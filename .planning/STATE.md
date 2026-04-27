@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 Milestone: v1.2 shipped (2026-04-24) — all 9 requirements satisfied, tagged, archived.
 Phase: none active. v1.2 phase artifacts moved to `.planning/milestones/v1.2-phases/`.
 Next action: `/gsd:new-milestone` to scope v1.3.
-Last activity: 2026-04-27 — Completed quick task 260427-r6c: replace resume-at description with examples
+Last activity: 2026-04-28 — Completed quick task 260428-1fl: bin/gsd-resume-at token-free shell wrapper
 
 ```
 v1.2 shipped: [==========] 100%
@@ -109,6 +109,7 @@ None.
 | 260421-rnu | Reorganize README — new-user flow (install/use/update) first; upstream-user migration content consolidated at end | 2026-04-21 | 5b5efd5 | [260421-rnu-readme-new-user-reorg](./quick/260421-rnu-readme-new-user-reorg/) |
 | 260427-rat | Add `/gsd:resume-at` skill (wraps `/schedule` for future-resume) + new README "Added features beyond upstream" section; bump 2.38.7→2.38.8 | 2026-04-27 | — | [260427-rat-resume-at-skill](./quick/260427-rat-resume-at-skill/) |
 | 260427-r6c | Replace resume-at description with concrete invocation examples | 2026-04-27 | 4cb0368 | [260427-r6c-replace-resume-at-skill-description-with](./quick/260427-r6c-replace-resume-at-skill-description-with/) |
+| 260428-1fl | Add `bin/gsd-resume-at` shell wrapper so resume-at scheduling works without tokens (macOS, nohup+sleep+osascript) | 2026-04-28 | c166a04 | [260428-1fl-add-bin-gsd-resume-at-shell-wrapper-so-r](./quick/260428-1fl-add-bin-gsd-resume-at-shell-wrapper-so-r/) |
 
 ## Session Continuity
 
