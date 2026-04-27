@@ -2,13 +2,13 @@
 
 **Based on:** [GSD 1.38.3](https://github.com/gsd-build/get-shit-done/releases/tag/v1.38.3) base tree by **TACHES** (Lex Christopherson)
 
-**Plugin version:** `2.38.7`
+**Plugin version:** `2.38.8`
 
 A performance-optimized plugin packaging of [GSD](https://github.com/gsd-build/get-shit-done) for Claude Code. Reduces per-turn token overhead by ~92%, adds MCP-backed project state, auto-resumes across `/compact`, and bundles everything into a single-install plugin.
 
 ## What GSD Plugin provides
 
-- **81 slash commands** (`/gsd:*`) for project planning, execution, debugging, and verification
+- **82 slash commands** (`/gsd:*`) for project planning, execution, debugging, and verification
 - **21 agent definitions** for specialized workflow roles (planner, executor, researcher, verifier, etc.)
 - **78 workflow bodies** in `workflows/` — operational logic that skills delegate to via `@${CLAUDE_PLUGIN_ROOT}/workflows/<name>.md`
 - **MCP server** exposing project state as queryable resources and mutation tools
@@ -25,6 +25,24 @@ A performance-optimized plugin packaging of [GSD](https://github.com/gsd-build/g
 A PostToolUse hook also writes a fresh checkpoint after most tool calls — `Bash`, `Edit`, `Write`, `MultiEdit`, `NotebookEdit`, `Read`, `Grep`, `Glob`, `WebFetch`, `WebSearch` — throttled to at most once per 60 seconds via mtime. This bridges Claude Code's *microcompact* path, which silently strips stale tool outputs without firing PreCompact, AND covers read-heavy research phases that don't write files: the periodic checkpoint keeps `HANDOFF.json` at most ~60s stale at any point during an active session, so resume after an unexpected session end (usage cap, kill, network drop) reflects recent state.
 
 **Drift resilience.** The plugin sits downstream of [upstream GSD](https://github.com/gsd-build/get-shit-done), which ships frequent feature releases. To catch structural drift before it reaches users, three detectors run in CI on every push: a **file-layout drift detector** flags dangling `@~/.claude/get-shit-done/*` references (e.g. skill files delegating to workflow bodies that don't exist in the plugin); a **HANDOFF schema validator** confirms `checkpoint.cjs` output matches the committed JSON Schema; and a **namespace drift check** fires if any `/gsd-<skill>` dash-style command refs have been reintroduced. Each detector has a committed ratchet baseline; regressions hard-fail. After each upstream sync, an additional **upstream schema drift detector** (`check-upstream-schema.cjs`) compares upstream's `/gsd:pause-work` output against our schema to catch format divergence early.
+
+## Added features beyond upstream
+
+This plugin starts from upstream GSD's source tree but adds Claude-Code-native capabilities that aren't possible in upstream's CLI-only design. If you're scanning for "what does this give me that upstream doesn't" — these are the headliners:
+
+| Feature | What it does | Command / hook |
+|---------|--------------|----------------|
+| **Scheduled resume** | Schedule a future Claude Code session to auto-run `/gsd:resume-work` (or any GSD command) at a specific time. Useful when hitting a usage cap, pausing for the day, or queuing a phase to run during off-peak quota windows. Accepts `HH:MM`, ISO 8601, or `+<duration>` (e.g. `+2h`). | `/gsd:resume-at <time>` |
+| **Auto-resume across `/compact`** | When Claude Code compacts a conversation, a 19-field `HANDOFF.json` is written automatically. The next session detects it via SessionStart and invokes `/gsd:resume-work` with **zero manual input**. | PreCompact + SessionStart hooks |
+| **Mid-session checkpoints** | A PostToolUse hook writes a fresh checkpoint after most tool calls (`Bash`, `Edit`, `Write`, `MultiEdit`, `NotebookEdit`, `Read`, `Grep`, `Glob`, `WebFetch`, `WebSearch`), throttled to ≤1/min. Closes the gap when Claude Code's silent *microcompact* path strips tool outputs without firing PreCompact, AND covers read-heavy research phases that don't write files. | PostToolUse hook |
+| **Plugin-version-churn fallback** | If another session upgrades the plugin mid-run and prunes the baked `${CLAUDE_PLUGIN_ROOT}` path, hooks resolve through a Node inline resolver that falls back to the newest cached plugin version. Long sessions survive plugin updates. | Hook command resolver |
+| **CI-enforced drift detection** | Three detectors run on every push: file-layout drift, HANDOFF schema integrity, and namespace normalization. Each has a ratchet baseline; regressions hard-fail. An upstream-schema detector runs post-sync to catch upstream format divergence early. | `bin/maintenance/check-drift.cjs` |
+| **92% per-turn token reduction** | Skill bodies are isolated in `context: fork` sub-agents; orchestration runs in clean child contexts instead of polluting the parent CLAUDE.md. State access uses MCP resources/tools instead of BashTool roundtrips to a CLI. | Plugin architecture |
+| **Plugin-local workflow bodies** | All 78 workflow bodies ship inside the plugin (`workflows/<name>.md`) and resolve via `${CLAUDE_PLUGIN_ROOT}/workflows/<name>.md`. Upstream's setup relies on a global `~/.claude/get-shit-done/` install dir that fails silently when missing. | `workflows/` dir |
+| **Standardized continuation prompts** | 6 terminal skills (`execute-phase`, `complete-milestone`, `verify-work`, `quick`, `plan-phase`, `ship`) emit "Next Up" blocks per `references/continuation-format.md` — `/clear`-then-[next] suggestions with a "/clear is safe (resume restores from HANDOFF)" footer. | All terminal skills |
+| **Memory across sessions** | Phase outcomes persist via Claude Code's memdir and are auto-recalled at session start. Upstream has no persistence — each session starts cold. | Built-in |
+
+For implementation details, see the deep-dive tables in [For users of upstream GSD](#for-users-of-upstream-gsd) below.
 
 ## Installation
 

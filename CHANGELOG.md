@@ -8,6 +8,17 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.38.8] - 2026-04-27  (based on upstream GSD 1.38.3)
+
+Plugin-only feature release — adds scheduled-resume support and surfaces plugin-only features more prominently in the README.
+
+### Added
+- **`/gsd:resume-at <time>` skill** — schedule a future Claude Code session to auto-run `/gsd:resume-work` (or any GSD command via `--cmd`) at a specific time. Accepts `HH:MM` (today/tomorrow), ISO 8601, or `+<duration>` (`+30m`, `+2h`, `+1d`). Thin wrapper over Claude Code's built-in `/schedule` / `CronCreate` primitive — durability is owned by the host CLI; the skill translates GSD-flavored input. Default scheduled command is `/gsd:resume-work` so HANDOFF.json restores context automatically when the future session opens. Use case: hitting a usage cap, pausing for the day, or queuing a phase to run during off-peak quota windows (quick task `260427-rat`).
+- **README "Added features beyond upstream" section** — surfaces plugin-only features above the fold in a single scannable table: scheduled resume, auto-resume across `/compact`, mid-session checkpoints, plugin-version churn fallback, drift detection, 92% token reduction, plugin-local workflow bodies, standardized continuation prompts, and cross-session memory. Replaces buried context in the deep-dive comparison tables for fresh visitors.
+
+### Changed
+- **README slash-command count**: 81 → 82 (added `resume-at`).
+
 ## [2.38.7] - 2026-04-25  (based on upstream GSD 1.38.3)
 
 Plugin-only patch — closes a real read-heavy-session checkpoint gap surfaced by a usage-cap incident, plus a fuller README comparison vs upstream.
