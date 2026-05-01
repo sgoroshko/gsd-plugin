@@ -6,8 +6,8 @@ offers mid-conversation research when useful, then routes crystallized outputs t
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@${CLAUDE_PLUGIN_ROOT}/references/questioning.md
-@${CLAUDE_PLUGIN_ROOT}/references/domain-probes.md
+@~/.claude/get-shit-done/references/questioning.md
+@~/.claude/get-shit-done/references/domain-probes.md
 </required_reading>
 
 <available_agent_types>
@@ -66,6 +66,8 @@ Task(
 )
 ```
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Task() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
 Share findings and continue the conversation.
 
 If the topic doesn't warrant research, skip this step entirely. **Don't force it.**
@@ -82,8 +84,8 @@ When the conversation reaches natural conclusions or the developer signals readi
 | Research question | `.planning/research/questions.md` (append) | Open questions that need deeper investigation |
 | Requirement | `REQUIREMENTS.md` (append) | Clear requirements that emerged from discussion |
 | New phase | `ROADMAP.md` (append) | Scope large enough to warrant its own phase |
-| Spike | `/gsd:spike` (invoke) | Feasibility uncertainty surfaced — "will this API work?", "can we do X?" |
-| Sketch | `/gsd:sketch` (invoke) | Design direction unclear — "what should this look like?", "how should this feel?" |
+| Spike | `/gsd-spike` (invoke) | Feasibility uncertainty surfaced — "will this API work?", "can we do X?" |
+| Sketch | `/gsd-sketch` (invoke) | Design direction unclear — "what should this look like?", "how should this feel?" |
 
 Present suggestions:
 ```
@@ -109,11 +111,11 @@ For each selected output, write the file:
 - **Seeds:** Create `.planning/seeds/{slug}.md` with frontmatter (title, trigger_condition, planted_date)
 - **Research questions:** Append to `.planning/research/questions.md`
 - **Requirements:** Append to `.planning/REQUIREMENTS.md` with next available REQ ID
-- **Phases:** Use existing `/gsd:add-phase` command via SlashCommand
+- **Phases:** Use existing `/gsd-add-phase` command via SlashCommand
 
 Commit if `commit_docs` is enabled:
 ```bash
-gsd-sdk query commit "docs: capture exploration — {topic_slug}" {file_list}
+gsd-sdk query commit "docs: capture exploration — {topic_slug}" --files {file_list}
 ```
 
 ## Step 6: Close
@@ -125,7 +127,7 @@ gsd-sdk query commit "docs: capture exploration — {topic_slug}" {file_list}
 **Outputs:** {count} artifact(s) created
 {list of created files}
 
-Continue exploring with `/gsd:explore` or start working with `/gsd:next`.
+Continue exploring with `/gsd-explore` or start working with `/gsd-next`.
 ```
 
 </process>

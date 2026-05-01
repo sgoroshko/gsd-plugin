@@ -1,5 +1,5 @@
 <purpose>
-Create structured `.planning/HANDOFF.json` and `.continue-here.md` handoff files to preserve complete work state across sessions. The JSON provides machine-readable state for `/gsd:resume-work`; the markdown provides human-readable context.
+Create structured `.planning/HANDOFF.json` and `.continue-here.md` handoff files to preserve complete work state across sessions. The JSON provides machine-readable state for `/gsd-resume-work`; the markdown provides human-readable context.
 </purpose>
 
 <required_reading>
@@ -207,7 +207,7 @@ timestamp=$(gsd-sdk query current-timestamp full --raw)
 
 <step name="commit">
 ```bash
-gsd-sdk query commit "wip: [context-name] paused at [X]/[Y]" [handoff-path] .planning/HANDOFF.json
+gsd-sdk query commit "wip: [context-name] paused at [X]/[Y]" --files [handoff-path] .planning/HANDOFF.json
 ```
 </step>
 
@@ -226,7 +226,7 @@ Current state:
 - Blockers: [count] ({human_actions_pending count} need human action)
 - Committed as WIP
 
-To resume: /gsd:resume-work
+To resume: /gsd-resume-work
 
 ```
 </step>

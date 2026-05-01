@@ -16,7 +16,7 @@ Load docs-update context:
 ```bash
 INIT=$(gsd-sdk query docs-init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS=$(gsd-sdk query agent-skills gsd-doc-writer 2>/dev/null)
+AGENT_SKILLS=$(gsd-sdk query agent-skills gsd-doc-writer)
 ```
 
 Extract from init JSON:
@@ -448,6 +448,8 @@ Write the doc file directly. Return confirmation only — do not return doc cont
 
 **CRITICAL:** Agent prompts must contain ONLY the `<doc_assignment>` block, the `${AGENT_SKILLS}` variable, and the return instruction. Do not include project planning context, workflow prose, or any internal tooling references in agent prompts.
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all Wave 1 Task() calls above with `run_in_background=true`, do NOT generate any documentation independently while the subagents are active. Wait for all Wave 1 agents to complete before proceeding. This prevents duplicate work and wasted context.
+
 Continue to collect_wave_1.
 </step>
 
@@ -665,6 +667,8 @@ Write the doc file directly. Return confirmation only — do not return doc cont
 
 **CRITICAL:** Agent prompts must contain ONLY the `<doc_assignment>` block, the `${AGENT_SKILLS}` variable, and the return instruction. Do not include project planning context, workflow prose, or any internal tooling references in agent prompts.
 
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all Wave 2 Task() calls above with `run_in_background=true`, do NOT generate any documentation independently while the subagents are active. Wait for all Wave 2 agents to complete before proceeding. This prevents duplicate work and wasted context.
+
 Continue to collect_wave_2.
 </step>
 
@@ -746,6 +750,8 @@ project_context: {INIT JSON with project_root set to package directory}
 Write {package_dir}/README.md directly. Return confirmation only — do not return doc content."
 )
 ```
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all per-package Task() calls above with `run_in_background=true`, do NOT generate any package READMEs independently while the subagents are active. Wait for all agents to complete via TaskOutput before proceeding. This prevents duplicate work and wasted context.
 
 Collect confirmations via TaskOutput for all package agents. Note failures in the final report.
 
@@ -988,8 +994,8 @@ Failed claims:
 
 Display note:
 ```
-To fix failures automatically: /gsd:docs-update (runs generation + fix loop)
-To regenerate all docs from scratch: /gsd:docs-update --force
+To fix failures automatically: /gsd-docs-update (runs generation + fix loop)
+To regenerate all docs from scratch: /gsd-docs-update --force
 ```
 
 Clean up temp files: remove `.planning/tmp/verify-*.json` files.
@@ -1024,7 +1030,7 @@ This would expose credentials if committed.
 Action required:
 1. Review the flagged lines above
 2. Remove any real secrets from the doc files
-3. Re-run /gsd:docs-update to regenerate clean docs
+3. Re-run /gsd-docs-update to regenerate clean docs
 ```
 
 Then confirm with AskUserQuestion:
@@ -1126,7 +1132,7 @@ All generated files committed.
 Remind the user they can fact-check generated docs:
 
 ```
-Run `/gsd:docs-update --verify-only` to fact-check generated docs against the codebase.
+Run `/gsd-docs-update --verify-only` to fact-check generated docs against the codebase.
 ```
 
 End workflow.
