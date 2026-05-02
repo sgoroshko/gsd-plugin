@@ -8,6 +8,9 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+### Added
+- **Rate-limit fallback hint** — new `Stop` hook tails the session transcript and, when it detects a rate-limit message ("You've hit your limit", "usage limit", "rate limit"), prints a bordered hint pointing at the no-token recovery path (`/exit` then `gsd-resume-at HH:MM` from a plain terminal). Best-effort detection because Claude Code renders its rate-limit message before any plugin code runs; the Stop event fires after, giving users a one-paste recovery the next time they look at the terminal. Same example also added to `skills/resume-at/SKILL.md` (No-token fallback callout) and `bin/gsd-resume-at` (head comment + runtime `--help`).
+
 ## [2.39.1] - 2026-05-01  (based on upstream GSD 1.39.1)
 
 Upstream hotfix sync — picks up upstream GSD 1.39.1 (released 2026-05-01) on top of yesterday's v1.39.0 sync. Hotfix scope: `bin/gsd-tools.cjs` (1 line — adds `'skills'` to `GSD_MANAGED_DIRS` in `detect-custom-files`, PR #2942), `bin/lib/config-schema.cjs` + `bin/lib/config.cjs` (~20 lines — `SCHEMA_DEFAULTS` for `context_window`, PR #2944), `references/git-integration.md` (worktree hook policy, PR #2924), and roughly a dozen `workflows/*.md` files. Plugin-only patches in `bin/lib/core.cjs` (CLAUDE_PLUGIN_ROOT path resolution helpers — `resolveGsdRoot` / `resolveGsdDataDir` / `resolveGsdAsset`) and `bin/gsd-tools.cjs` (`migrate` / `write-phase-memory` / `checkpoint` / `hook` command branches) preserved verbatim. Upstream did not modify `bin/lib/core.cjs` between 1.39.0 → 1.39.1, so the plugin's patched copy was kept as-is.
