@@ -1191,6 +1191,56 @@ async function runCommand(command, args, cwd, raw, defaultValue) {
         } catch (err) {
           process.stderr.write('GSD: checkpoint save failed: ' + (err && err.message ? err.message : 'unknown error') + '\n');
         }
+      } else if (hookType === 'stop') {
+        // Rate-limit fallback nudge.
+        // Claude Code renders its "You've hit your limit" message before any plugin
+        // code can run, so we can't inject into that line. Best-effort detection:
+        // tail the transcript and surface the no-token fallback (`/exit` then the
+        // `gsd-resume-at` shell wrapper) so the next invocation is one paste away.
+        // Silent on no match. Never blocks Stop dispatch — exits 0 always.
+        try {
+          let payload = {};
+          try {
+            const stdinData = fs.readFileSync(0, 'utf-8');
+            if (stdinData) payload = JSON.parse(stdinData);
+          } catch { /* stdin missing or unparseable — skip */ }
+
+          const transcriptPath = payload && payload.transcript_path;
+          if (transcriptPath && fs.existsSync(transcriptPath)) {
+            // Read last ~8KB. Transcripts are JSONL — tailing bytes is enough
+            // to catch the most recent assistant turn without parsing the whole file.
+            const TAIL_BYTES = 8192;
+            const stat = fs.statSync(transcriptPath);
+            const start = Math.max(0, stat.size - TAIL_BYTES);
+            const fd = fs.openSync(transcriptPath, 'r');
+            const buf = Buffer.alloc(stat.size - start);
+            try {
+              fs.readSync(fd, buf, 0, buf.length, start);
+            } finally {
+              fs.closeSync(fd);
+            }
+            const tail = buf.toString('utf-8');
+
+            const RATE_LIMIT_RE = /(you'?ve hit your limit|usage[\s-]*limit|rate[\s-]*limit)/i;
+            if (RATE_LIMIT_RE.test(tail)) {
+              const hint = [
+                '',
+                '════════════════════════════════════════════════════════════',
+                '  Rate-limited? Schedule a resume without consuming tokens:',
+                '',
+                '    /exit                    # leave this Claude session',
+                '    gsd-resume-at HH:MM      # then run from a plain terminal',
+                '',
+                '  Wrapper docs: gsd-resume-at --help',
+                '════════════════════════════════════════════════════════════',
+                ''
+              ].join('\n');
+              process.stderr.write(hint);
+            }
+          }
+        } catch {
+          // Best effort — never break Stop dispatch.
+        }
       } else if (hookType === 'post-tool-use') {
         // Periodic checkpoint to bridge the microcompact gap.
         // CC's microcompact (services/compact/microCompact.ts) silently strips stale
