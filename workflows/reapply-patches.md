@@ -1,6 +1,6 @@
 # Reapply Local Patches Workflow
 
-Invoked by `/gsd:update --reapply` (`commands/gsd/update.md`).
+Invoked by `/gsd-update --reapply` (`commands/gsd/update.md`).
 
 After a GSD update wipes and reinstalls files, this workflow merges user's previously saved local modifications back into the new version. Uses three-way comparison (pristine baseline, user-modified backup, newly installed version) to reliably distinguish user customizations from version drift.
 
@@ -111,7 +111,7 @@ Read `backup-meta.json` from the patches directory.
 ```
 No local patches found. Nothing to reapply.
 
-Local patches are automatically saved when you run /gsd:update
+Local patches are automatically saved when you run /gsd-update
 after modifying any GSD workflow, command, or agent files.
 ```
 Exit.
@@ -275,7 +275,7 @@ Two layered gates. Both must pass before proceeding to cleanup.
 
 Run the deterministic verifier script. Do NOT rely solely on the free-text `verified: yes/no` Hunk Verification Table from Step 4 — bug #2969 traced repeated false-positive `verified: yes` reports to that table being filled in without an actual content-presence check. The script performs the check structurally and exits non-zero on any miss.
 
-Run the verifier as a child process (the gsd-tools binary directory is not required — the script ships under `scripts/` in the source repo and is also exposed via the SDK at `sdk/dist/cli.js verify-reapply` when present):
+Run the verifier as a child process (the gsd-tools binary directory is not required — the script ships under `get-shit-done/bin/` in the source repo and is installed to `${GSD_HOME}/get-shit-done/bin/`; it is also exposed via the SDK at `sdk/dist/cli.js verify-reapply` when present):
 
 ```bash
 PRISTINE_DIR="${CONFIG_DIR}/gsd-pristine"
@@ -295,7 +295,7 @@ VERIFY_ARGS+=(--json)
 # Node warnings, deprecation notices, or stack traces do not corrupt the
 # JSON parse downstream. Stderr is preserved on the controlling terminal
 # for operator visibility.
-VERIFY_OUTPUT="$(node "${GSD_HOME}/scripts/verify-reapply-patches.cjs" "${VERIFY_ARGS[@]}")"
+VERIFY_OUTPUT="$(node "${GSD_HOME}/get-shit-done/bin/verify-reapply-patches.cjs" "${VERIFY_ARGS[@]}")"
 VERIFY_STATUS=$?
 ```
 
@@ -317,7 +317,7 @@ Resolve before proceeding:
   (a) Re-merge the missing content into the installed file by hand, or
   (b) Restore from backup: cp {patches_dir}/{file} {installed_path}
 
-Then re-run /gsd:update --reapply to re-verify.
+Then re-run /gsd-update --reapply to re-verify.
 ```
 
 Do not proceed to cleanup until the verifier exits 0.
@@ -334,7 +334,7 @@ The Hunk Verification Table produced in Step 4 must also be reviewed before proc
 ERROR: Hunk Verification Table is missing — Step 4 did not produce it.
 The deterministic verifier (5a) may still have passed, but a missing table
 means post-merge verification was not fully completed. Rerun
-/gsd:update --reapply to retry with full verification.
+/gsd-update --reapply to retry with full verification.
 ```
 
 A missing table absent from the workflow output cannot bypass this gate.

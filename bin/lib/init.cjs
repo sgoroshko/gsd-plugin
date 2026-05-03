@@ -7,6 +7,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 const { loadConfig, resolveModelInternal, findPhaseInternal, getRoadmapPhaseInternal, pathExistsInternal, generateSlugInternal, getMilestoneInfo, getMilestonePhaseFilter, stripShippedMilestones, extractCurrentMilestone, normalizePhaseName, toPosixPath, output, error, checkAgentsInstalled, phaseTokenMatches } = require('./core.cjs');
 const { planningPaths, planningDir, planningRoot } = require('./planning-workspace.cjs');
+const { maskIfSecret } = require('./secrets.cjs');
 
 // Accept all bold/colon variants of the Requirements header (#2769):
 // **Requirements:** / **Requirements**: / **Requirements** : render the
@@ -725,9 +726,13 @@ function cmdInitPhaseOp(cwd, phase, raw) {
   const result = {
     // Config
     commit_docs: config.commit_docs,
-    brave_search: config.brave_search,
-    firecrawl: config.firecrawl,
-    exa_search: config.exa_search,
+    // #2997: secret config keys may be either booleans (availability flags) or
+    // string API keys (when user did `gsd-tools config-set brave_search XXX`).
+    // Pass booleans through; mask string values so the init bundle never echoes
+    // plaintext credentials. SDK init.ts mirrors this masking.
+    brave_search: typeof config.brave_search === 'string' ? maskIfSecret('brave_search', config.brave_search) : config.brave_search,
+    firecrawl: typeof config.firecrawl === 'string' ? maskIfSecret('firecrawl', config.firecrawl) : config.firecrawl,
+    exa_search: typeof config.exa_search === 'string' ? maskIfSecret('exa_search', config.exa_search) : config.exa_search,
 
     // Phase info
     phase_found: !!phaseInfo,
@@ -1004,10 +1009,10 @@ function cmdInitManager(cwd, raw) {
 
   // Validate prerequisites
   if (!fs.existsSync(paths.roadmap)) {
-    error('No ROADMAP.md found. Run /gsd:new-milestone first.');
+    error('No ROADMAP.md found. Run /gsd-new-milestone first.');
   }
   if (!fs.existsSync(paths.state)) {
-    error('No STATE.md found. Run /gsd:new-milestone first.');
+    error('No STATE.md found. Run /gsd-new-milestone first.');
   }
   const rawContent = fs.readFileSync(paths.roadmap, 'utf-8');
   const content = extractCurrentMilestone(rawContent, cwd);
@@ -1186,7 +1191,7 @@ function cmdInitManager(cwd, raw) {
         phase_name: phase.name,
         action: 'execute',
         reason: `${phase.plan_count} plans ready, dependencies met`,
-        command: `/gsd:execute-phase ${phase.number}`,
+        command: `/gsd-execute-phase ${phase.number}`,
       });
     } else if (phase.disk_status === 'discussed' || phase.disk_status === 'researched') {
       recommendedActions.push({
@@ -1194,7 +1199,7 @@ function cmdInitManager(cwd, raw) {
         phase_name: phase.name,
         action: 'plan',
         reason: 'Context gathered, ready for planning',
-        command: `/gsd:plan-phase ${phase.number}`,
+        command: `/gsd-plan-phase ${phase.number}`,
       });
     } else if ((phase.disk_status === 'empty' || phase.disk_status === 'no_directory') && phase.is_next_to_discuss) {
       recommendedActions.push({
@@ -1202,7 +1207,7 @@ function cmdInitManager(cwd, raw) {
         phase_name: phase.name,
         action: 'discuss',
         reason: 'Unblocked, ready to gather context',
-        command: `/gsd:discuss-phase ${phase.number}`,
+        command: `/gsd-discuss-phase ${phase.number}`,
       });
     }
   }
