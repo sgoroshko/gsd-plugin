@@ -63,7 +63,7 @@ The `--dangerously-skip-permissions` flag is recommended for the install flow: i
 You should now be inside a Claude Code session (you'll see the Claude Code prompt, not your shell prompt). Type these two commands at the Claude Code prompt:
 
 ```
-/plugin marketplace add jnuyens/gsd-plugin
+/plugin marketplace add https://github.com/jnuyens/gsd-plugin.git
 /plugin install gsd@gsd-plugin
 ```
 
@@ -116,7 +116,7 @@ This plugin starts from upstream GSD's source tree and adds Claude-Code-native f
 
 | Aspect | Upstream GSD | This plugin |
 |--------|-------------|-------------|
-| Install | `npx get-shit-done-cc` | `/plugin marketplace add jnuyens/gsd-plugin && /plugin install gsd@gsd-plugin` (run inside Claude Code) |
+| Install | `npx get-shit-done-cc` | `/plugin marketplace add https://github.com/jnuyens/gsd-plugin.git` then `/plugin install gsd@gsd-plugin` (run inside Claude Code) |
 | Context overhead | ~3,000-5,000 tokens/turn via CLAUDE.md | ~200 tokens (92% reduction) |
 | Skill isolation | Inline execution; orchestration prompts pollute parent context | `context: fork` sub-agent isolation; orchestration runs in clean child contexts |
 | State access | BashTool roundtrips to `gsd-tools` CLI | MCP resources + tools; structured queries replace prompt injection |
@@ -173,7 +173,7 @@ A few things the auto-migration can't do for you:
 Type these at the Claude Code prompt:
 
 ```
-/plugin marketplace add jnuyens/gsd-plugin
+/plugin marketplace add https://github.com/jnuyens/gsd-plugin.git
 /plugin install gsd@gsd-plugin
 ```
 
