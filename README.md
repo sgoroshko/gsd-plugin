@@ -48,7 +48,17 @@ For implementation details, see the deep-dive tables in [For users of upstream G
 
 GSD Plugin installs *inside* a Claude Code session, not from your host shell. If you have never used Claude Code plugins before, follow these steps in order.
 
-### Step 1 — Launch Claude Code
+### Step 1 — Trust GitHub's SSH host key (first time only on a new machine)
+
+`/plugin marketplace add` clones over SSH. On a fresh machine GitHub's host key is unknown, which makes the non-interactive `git clone` Claude Code runs fail silently. Prime `known_hosts` once from your host shell:
+
+```bash
+ssh -T git@github.com
+```
+
+Type `yes` at the *"Are you sure you want to continue connecting?"* prompt. The follow-up *"Permission denied (publickey)"* is expected for a public-repo clone via SSH and harmless — you only needed the host key to land in `~/.ssh/known_hosts`. Skip this step if you have used `git@github.com` from this machine before.
+
+### Step 2 — Launch Claude Code
 
 From your host shell (Terminal, iTerm, etc.), in any directory:
 
@@ -58,12 +68,12 @@ claude --dangerously-skip-permissions
 
 The `--dangerously-skip-permissions` flag is recommended for the install flow: it lets the plugin marketplace add, plugin install, and MCP server bootstrap run without a wall of permission prompts. You can launch with plain `claude` later if you prefer to approve each tool use.
 
-### Step 2 — Add the marketplace and install the plugin
+### Step 3 — Add the marketplace and install the plugin
 
 You should now be inside a Claude Code session (you'll see the Claude Code prompt, not your shell prompt). Type these two commands at the Claude Code prompt:
 
 ```
-/plugin marketplace add https://github.com/jnuyens/gsd-plugin.git
+/plugin marketplace add jnuyens/gsd-plugin
 /plugin install gsd@gsd-plugin
 ```
 
@@ -116,7 +126,7 @@ This plugin starts from upstream GSD's source tree and adds Claude-Code-native f
 
 | Aspect | Upstream GSD | This plugin |
 |--------|-------------|-------------|
-| Install | `npx get-shit-done-cc` | `/plugin marketplace add https://github.com/jnuyens/gsd-plugin.git` then `/plugin install gsd@gsd-plugin` (run inside Claude Code) |
+| Install | `npx get-shit-done-cc` | `/plugin marketplace add jnuyens/gsd-plugin && /plugin install gsd@gsd-plugin` (run inside Claude Code) |
 | Context overhead | ~3,000-5,000 tokens/turn via CLAUDE.md | ~200 tokens (92% reduction) |
 | Skill isolation | Inline execution; orchestration prompts pollute parent context | `context: fork` sub-agent isolation; orchestration runs in clean child contexts |
 | State access | BashTool roundtrips to `gsd-tools` CLI | MCP resources + tools; structured queries replace prompt injection |
@@ -173,7 +183,7 @@ A few things the auto-migration can't do for you:
 Type these at the Claude Code prompt:
 
 ```
-/plugin marketplace add https://github.com/jnuyens/gsd-plugin.git
+/plugin marketplace add jnuyens/gsd-plugin
 /plugin install gsd@gsd-plugin
 ```
 
