@@ -70,14 +70,15 @@ The `--dangerously-skip-permissions` flag is recommended for the install flow: i
 
 ### Step 3 — Add the marketplace and install the plugin
 
-You should now be inside a Claude Code session (you'll see the Claude Code prompt, not your shell prompt). Type these two commands at the Claude Code prompt:
+You should now be inside a Claude Code session (you'll see the Claude Code prompt, not your shell prompt). Type these three commands at the Claude Code prompt:
 
 ```
 /plugin marketplace add jnuyens/gsd-plugin
 /plugin install gsd@gsd-plugin
+/reload-plugins
 ```
 
-That's it. This installs everything: slash commands, agent definitions, hooks, and an MCP server for project state. No manual configuration required. Enable auto-update for the marketplace in Claude Code settings to receive updates automatically.
+That's it. This installs everything: slash commands, agent definitions, hooks, and an MCP server for project state. The `/reload-plugins` step activates the freshly installed plugin in your current session — without it the slash commands and hooks aren't loaded until you restart Claude Code. Enable auto-update for the marketplace in Claude Code settings to receive updates automatically.
 
 ## Quick start
 
@@ -188,6 +189,7 @@ Type these at the Claude Code prompt:
 ```
 /plugin marketplace add jnuyens/gsd-plugin
 /plugin install gsd@gsd-plugin
+/reload-plugins
 ```
 
 #### 2. Uninstall `get-shit-done-cc` npm package (if installed)
