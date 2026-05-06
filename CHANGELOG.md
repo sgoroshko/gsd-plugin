@@ -8,6 +8,19 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.40.1] - 2026-05-06
+
+Hotfix — suppresses a false-positive "GSD subagents are not installed" warning that appeared after `/gsd:new-project` and `/gsd:new-milestone` for plugin users.
+
+### Fixed
+- **`bin/lib/core.cjs::getAgentsDir()`** (#PLUGIN-AGENTS-DIR) — upstream's `__dirname/../../../agents` traversal assumes the upstream `<root>/get-shit-done/bin/lib/` layout and lands one level too high in the plugin's flattened `<plugin_root>/bin/lib/` layout. Patched to prefer `path.join(resolveGsdRoot(), 'agents')` when that directory exists, so `checkAgentsInstalled()` finds the bundled agents.
+- **`workflows/new-project.md` + `workflows/new-milestone.md`** — the `agents_installed: false` warning gate now first overrides the flag for plugin users (`CLAUDE_PLUGIN_ROOT` set + bundled `agents/gsd-planner.md` present), and the fallback warning text clarifies that plugin users can ignore it. The previous warning recommended `npx get-shit-done-cc@latest --global`, which the plugin's `migrations/legacy-cleanup.cjs::autoMigrate` actively undoes — bad advice for plugin users.
+- **`workflows/quick.md`** — exports `GSD_AGENTS_DIR=$CLAUDE_PLUGIN_ROOT/agents` before the `gsd-sdk query init.quick` call so the SDK's bundled (un-patched) `core.cjs` consults the plugin's agents directory.
+
+### Notes
+- Patches are tagged inline with `[PLUGIN PATCH]` / `#PLUGIN-AGENTS-DIR` markers and recorded in the persistent plugin-patches inventory so future upstream syncs preserve them.
+- This is a plugin-side fix only. Standalone `gsd-sdk` invocations outside the plugin's workflows still report the false-negative, because the SDK ships its own bundled `core.cjs` from the npx cache and that copy is not patched. A future upstream PR can land the same `getAgentsDir()` fix at source.
+
 ## [2.40.0] - 2026-05-03  (based on upstream GSD 1.40.0)
 
 Upstream minor sync — picks up upstream GSD 1.40.0 (released 2026-05-02). Plugin-only patches in `bin/lib/core.cjs` (CLAUDE_PLUGIN_ROOT path resolution helpers — `resolveGsdRoot` / `resolveGsdDataDir` / `resolveGsdAsset`) and `bin/gsd-tools.cjs` (`migrate` / `write-phase-memory` / `checkpoint` / `hook` command branches) preserved via 3-way merge.
