@@ -98,9 +98,12 @@ Enable auto-update for the marketplace in Claude Code settings and updates will 
 
 # Step 2: Reinstall the plugin to pick up the new version
 /plugin install gsd@gsd-plugin
+
+# Step 3: Reload plugins so the new version is active in this session
+/reload-plugins
 ```
 
-Note: Step 1 refreshes the marketplace index but does not upgrade the installed plugin. Step 2 is needed to install the new version.
+Note: Step 1 refreshes the marketplace index but does not upgrade the installed plugin. Step 2 installs the new version on disk, and Step 3 makes Claude Code pick it up without restarting.
 
 ## Maintenance scripts
 
