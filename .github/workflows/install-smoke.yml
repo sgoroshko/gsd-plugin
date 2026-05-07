@@ -62,7 +62,7 @@ jobs:
           echo "out: $out"
           echo "$out" | grep -q "gsd-sdk v" || { echo "FAIL: PATH resolution did not find bundled wrapper"; exit 1; }
 
-      - name: Test 3 - real query: state.load on a synthetic project
+      - name: "Test 3 - real query: state.load on a synthetic project"
         run: |
           set -e
           mkdir -p /tmp/smoke-project && cd /tmp/smoke-project
