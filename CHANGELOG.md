@@ -8,6 +8,28 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.41.0] - 2026-05-07  (based on upstream GSD 1.41.0)
+
+Upstream minor sync — picks up GSD 1.41.0 (released 2026-05-07). Plugin-only patches in `bin/lib/core.cjs` (CLAUDE_PLUGIN_ROOT path resolution helpers `resolveGsdRoot` / `resolveGsdDataDir` / `resolveGsdAsset` + agent-dir override `getAgentsDir` reading `GSD_AGENTS_DIR`) preserved via 3-way merge. `bin/gsd-tools.cjs` untouched upstream this cycle; plugin's `migrate` / `write-phase-memory` / `checkpoint` / `hook` cases verified intact via regression grep.
+
+### Added
+- **`/gsd:mvp-phase` workflow** — new MVP-phase command (vertical-slice planning + TDD execution + UAT verification). Includes 8 new references (`mvp-concepts`, `planner-mvp-mode`, `execute-mvp-tdd`, `verify-mvp-mode`, `spidr-splitting`, `skeleton-template`, `user-story-template`, `worktree-path-safety`). New plugin skill `skills/mvp-phase/SKILL.md` exposes the command.
+- **3 new workflow bodies** for existing skills: `workflows/add-backlog.md`, `workflows/debug.md`, `workflows/thread.md` (the skills already existed in the plugin; upstream now ships the workflow files they reference).
+- **`bin/lib/runtime-homes.cjs`** — runtime-aware `globalSkillsBase` resolution (replaces hardcoded path, upstream #3126).
+- 7 agent-prompt updates: `gsd-codebase-mapper`, `gsd-debug-session-manager`, `gsd-executor`, `gsd-plan-checker`, `gsd-planner`, `gsd-roadmapper`, `gsd-verifier`.
+- See full upstream release notes: <https://github.com/gsd-build/get-shit-done/releases/tag/v1.41.0>.
+
+### Changed
+- **Version bump** — plugin `2.40.2 → 2.41.0` per `plugin_minor = upstream_minor` versioning (README § Versioning).
+- **`workflows/extract_learnings.md` renamed to `workflows/extract-learnings.md`** (snake → kebab; git history preserved via `git mv`).
+- **33 workflows refreshed** at top level: `ai-integration-phase`, `audit-fix`, `audit-milestone`, `code-review-fix`, `code-review`, `diagnose-issues`, `discuss-phase-assumptions`, `discuss-phase`, `docs-update`, `execute-phase`, `execute-plan`, `explore`, `help`, `import`, `ingest-docs`, `manager`, `map-codebase`, `new-milestone`, `new-project`, `next`, `plan-phase`, `progress`, `quick`, `resume-project`, `scan`, `secure-phase`, `settings`, `stats`, `ui-phase`, `ui-review`, `update`, `validate-phase`, `verify-work`. Notable: `quick.md` (history-based resurrection guard), `plan-phase.md` (removed stale OpenCode `agent:` directive #3156), `execute-phase.md` + sub-step files (cwd-drift sentinel + absolute-path guard #3097/#3099).
+- **3 nested workflow files refreshed**: `discuss-phase/modes/advisor.md`, `execute-phase/steps/codebase-drift-gate.md`, `execute-phase/steps/per-plan-worktree-gate.md`.
+- **12 `bin/lib/` modules refreshed** wholesale (no plugin patches in any of them): `artifacts`, `config-schema`, `graphify`, `init`, `milestone`, `phase-command-router`, `phase`, `profile-output`, `roadmap`, `state-command-router`, `state`, `verify`.
+- **`templates/README.md`** updated.
+
+### Fixed
+- Upstream bug fixes flowing through automatically: milestone version-resolution (#3109), STATE narrative-tail normalization (#3122), `roadmap.cjs` plan-count for nested layout (#3128), `state.begin-phase` idempotency (#3127), workflow contract validation (#3151), and statusline numeric-100 / next_phases parsing (#3154).
+
 ## [2.40.2] - 2026-05-07
 
 Hotfix — restores the bundled MCP server's stdio transport so `claude mcp list` reports `gsd: ✓ Connected` and the eight `gsd_*` MCP tools become reachable.
