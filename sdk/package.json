@@ -33,7 +33,8 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run bundle",
+    "bundle": "esbuild dist/cli.js --bundle --platform=node --format=esm --outfile=dist/cli.js --allow-overwrite --banner:js=\"import { createRequire as _gsdCreateRequire } from 'module'; const require = _gsdCreateRequire(import.meta.url);\"",
     "check:alias-drift": "npm run build && node scripts/check-command-aliases-fresh.mjs",
     "prepublishOnly": "rm -rf dist && tsc && chmod +x dist/cli.js",
     "test": "vitest run",
@@ -47,6 +48,7 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/ws": "^8.18.1",
+    "esbuild": "^0.28.0",
     "typescript": "^5.7.0",
     "vitest": "^3.1.1"
   }
