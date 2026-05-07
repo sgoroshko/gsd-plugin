@@ -48,6 +48,9 @@ if (!fs.existsSync('.git') || !fs.existsSync('skills')) {
 const skipDirs = [
   /^_research\//,
   /^\.planning\//,  // all planning artifacts (plans, summaries, research, quick tasks, archives)
+  /^sdk\//,         // vendored SDK source/dist (v2.42.0+) — refs inside are upstream's docstrings
+                    // (e.g. literal `references/foo.md` placeholders in prompt-sanitizer comments),
+                    // not plugin-authored content the layout detector is meant to police.
 ];
 const textExt = /\.(md|json|cjs|js|ts|tsx|txt|yml|yaml|sh|html)$/i;
 

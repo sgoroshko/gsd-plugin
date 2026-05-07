@@ -2,7 +2,7 @@
 
 **Based on:** [GSD 1.41.0](https://github.com/gsd-build/get-shit-done/releases/tag/v1.41.0) base tree by **TACHES** (Lex Christopherson)
 
-**Plugin version:** `2.41.0`
+**Plugin version:** `2.42.0`
 
 **GSD Plugin for Claude Code** ensures your coding work gets done in a systematic, structured way. It prompts you only for the important design and architectural decisions that actually need your judgment, and it splits each step into its own focused subcontext so token use stays optimised across long projects.
 
@@ -12,24 +12,11 @@ Under the hood, a performance-optimized plugin packaging of [GSD](https://github
 
 GSD Plugin installs *inside* a Claude Code session, not from your host shell. If you have never used Claude Code plugins before, follow these steps in order.
 
-### Prerequisites: install the GSD SDK CLI (`gsd-sdk`)
+### No prerequisites
 
-The plugin's workflow scripts shell out to the `gsd-sdk` binary in 500+ places. Without it, every `/gsd:*` command fails with `command not found: gsd-sdk`. Install it once globally before installing the plugin:
+As of **v2.42.0** the plugin bundles its own copy of the GSD SDK at `sdk/dist/cli.js` and ships a `bin/gsd-sdk` wrapper that Claude Code automatically puts on `PATH` for plugin Bash calls. You no longer need to `npm install -g get-shit-done-cc`. Closes [#4](https://github.com/jnuyens/gsd-plugin/issues/4).
 
-```bash
-npm install -g get-shit-done-cc
-```
-
-The `get-shit-done-cc` package ships the `gsd-sdk` binary on your `PATH`. (`npm install -g @gsd-build/sdk` is *not* sufficient yet — its npm-published `0.1.0` lacks the `query` subcommand the plugin needs; tracked at [gsd-build/get-shit-done#2685](https://github.com/gsd-build/get-shit-done/issues/2685).)
-
-Verify:
-
-```bash
-which gsd-sdk    # should print a path
-gsd-sdk --version
-```
-
-If you've used GSD before via `npx get-shit-done-cc`, you already have this and can skip ahead.
+If you already have an external `gsd-sdk` from a prior `npx get-shit-done-cc` install, it stays on your `PATH` ahead of the bundled one and keeps working — no breakage.
 
 ### Step 1: Trust GitHub's SSH host key (first time only on a new machine)
 
@@ -213,19 +200,15 @@ Type these at the Claude Code prompt:
 /reload-plugins
 ```
 
-#### 2. Keep `get-shit-done-cc` installed -- the plugin needs its `gsd-sdk` binary
-
-> **Earlier versions of this README (≤ v2.41.0) told you to `npm uninstall -g get-shit-done-cc` here. That was wrong and has been corrected** ([#4](https://github.com/jnuyens/gsd-plugin/issues/4), reported by @ThomasHezard and confirmed by @herman925).
-
-The plugin's `workflows/*.md` and `skills/*/SKILL.md` files shell out to `gsd-sdk` (provided by `get-shit-done-cc`) in 500+ places, so the package must stay installed even after migrating to the plugin. If you already removed it, reinstall:
+#### 2. Uninstall `get-shit-done-cc` npm package (now safe -- v2.42.0+)
 
 ```bash
-npm install -g get-shit-done-cc
+npm uninstall -g get-shit-done-cc
 ```
 
-The legacy *config directory* (`~/.claude/get-shit-done/`) is still safe to remove if the auto-migration didn't already do so -- only the npm package needs to remain. The plugin self-contains its own copy of all workflow / skill / agent / reference content; it just needs the `gsd-sdk` binary as a runtime helper.
+> **History:** this step's wording has changed twice. Versions ≤ v2.41.0 told users to uninstall while the plugin still needed the package's `gsd-sdk` binary, which silently broke every `/gsd:*` command ([#4](https://github.com/jnuyens/gsd-plugin/issues/4)). v2.41.1 corrected the README to "keep installed". v2.42.0 bundles the SDK inside the plugin, making the uninstall genuinely safe again. Thanks to @ThomasHezard for catching the original bug and @herman925 for confirming.
 
-> **Long-term plan:** route the workflows through the plugin's own MCP server (or a bundled SDK shim) so `gsd-sdk` is no longer a separate prerequisite. Tracked at [#4](https://github.com/jnuyens/gsd-plugin/issues/4).
+If you're on **v2.42.0 or newer** the plugin's `bin/gsd-sdk` wrapper takes over once the global one is gone; nothing breaks. If you're on an older plugin version, leave the global package alone until you've upgraded the plugin first.
 
 #### 3. Stop using `/gsd:update`
 

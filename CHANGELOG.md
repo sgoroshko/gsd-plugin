@@ -8,6 +8,39 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.42.0] - 2026-05-07
+
+**No more `gsd-sdk` prerequisite.** The plugin now bundles the GSD SDK inside its own tree, so `/plugin install gsd@gsd-plugin` is genuinely the only install step. Closes [#4](https://github.com/jnuyens/gsd-plugin/issues/4) at the architectural level (v2.41.1's README fix corrected the documentation; this release removes the requirement that documentation was trying to describe).
+
+### Added
+- **`sdk/`** — full GSD SDK source tree synced from upstream `gsd-build/get-shit-done@v1.41.0` (`src/`, `prompts/`, `scripts/`, `package.json`, `tsconfig.json`, `package-lock.json`).
+- **`sdk/dist/`** — pre-built TypeScript output (`tsc` against the committed `src/`). Plugin commits `dist/` even though upstream gitignores it: plugin users won't run `npm install` / `npm run build`, so the binary needs to be ready immediately after `/plugin install`.
+- **`bin/gsd-sdk`** — POSIX shell wrapper that `exec`s `node ${CLAUDE_PLUGIN_ROOT}/sdk/dist/cli.js`. Falls back to script-relative resolution if `CLAUDE_PLUGIN_ROOT` is unset, and to an external `gsd-sdk` on `PATH` if the bundled one is somehow missing (preserves legacy install path as a safety net).
+- **`bin/gsd-sdk.cmd`** — Windows batch wrapper with the same logic.
+
+### Changed
+- **README** — replaced the "Prerequisites: install the GSD SDK CLI" subsection (added in v2.41.1 as a stop-gap) with a "No prerequisites" notice. Migration §2 now correctly tells users it's safe to `npm uninstall -g get-shit-done-cc` after upgrading to v2.42.0+.
+- **Versioning rule exception** — bumping minor (`2.41.x → 2.42.0`) for a plugin-only feature even though upstream is still at `1.41.0`. Standard rule (`plugin_minor = upstream_minor`) resumes when the next upstream sync lands; if upstream then ships `1.42.0`, that sync goes out as `2.43.0` to avoid collision.
+
+### Plugin patches
+Two SDK source patches were needed for the plugin's flat directory layout:
+- **`sdk/src/query/state-project-load.ts`** — adds `${CLAUDE_PLUGIN_ROOT}/bin/lib/core.cjs` as the first probe candidate. Upstream's resolver expects `<root>/get-shit-done/bin/lib/core.cjs`; the plugin's flat layout is `<plugin_root>/bin/lib/core.cjs`. Tagged `[PLUGIN PATCH]` inline.
+- **`sdk/src/query-gsd-tools-path.ts`** — same patch for `gsd-tools.cjs`. Tagged `[PLUGIN PATCH]` inline.
+
+### How resolution works (no callsite rewrite was needed)
+Claude Code automatically prepends each plugin's `bin/` directory to `PATH` for every `Bash` tool call. Existing `gsd-sdk query ...` invocations across all 500+ workflow and skill callsites resolve to the bundled wrapper for plugin-only users, with **zero rewrite** required. Users with an external `gsd-sdk` already on `PATH` (e.g. `/opt/homebrew/bin` from a prior `npx get-shit-done-cc` install) keep using their external one because plugin `bin/` is appended (not prepended) by Claude Code — no behavior change for legacy users.
+
+### Verified
+- `gsd-sdk --version` → `v1.50.0-canary.0` (bundled, was the npm-published `0.1.0`)
+- `gsd-sdk query state.load` returns valid project config block
+- `gsd-sdk query roadmap.analyze` returns project milestones
+- `gsd-sdk query commands` returns full command list
+- `node tests/mcp-stdio-framing.test.cjs` still passes (regression fence from v2.40.2 unaffected)
+
+### Notes
+- Bundle adds ~6.8 MB to the plugin tree (`sdk/dist/` 3.9 MB + `sdk/src/` 2.8 MB + prompts/scripts). Plugin total still well under typical Claude Code plugin sizes.
+- Long-term: route workflow scripts through the plugin's own MCP server instead of shelling out at all. Tracked separately; this release is the architectural prerequisite that makes the routing achievable.
+
 ## [2.41.1] - 2026-05-07
 
 Documentation hotfix — corrects a README instruction that left migrating users (and any new user without a prior `npx get-shit-done-cc` install) with broken `/gsd:*` commands.
