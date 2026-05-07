@@ -12,6 +12,25 @@ Under the hood, a performance-optimized plugin packaging of [GSD](https://github
 
 GSD Plugin installs *inside* a Claude Code session, not from your host shell. If you have never used Claude Code plugins before, follow these steps in order.
 
+### Prerequisites: install the GSD SDK CLI (`gsd-sdk`)
+
+The plugin's workflow scripts shell out to the `gsd-sdk` binary in 500+ places. Without it, every `/gsd:*` command fails with `command not found: gsd-sdk`. Install it once globally before installing the plugin:
+
+```bash
+npm install -g get-shit-done-cc
+```
+
+The `get-shit-done-cc` package ships the `gsd-sdk` binary on your `PATH`. (`npm install -g @gsd-build/sdk` is *not* sufficient yet — its npm-published `0.1.0` lacks the `query` subcommand the plugin needs; tracked at [gsd-build/get-shit-done#2685](https://github.com/gsd-build/get-shit-done/issues/2685).)
+
+Verify:
+
+```bash
+which gsd-sdk    # should print a path
+gsd-sdk --version
+```
+
+If you've used GSD before via `npx get-shit-done-cc`, you already have this and can skip ahead.
+
 ### Step 1: Trust GitHub's SSH host key (first time only on a new machine)
 
 `/plugin marketplace add` clones over SSH. On a fresh machine GitHub's host key is unknown, which makes the non-interactive `git clone` Claude Code runs fail silently. Prime `known_hosts` once from your host shell:
@@ -194,11 +213,19 @@ Type these at the Claude Code prompt:
 /reload-plugins
 ```
 
-#### 2. Uninstall `get-shit-done-cc` npm package (if installed)
+#### 2. Keep `get-shit-done-cc` installed -- the plugin needs its `gsd-sdk` binary
+
+> **Earlier versions of this README (≤ v2.41.0) told you to `npm uninstall -g get-shit-done-cc` here. That was wrong and has been corrected** ([#4](https://github.com/jnuyens/gsd-plugin/issues/4), reported by @ThomasHezard and confirmed by @herman925).
+
+The plugin's `workflows/*.md` and `skills/*/SKILL.md` files shell out to `gsd-sdk` (provided by `get-shit-done-cc`) in 500+ places, so the package must stay installed even after migrating to the plugin. If you already removed it, reinstall:
 
 ```bash
-npm uninstall -g get-shit-done-cc
+npm install -g get-shit-done-cc
 ```
+
+The legacy *config directory* (`~/.claude/get-shit-done/`) is still safe to remove if the auto-migration didn't already do so -- only the npm package needs to remain. The plugin self-contains its own copy of all workflow / skill / agent / reference content; it just needs the `gsd-sdk` binary as a runtime helper.
+
+> **Long-term plan:** route the workflows through the plugin's own MCP server (or a bundled SDK shim) so `gsd-sdk` is no longer a separate prerequisite. Tracked at [#4](https://github.com/jnuyens/gsd-plugin/issues/4).
 
 #### 3. Stop using `/gsd:update`
 

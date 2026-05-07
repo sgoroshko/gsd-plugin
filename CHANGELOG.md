@@ -8,6 +8,18 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.41.1] - 2026-05-07
+
+Documentation hotfix — corrects a README instruction that left migrating users (and any new user without a prior `npx get-shit-done-cc` install) with broken `/gsd:*` commands.
+
+### Fixed
+- **`README.md` — Manual migration §2** ([#4](https://github.com/jnuyens/gsd-plugin/issues/4)) — earlier versions told users to `npm uninstall -g get-shit-done-cc`, which removes the `gsd-sdk` binary that the plugin's workflow scripts shell out to in 500+ places. After following the step, every `/gsd:*` command failed with `command not found: gsd-sdk`. §2 now explicitly tells users to keep the package installed (with a "this README used to be wrong" callout) and points at the long-term plan to route workflows through the plugin's MCP server.
+- **`README.md` — Installation prerequisites** — added a new "Prerequisites: install the GSD SDK CLI" subsection before Step 1, with the exact `npm install -g get-shit-done-cc` command and a verification snippet (`which gsd-sdk` / `gsd-sdk --version`). This closes the same gap for fresh installs that issue #4 surfaced for migrating ones.
+
+### Notes
+- Reported by @ThomasHezard ([#4](https://github.com/jnuyens/gsd-plugin/issues/4), 2026-04-28) with a Claude-on-behalf-of-user investigation that pinpointed exact line numbers and counted the `gsd-sdk` ref footprint. Confirmed independently by @herman925 (2026-05-06).
+- This is a documentation-only release; no behavior change in plugin code. The architectural fix (routing workflow scripts through the plugin's MCP server so `gsd-sdk` is no longer a separate prerequisite) remains tracked at [#4](https://github.com/jnuyens/gsd-plugin/issues/4).
+
 ## [2.41.0] - 2026-05-07  (based on upstream GSD 1.41.0)
 
 Upstream minor sync — picks up GSD 1.41.0 (released 2026-05-07). Plugin-only patches in `bin/lib/core.cjs` (CLAUDE_PLUGIN_ROOT path resolution helpers `resolveGsdRoot` / `resolveGsdDataDir` / `resolveGsdAsset` + agent-dir override `getAgentsDir` reading `GSD_AGENTS_DIR`) preserved via 3-way merge. `bin/gsd-tools.cjs` untouched upstream this cycle; plugin's `migrate` / `write-phase-memory` / `checkpoint` / `hook` cases verified intact via regression grep.
