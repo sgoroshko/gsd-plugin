@@ -102,22 +102,20 @@ function captureCmd(fn, ...args) {
 
 let requestBuffer = '';
 
+// MCP stdio transport is newline-delimited JSON (ndjson).
+// Current MCP clients (incl. Claude Code) expect one JSON object per line;
+// the older LSP-style Content-Length framing is not part of the MCP spec
+// and breaks the connection. See issue #3.
 function sendResponse(id, result) {
-  const msg = JSON.stringify({ jsonrpc: '2.0', id, result });
-  const header = `Content-Length: ${Buffer.byteLength(msg)}\r\n\r\n`;
-  process.stdout.write(header + msg);
+  process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id, result }) + '\n');
 }
 
 function sendError(id, code, message) {
-  const msg = JSON.stringify({ jsonrpc: '2.0', id, error: { code, message } });
-  const header = `Content-Length: ${Buffer.byteLength(msg)}\r\n\r\n`;
-  process.stdout.write(header + msg);
+  process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id, error: { code, message } }) + '\n');
 }
 
 function sendNotification(method, params) {
-  const msg = JSON.stringify({ jsonrpc: '2.0', method, params });
-  const header = `Content-Length: ${Buffer.byteLength(msg)}\r\n\r\n`;
-  process.stdout.write(header + msg);
+  process.stdout.write(JSON.stringify({ jsonrpc: '2.0', method, params }) + '\n');
 }
 
 // ─── Resource handlers ──────────────────────────────────────────────────────
@@ -524,32 +522,37 @@ process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => {
   requestBuffer += chunk;
 
-  // Process complete messages (Content-Length header + body)
+  // Process complete messages. Prefer ndjson (current MCP spec); fall back to
+  // LSP-style Content-Length framing only when a complete header block arrives
+  // before the next newline, for legacy transports that still emit it. See #3.
   while (true) {
-    const headerEnd = requestBuffer.indexOf('\r\n\r\n');
-    if (headerEnd === -1) break;
+    const newlineIdx = requestBuffer.indexOf('\n');
+    const lspHeaderEnd = requestBuffer.indexOf('\r\n\r\n');
 
-    const header = requestBuffer.substring(0, headerEnd);
-    const contentLengthMatch = header.match(/Content-Length:\s*(\d+)/i);
-    if (!contentLengthMatch) {
-      // Try to parse as raw JSON (some transports skip headers)
-      try {
-        const newlineIdx = requestBuffer.indexOf('\n');
-        if (newlineIdx !== -1) {
-          const line = requestBuffer.substring(0, newlineIdx).trim();
-          if (line.startsWith('{')) {
-            const parsed = JSON.parse(line);
-            requestBuffer = requestBuffer.substring(newlineIdx + 1);
-            handleRequest(parsed);
-            continue;
-          }
+    // ndjson path: a newline arrives before any LSP header block.
+    if (newlineIdx !== -1 && (lspHeaderEnd === -1 || newlineIdx < lspHeaderEnd)) {
+      const line = requestBuffer.substring(0, newlineIdx).trim();
+      requestBuffer = requestBuffer.substring(newlineIdx + 1);
+      if (!line) continue;
+      if (line.startsWith('{')) {
+        try {
+          handleRequest(JSON.parse(line));
+        } catch (err) {
+          process.stderr.write(`GSD MCP: Failed to parse ndjson request: ${err.message}\n`);
         }
-      } catch {}
-      break;
+      }
+      continue;
     }
 
+    // LSP fallback: complete Content-Length header block present.
+    if (lspHeaderEnd === -1) break;
+
+    const header = requestBuffer.substring(0, lspHeaderEnd);
+    const contentLengthMatch = header.match(/Content-Length:\s*(\d+)/i);
+    if (!contentLengthMatch) break;
+
     const contentLength = parseInt(contentLengthMatch[1]);
-    const bodyStart = headerEnd + 4;
+    const bodyStart = lspHeaderEnd + 4;
     const totalLength = bodyStart + contentLength;
 
     if (requestBuffer.length < totalLength) break;
@@ -558,10 +561,9 @@ process.stdin.on('data', (chunk) => {
     requestBuffer = requestBuffer.substring(totalLength);
 
     try {
-      const parsed = JSON.parse(body);
-      handleRequest(parsed);
+      handleRequest(JSON.parse(body));
     } catch (err) {
-      process.stderr.write(`GSD MCP: Failed to parse request: ${err.message}\n`);
+      process.stderr.write(`GSD MCP: Failed to parse LSP-framed request: ${err.message}\n`);
     }
   }
 });
