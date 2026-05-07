@@ -4,7 +4,7 @@ milestone: v1.2
 milestone_name: Upstream Resilience
 status: shipped
 stopped_at: v1.2 archived 2026-04-24 — milestone shipped; tags v1.2 + v2.38.4 created
-last_updated: "2026-05-07T00:00:00Z"
+last_updated: "2026-05-07T20:00:00Z"
 last_activity: 2026-05-07
 progress:
   total_phases: 3
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 Milestone: v1.2 shipped (2026-04-24) — all 9 requirements satisfied, tagged, archived.
 Phase: none active. v1.2 phase artifacts moved to `.planning/milestones/v1.2-phases/`.
 Next action: `/gsd:new-milestone` to scope v1.3.
-Last activity: 2026-05-07 — Completed quick task 260507-esn: produced v1.41.0 upstream sync plan (260507-esn-PLAN.md, execution deferred)
+Last activity: 2026-05-07 — Executed quick task 260507-esn: synced upstream GSD 1.41.0 (plugin v2.41.0); MCP stdio framing fix landed in 2.40.2 with regression test wired into CI
 
 ```
 v1.2 shipped: [==========] 100%
@@ -114,7 +114,7 @@ None.
 | 260502-0h9 | Sync upstream GSD to v1.39.1 (plugin v2.39.1): hotfix bundle (~12 PRs incl. #2917 raw agent_skills, #2942 skills/ in GSD_MANAGED_DIRS, #2924 worktree HEAD assertion); core.cjs untouched upstream so patches kept verbatim, gsd-tools.cjs 1-line merge clean, namespace rewrite 820 replacements across 119 files, drift-baseline matched exactly (no regen) — both gates pass | 2026-05-02 | 1a4996c |  | [260502-0h9-address-another-upstream-version-jump](./quick/260502-0h9-address-another-upstream-version-jump/) |
 | 260502-rx0 | Surface rate-limit fallback example (/exit + gsd-resume-at HH:MM) at 3 surfaces: new Stop hook in gsd-tools.cjs that tails transcript and prints bordered hint on rate-limit pattern, /exit-first example added to resume-at SKILL.md No-token fallback callout, same example added to gsd-resume-at wrapper head comment + usage() — drift gates clean | 2026-05-02 | 364ae58 |  | [260502-rx0-surface-rate-limit-fallback-example-for-](./quick/260502-rx0-surface-rate-limit-fallback-example-for-/) |
 | 260503-ier | Sync upstream GSD v1.40.0 + bump plugin to v2.40.0 | 2026-05-03 | 8af38a3 |  | [260503-ier-1-40-0-is-release-upstream-update-gsd-pl](./quick/260503-ier-1-40-0-is-release-upstream-update-gsd-pl/) |
-| 260507-esn | Investigate v1.41.0 upstream and produce sync plan (260507-esn-PLAN.md, execution deferred to follow-up) | 2026-05-07 | — |  | [260507-esn-there-is-a-new-upstream-version-see-what](./quick/260507-esn-there-is-a-new-upstream-version-see-what/) |
+| 260507-esn | Sync upstream GSD v1.41.0 + bump plugin to v2.41.0 (incl. MVP-phase workflow, 8 new MVP/SPIDR refs, runtime-homes helper, extract_learnings rename); MCP stdio framing fix released as v2.40.2 with regression test in CI (closes #3) | 2026-05-07 | 69e3843 | Verified | [260507-esn-there-is-a-new-upstream-version-see-what](./quick/260507-esn-there-is-a-new-upstream-version-see-what/) |
 
 ## Session Continuity
 
