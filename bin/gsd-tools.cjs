@@ -1226,6 +1226,22 @@ async function runCommand(command, args, cwd, raw, defaultValue) {
               process.stderr.write('GSD: session checkpoint detected, auto-resuming...\n');
             }
           } catch { /* never break session start */ }
+
+          // workspace.json read — fail-soft, zero impact if absent
+          try {
+            const { readWorkspaceJson, buildContextString, MAX_FILES_CONFIG_KEY, DEFAULT_MAX_FILES } = require('./lib/workspace-json.cjs');
+            const workspaceJson = readWorkspaceJson(cwd);
+            if (workspaceJson) {
+              let config = null;
+              try { config = require('./lib/config.cjs').loadConfig(cwd); } catch { /* config optional */ }
+              const maxFiles = (config && config[MAX_FILES_CONFIG_KEY]) || DEFAULT_MAX_FILES;
+              const contextString = buildContextString(workspaceJson, { maxFiles });
+              if (contextString) {
+                process.stdout.write(contextString);
+                process.stderr.write('GSD: workspace.json intelligence injected.\n');
+              }
+            }
+          } catch { /* never break session start */ }
         }
       } else if (hookType === 'pre-compact') {
         try {
