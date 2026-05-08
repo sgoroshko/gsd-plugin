@@ -1237,11 +1237,13 @@ async function runCommand(command, args, cwd, raw, defaultValue) {
               const maxFiles = (config && config[MAX_FILES_CONFIG_KEY]) || DEFAULT_MAX_FILES;
               const contextString = buildContextString(workspaceJson, { maxFiles });
               if (contextString) {
-                process.stdout.write(contextString);
+                process.stdout.write('\n\n' + contextString);
                 process.stderr.write('GSD: workspace.json intelligence injected.\n');
               }
             }
-          } catch { /* never break session start */ }
+          } catch (err) {
+            process.stderr.write('GSD: workspace.json block failed: ' + (err && err.message ? err.message : String(err)) + '\n');
+          }
         }
       } else if (hookType === 'pre-compact') {
         try {

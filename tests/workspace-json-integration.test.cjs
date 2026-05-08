@@ -263,6 +263,60 @@ check('HANDOFF.json injection still works alongside workspace.json', () => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+// Test 11: DEFAULT_MAX_FILES cap enforced — 8 files above threshold, only 5 in output
+check('DEFAULT_MAX_FILES cap is enforced (8 files in, 5 out)', () => {
+  const dir = makeTempRepo();
+  const fileIndex = {};
+  for (let i = 1; i <= 8; i++) {
+    fileIndex[`src/file${i}.ts`] = {
+      fragility: 0.70 + (i * 0.01),
+      aiModificationCount: i,
+      humanModificationCount: 1,
+    };
+  }
+  writeCanonicalWorkspaceJson(dir, {
+    version: '1.0',
+    generated: { version: '1.0', fileIndex },
+  });
+  const result = runHook(dir);
+  let injectedCount = 0;
+  for (let i = 1; i <= 8; i++) {
+    if (result.stdout.includes(`src/file${i}.ts`)) injectedCount += 1;
+  }
+  if (injectedCount !== 5) {
+    throw new Error(`Expected 5 files injected (DEFAULT_MAX_FILES), got ${injectedCount}`);
+  }
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+// Test 12: mixed manual.fragileFiles — valid entries inject, invalid entries are skipped
+check('mixed manual.fragileFiles skips invalid entries without crashing', () => {
+  const dir = makeTempRepo();
+  writeCanonicalWorkspaceJson(dir, {
+    version: '1.0',
+    manual: {
+      fragileFiles: [
+        { path: 'src/valid.ts', reason: 'Known fragile.' },
+        'bare string entry',
+        null,
+        { path: 'src/missing-reason.ts' },
+        { reason: 'missing path' },
+      ],
+    },
+  });
+  const result = runHook(dir);
+  if (result.status !== 0) {
+    throw new Error(`Hook exited ${result.status} on mixed fragileFiles array`);
+  }
+  if (!result.stdout.includes('src/valid.ts')) {
+    throw new Error('Valid fragileFiles entry was not injected');
+  }
+  if (result.stdout.includes('bare string entry') || result.stdout.includes('missing-reason') || result.stdout.includes('missing path')) {
+    throw new Error('Invalid fragileFiles entry leaked into output');
+  }
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 // Report
 let failures = 0;
 for (const [ok, msg] of checks) {
