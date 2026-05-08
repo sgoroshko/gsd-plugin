@@ -34,11 +34,17 @@ function readWorkspaceJson(cwd) {
         return null;
       }
 
-      if (parsed.version && !SUPPORTED_VERSIONS.some(v => String(parsed.version) === v)) {
-        process.stderr.write(
-          `GSD: workspace.json version ${String(parsed.version)} is newer than supported. ` +
-          `Reading what we can. Consider upgrading gsd-plugin.\n`
-        );
+      if (parsed.version) {
+        const fileMajor = String(parsed.version).split('.')[0];
+        const supportedMajors = SUPPORTED_VERSIONS.map(v => v.split('.')[0]);
+        if (!supportedMajors.includes(fileMajor)) {
+          process.stderr.write(
+            `GSD: workspace.json requires version ${String(parsed.version)} ` +
+            `but this plugin supports ${SUPPORTED_VERSIONS.join(', ')}. ` +
+            `Update gsd-plugin or regenerate your workspace.json.\n`
+          );
+          return null;
+        }
       }
 
       return parsed;

@@ -394,8 +394,8 @@ check('array root JSON exits 0 and produces no injection', () => withTempRepo(di
   }
 }));
 
-// Test 17: unsupported version emits stderr warning but still injects data
-check('unsupported version emits warning and still injects', () => withTempRepo(dir => {
+// Test 17: unsupported major version refuses to load with a clear error
+check('unsupported major version refuses to load', () => withTempRepo(dir => {
   writeCanonicalWorkspaceJson(dir, {
     version: '99.0',
     generated: {
@@ -406,11 +406,31 @@ check('unsupported version emits warning and still injects', () => withTempRepo(
     },
   });
   const result = runHook(dir);
-  if (!result.stderr.includes('newer than supported')) {
-    throw new Error('Expected unsupported-version warning in stderr');
+  if (result.status !== 0) {
+    throw new Error(`Hook exited ${result.status} on unsupported major version`);
   }
-  if (!result.stdout.includes('src/future-version.ts')) {
-    throw new Error('Should still inject data for unknown version (best-effort per spec)');
+  if (!result.stderr.includes('Update gsd-plugin or regenerate')) {
+    throw new Error('Expected clear refusal message in stderr');
+  }
+  if (result.stdout.includes('src/future-version.ts')) {
+    throw new Error('Should refuse to inject for unsupported major version');
+  }
+}));
+
+// Test 17b: same major, higher minor version loads successfully (forward-compat within major)
+check('same major different minor version loads successfully', () => withTempRepo(dir => {
+  writeCanonicalWorkspaceJson(dir, {
+    version: '1.5',
+    generated: {
+      version: '1.0',
+      fileIndex: {
+        'src/minor-compat.ts': { fragility: 0.82, aiModificationCount: 2, humanModificationCount: 1 },
+      },
+    },
+  });
+  const result = runHook(dir);
+  if (!result.stdout.includes('src/minor-compat.ts')) {
+    throw new Error('Same-major different-minor version should load (forward-compat within major)');
   }
 }));
 
