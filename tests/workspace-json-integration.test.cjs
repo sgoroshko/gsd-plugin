@@ -40,12 +40,12 @@ function writeLegacyWorkspaceJson(dir, content) {
   );
 }
 
-function runHook(cwd) {
+function runHook(cwd, source) {
   const result = spawnSync('node', [HOOK_BIN, 'hook', 'session-start'], {
     cwd,
     encoding: 'utf-8',
     timeout: 5000,
-    input: JSON.stringify({ source: 'startup' }),
+    input: JSON.stringify({ source: source || 'startup' }),
   });
   return { stdout: result.stdout || '', stderr: result.stderr || '', status: result.status };
 }
@@ -235,8 +235,8 @@ check('coChangePatterns are injected', () => withTempRepo(dir => {
   }
 }));
 
-// Test 10: HANDOFF.json read is unaffected by workspace.json presence
-check('HANDOFF.json injection still works alongside workspace.json', () => withTempRepo(dir => {
+// Test 10: HANDOFF.json and workspace.json coexist — both appear in the same output
+check('HANDOFF.json and workspace.json both inject into the same output', () => withTempRepo(dir => {
   fs.mkdirSync(path.join(dir, '.planning'), { recursive: true });
   fs.writeFileSync(
     path.join(dir, '.planning', 'HANDOFF.json'),
@@ -249,10 +249,21 @@ check('HANDOFF.json injection still works alongside workspace.json', () => withT
       partial: false,
     })
   );
-  writeCanonicalWorkspaceJson(dir, { version: '1.0', generated: { version: '1.0' } });
+  writeCanonicalWorkspaceJson(dir, {
+    version: '1.0',
+    generated: {
+      version: '1.0',
+      fileIndex: {
+        'src/coexist.ts': { fragility: 0.88, aiModificationCount: 4, humanModificationCount: 1 },
+      },
+    },
+  });
   const result = runHook(dir);
   if (!result.stdout.includes('Phase 4')) {
     throw new Error('HANDOFF.json injection regressed');
+  }
+  if (!result.stdout.includes('src/coexist.ts')) {
+    throw new Error('workspace.json injection missing when HANDOFF also present');
   }
 }));
 
@@ -331,6 +342,141 @@ check('mixed manual.fragileFiles skips invalid entries without crashing', () => 
   }
   if (result.stdout.includes('bare string entry') || result.stdout.includes('missing-reason') || result.stdout.includes('missing path')) {
     throw new Error('Invalid fragileFiles entry leaked into output');
+  }
+}));
+
+// Test 14: source 'compact' also triggers injection (supported alongside 'startup')
+check('source compact triggers workspace.json injection', () => withTempRepo(dir => {
+  writeCanonicalWorkspaceJson(dir, {
+    version: '1.0',
+    generated: {
+      version: '1.0',
+      fileIndex: {
+        'src/compact-test.ts': { fragility: 0.82, aiModificationCount: 3, humanModificationCount: 1 },
+      },
+    },
+  });
+  const result = runHook(dir, 'compact');
+  if (!result.stdout.includes('src/compact-test.ts')) {
+    throw new Error('source=compact did not trigger workspace.json injection');
+  }
+}));
+
+// Test 15: non-startup/compact source does not inject workspace.json context
+check('source other-than-startup/compact produces no workspace.json injection', () => withTempRepo(dir => {
+  writeCanonicalWorkspaceJson(dir, {
+    version: '1.0',
+    generated: {
+      version: '1.0',
+      fileIndex: {
+        'src/should-not-appear.ts': { fragility: 0.9, aiModificationCount: 5, humanModificationCount: 1 },
+      },
+    },
+  });
+  const result = runHook(dir, 'post-tool');
+  if (result.stdout.includes('src/should-not-appear.ts')) {
+    throw new Error('Workspace injection fired for unsupported source type');
+  }
+}));
+
+// Test 16: non-object root JSON (array) exits 0 and produces no injection
+check('array root JSON exits 0 and produces no injection', () => withTempRepo(dir => {
+  fs.writeFileSync(path.join(dir, '.agents', 'agents.workspace.json'), '[1, 2, 3]');
+  const result = runHook(dir);
+  if (result.status !== 0) {
+    throw new Error(`Hook exited ${result.status} on array root JSON`);
+  }
+  if (result.stdout.includes('workspace.json')) {
+    throw new Error('Array root JSON should produce no workspace context');
+  }
+  if (!result.stderr.includes('not a JSON object')) {
+    throw new Error('Expected "not a JSON object" diagnostic in stderr');
+  }
+}));
+
+// Test 17: unsupported version emits stderr warning but still injects data
+check('unsupported version emits warning and still injects', () => withTempRepo(dir => {
+  writeCanonicalWorkspaceJson(dir, {
+    version: '99.0',
+    generated: {
+      version: '1.0',
+      fileIndex: {
+        'src/future-version.ts': { fragility: 0.85, aiModificationCount: 3, humanModificationCount: 1 },
+      },
+    },
+  });
+  const result = runHook(dir);
+  if (!result.stderr.includes('newer than supported')) {
+    throw new Error('Expected unsupported-version warning in stderr');
+  }
+  if (!result.stdout.includes('src/future-version.ts')) {
+    throw new Error('Should still inject data for unknown version (best-effort per spec)');
+  }
+}));
+
+// Test 18: framework confidence boundary at exactly 0.7 is included (>= threshold)
+check('framework at exactly 0.7 confidence is included (boundary condition)', () => withTempRepo(dir => {
+  writeCanonicalWorkspaceJson(dir, {
+    version: '1.0',
+    generated: {
+      version: '1.0',
+      frameworkManifest: [
+        { name: 'react', version: '18.0', confidence: 0.7 },
+        { name: 'too-uncertain', version: '1.0', confidence: 0.699 },
+      ],
+    },
+  });
+  const result = runHook(dir);
+  if (!result.stdout.includes('react@18.0')) {
+    throw new Error('Framework at exactly 0.7 confidence should be included (>= threshold)');
+  }
+  if (result.stdout.includes('too-uncertain')) {
+    throw new Error('Framework below 0.7 confidence should be excluded');
+  }
+}));
+
+// Test 19: coChangePatterns without note field renders just file paths (no parenthetical)
+check('coChangePatterns without note renders files only', () => withTempRepo(dir => {
+  writeCanonicalWorkspaceJson(dir, {
+    version: '1.0',
+    manual: {
+      coChangePatterns: [
+        { files: ['src/schema.ts', 'src/api.ts'] },
+      ],
+    },
+  });
+  const result = runHook(dir);
+  if (!result.stdout.includes('src/schema.ts')) {
+    throw new Error('coChangePattern without note should still inject file paths');
+  }
+  if (result.stdout.includes('undefined') || result.stdout.includes('null')) {
+    throw new Error('Missing note field produced garbage in output');
+  }
+}));
+
+// Test 20: mixed invalid coChangePatterns entries are skipped, valid ones inject
+check('mixed invalid coChangePatterns skips invalid entries without crashing', () => withTempRepo(dir => {
+  writeCanonicalWorkspaceJson(dir, {
+    version: '1.0',
+    manual: {
+      coChangePatterns: [
+        { files: ['src/valid-a.ts', 'src/valid-b.ts'], note: 'Must change together.' },
+        null,
+        'bare string',
+        { files: [] },
+        { note: 'no files array' },
+      ],
+    },
+  });
+  const result = runHook(dir);
+  if (result.status !== 0) {
+    throw new Error(`Hook exited ${result.status} on mixed coChangePatterns`);
+  }
+  if (!result.stdout.includes('src/valid-a.ts')) {
+    throw new Error('Valid coChangePattern was not injected');
+  }
+  if (result.stdout.includes('bare string') || result.stdout.includes('no files array')) {
+    throw new Error('Invalid coChangePattern entry leaked into output');
   }
 }));
 

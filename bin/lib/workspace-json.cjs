@@ -15,76 +15,74 @@ const SUPPORTED_VERSIONS = ['0.1', '1.0'];
 
 // Returns null if absent, malformed, or unreadable — never throws.
 function readWorkspaceJson(cwd) {
-  const canonicalFilePath = path.join(cwd, ...CANONICAL_PATH);
-  const legacyFilePath = path.join(cwd, ...LEGACY_PATH);
-
-  let filePath = null;
-  if (fs.existsSync(canonicalFilePath)) {
-    filePath = canonicalFilePath;
-  } else if (fs.existsSync(legacyFilePath)) {
-    filePath = legacyFilePath;
-  }
-
-  if (!filePath) {
-    return null;
-  }
-
-  try {
-    const raw = fs.readFileSync(filePath, 'utf-8');
-    const parsed = JSON.parse(raw);
-
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      process.stderr.write('GSD: workspace.json is not a JSON object. Skipping.\n');
+  for (const segments of [CANONICAL_PATH, LEGACY_PATH]) {
+    const filePath = path.join(cwd, ...segments);
+    let raw;
+    try {
+      raw = fs.readFileSync(filePath, 'utf-8');
+    } catch (e) {
+      if (e.code === 'ENOENT') continue;
+      process.stderr.write(`GSD: workspace.json at ${filePath} could not be read (${e.code || e.message}). Skipping.\n`);
       return null;
     }
 
-    if (parsed.version && !SUPPORTED_VERSIONS.some(v => String(parsed.version) === v)) {
-      process.stderr.write(
-        `GSD: workspace.json version ${parsed.version} is newer than supported. ` +
-        `Reading what we can. Consider upgrading gsd-plugin.\n`
-      );
-    }
+    try {
+      const parsed = JSON.parse(raw);
 
-    return parsed;
-  } catch (err) {
-    process.stderr.write(
-      `GSD: workspace.json present but unreadable. Skipping. (${err.message})\n`
-    );
-    return null;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        process.stderr.write('GSD: workspace.json is not a JSON object. Skipping.\n');
+        return null;
+      }
+
+      if (parsed.version && !SUPPORTED_VERSIONS.some(v => String(parsed.version) === v)) {
+        process.stderr.write(
+          `GSD: workspace.json version ${String(parsed.version)} is newer than supported. ` +
+          `Reading what we can. Consider upgrading gsd-plugin.\n`
+        );
+      }
+
+      return parsed;
+    } catch (err) {
+      process.stderr.write(`GSD: workspace.json at ${filePath} is not valid JSON. Skipping. (${err.message})\n`);
+      return null;
+    }
   }
+
+  return null;
 }
 
 // Scoped to generated + manual.fragileFiles + manual.coChangePatterns per issue #5.
 function buildContextString(workspaceJson, options) {
   if (!workspaceJson) return '';
 
-  const maxFiles = (options && options.maxFiles) || DEFAULT_MAX_FILES;
+  const rawMax = options && options.maxFiles;
+  const maxFiles = (typeof rawMax === 'number' && rawMax >= 0) ? rawMax : DEFAULT_MAX_FILES;
   const sections = [];
 
   const generated = workspaceJson.generated;
-  if (generated) {
+  if (generated && typeof generated === 'object') {
     const parts = [];
 
-    if (generated.frameworkManifest && Array.isArray(generated.frameworkManifest)) {
+    if (Array.isArray(generated.frameworkManifest)) {
       const frameworks = generated.frameworkManifest
-        .filter(f => f && typeof f.name === 'string' && (f.confidence === undefined || f.confidence >= FRAMEWORK_CONFIDENCE_THRESHOLD))
-        .map(f => `${f.name}@${f.version || 'unknown'}`)
+        .filter(f => f && typeof f.name === 'string' && (f.confidence == null || f.confidence >= FRAMEWORK_CONFIDENCE_THRESHOLD))
+        .map(f => `${f.name}@${typeof f.version === 'string' ? f.version : 'unknown'}`)
         .join(', ');
       if (frameworks) {
         parts.push(`Detected stack: ${frameworks}.`);
       }
     }
 
-    if (generated.fileIndex && typeof generated.fileIndex === 'object') {
+    if (generated.fileIndex && typeof generated.fileIndex === 'object' && !Array.isArray(generated.fileIndex)) {
       const fragileFromIndex = Object.entries(generated.fileIndex)
         .filter(([, data]) => data && typeof data.fragility === 'number' && data.fragility >= FRAGILITY_THRESHOLD)
-        .sort((a, b) => (b[1].fragility || 0) - (a[1].fragility || 0))
+        .sort((a, b) => b[1].fragility - a[1].fragility)
         .slice(0, maxFiles);
 
       if (fragileFromIndex.length > 0) {
         const list = fragileFromIndex
           .map(([file, data]) => {
-            const score = (data.fragility || 0).toFixed(2);
+            const score = data.fragility.toFixed(2);
             const aiCount = data.aiModificationCount || 0;
             const humanCount = data.humanModificationCount || 0;
             return `${file} (fragility ${score}, ${aiCount} AI / ${humanCount} human modifications)`;
@@ -100,10 +98,10 @@ function buildContextString(workspaceJson, options) {
   }
 
   const manual = workspaceJson.manual;
-  if (manual && Array.isArray(manual.fragileFiles) && manual.fragileFiles.length > 0) {
+  if (manual && typeof manual === 'object' && Array.isArray(manual.fragileFiles) && manual.fragileFiles.length > 0) {
     const list = manual.fragileFiles
       .map(f => {
-        if (f && typeof f === 'object' && f.path && f.reason) {
+        if (f && typeof f === 'object' && typeof f.path === 'string' && typeof f.reason === 'string') {
           return `${f.path} (${f.reason})`;
         }
         return null;
@@ -115,14 +113,14 @@ function buildContextString(workspaceJson, options) {
     }
   }
 
-  if (manual && Array.isArray(manual.coChangePatterns) && manual.coChangePatterns.length > 0) {
+  if (manual && typeof manual === 'object' && Array.isArray(manual.coChangePatterns) && manual.coChangePatterns.length > 0) {
     const list = manual.coChangePatterns
       .map(p => {
-        if (p && Array.isArray(p.files) && p.files.length > 0) {
-          const filesPart = p.files.join(' ↔ ');
-          return p.note ? `${filesPart} (${p.note})` : filesPart;
-        }
-        return null;
+        if (!p || !Array.isArray(p.files)) return null;
+        const stringFiles = p.files.filter(x => typeof x === 'string');
+        if (stringFiles.length === 0) return null;
+        const filesPart = stringFiles.join(' ↔ ');
+        return (typeof p.note === 'string' && p.note) ? `${filesPart} (${p.note})` : filesPart;
       })
       .filter(Boolean)
       .join('; ');

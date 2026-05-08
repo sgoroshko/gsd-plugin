@@ -1232,9 +1232,13 @@ async function runCommand(command, args, cwd, raw, defaultValue) {
             const { readWorkspaceJson, buildContextString, MAX_FILES_CONFIG_KEY, DEFAULT_MAX_FILES } = require('./lib/workspace-json.cjs');
             const workspaceJson = readWorkspaceJson(cwd);
             if (workspaceJson) {
-              let config = null;
-              try { config = require('./lib/config.cjs').loadConfig(cwd); } catch { /* config optional */ }
-              const maxFiles = (config && config[MAX_FILES_CONFIG_KEY]) || DEFAULT_MAX_FILES;
+              let maxFiles = DEFAULT_MAX_FILES;
+              try {
+                const cfgPath = path.join(planningPaths(cwd).planning, 'config.json');
+                const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf-8'));
+                const raw = cfg && cfg[MAX_FILES_CONFIG_KEY];
+                if (typeof raw === 'number' && raw >= 0) maxFiles = raw;
+              } catch { /* absent or unreadable config — use default */ }
               const contextString = buildContextString(workspaceJson, { maxFiles });
               if (contextString) {
                 process.stdout.write('\n\n' + contextString);
