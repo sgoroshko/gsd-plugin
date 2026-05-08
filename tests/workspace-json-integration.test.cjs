@@ -256,8 +256,8 @@ check('HANDOFF.json injection still works alongside workspace.json', () => withT
   }
 }));
 
-// Test 11: DEFAULT_MAX_FILES cap enforced — 8 files above threshold, only 5 in output
-check('DEFAULT_MAX_FILES cap is enforced (8 files in, 5 out)', () => withTempRepo(dir => {
+// Test 11: DEFAULT_MAX_FILES cap enforced — 8 files above threshold, only top 5 (by fragility) in output
+check('DEFAULT_MAX_FILES cap is enforced (8 files in, top 5 by fragility out)', () => withTempRepo(dir => {
   const fileIndex = {};
   for (let i = 1; i <= 8; i++) {
     fileIndex[`src/file${i}.ts`] = {
@@ -278,9 +278,37 @@ check('DEFAULT_MAX_FILES cap is enforced (8 files in, 5 out)', () => withTempRep
   if (injectedCount !== 5) {
     throw new Error(`Expected 5 files injected (DEFAULT_MAX_FILES), got ${injectedCount}`);
   }
+  // Top 5 by fragility are file8..file4; file1..file3 must be excluded
+  if (!result.stdout.includes('src/file8.ts')) {
+    throw new Error('Highest-fragility file (file8) not included — sort order wrong');
+  }
+  if (result.stdout.includes('src/file1.ts')) {
+    throw new Error('Lowest-fragility file (file1) should be excluded by cap');
+  }
 }));
 
-// Test 12: mixed manual.fragileFiles — valid entries inject, invalid entries are skipped
+// Test 12: fragility boundary at exactly 0.7 is included (spec: >= 0.7)
+check('file at exactly 0.7 fragility is included (boundary condition)', () => withTempRepo(dir => {
+  writeCanonicalWorkspaceJson(dir, {
+    version: '1.0',
+    generated: {
+      version: '1.0',
+      fileIndex: {
+        'src/boundary.ts': { fragility: 0.7, aiModificationCount: 3, humanModificationCount: 1 },
+        'src/below.ts': { fragility: 0.699, aiModificationCount: 3, humanModificationCount: 1 },
+      },
+    },
+  });
+  const result = runHook(dir);
+  if (!result.stdout.includes('src/boundary.ts')) {
+    throw new Error('File at exactly 0.7 fragility should be included (>= threshold)');
+  }
+  if (result.stdout.includes('src/below.ts')) {
+    throw new Error('File below 0.7 fragility should be excluded');
+  }
+}));
+
+// Test 13: mixed manual.fragileFiles — valid entries inject, invalid entries are skipped
 check('mixed manual.fragileFiles skips invalid entries without crashing', () => withTempRepo(dir => {
   writeCanonicalWorkspaceJson(dir, {
     version: '1.0',

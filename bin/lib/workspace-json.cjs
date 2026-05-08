@@ -33,7 +33,12 @@ function readWorkspaceJson(cwd) {
     const raw = fs.readFileSync(filePath, 'utf-8');
     const parsed = JSON.parse(raw);
 
-    if (parsed.version && !SUPPORTED_VERSIONS.some(v => String(parsed.version).startsWith(v))) {
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      process.stderr.write('GSD: workspace.json is not a JSON object. Skipping.\n');
+      return null;
+    }
+
+    if (parsed.version && !SUPPORTED_VERSIONS.some(v => String(parsed.version) === v)) {
       process.stderr.write(
         `GSD: workspace.json version ${parsed.version} is newer than supported. ` +
         `Reading what we can. Consider upgrading gsd-plugin.\n`
@@ -62,7 +67,7 @@ function buildContextString(workspaceJson, options) {
 
     if (generated.frameworkManifest && Array.isArray(generated.frameworkManifest)) {
       const frameworks = generated.frameworkManifest
-        .filter(f => f.confidence === undefined || f.confidence >= FRAMEWORK_CONFIDENCE_THRESHOLD)
+        .filter(f => f && typeof f.name === 'string' && (f.confidence === undefined || f.confidence >= FRAMEWORK_CONFIDENCE_THRESHOLD))
         .map(f => `${f.name}@${f.version || 'unknown'}`)
         .join(', ');
       if (frameworks) {
@@ -72,7 +77,7 @@ function buildContextString(workspaceJson, options) {
 
     if (generated.fileIndex && typeof generated.fileIndex === 'object') {
       const fragileFromIndex = Object.entries(generated.fileIndex)
-        .filter(([, data]) => data && data.fragility !== undefined && data.fragility >= FRAGILITY_THRESHOLD)
+        .filter(([, data]) => data && typeof data.fragility === 'number' && data.fragility >= FRAGILITY_THRESHOLD)
         .sort((a, b) => (b[1].fragility || 0) - (a[1].fragility || 0))
         .slice(0, maxFiles);
 
