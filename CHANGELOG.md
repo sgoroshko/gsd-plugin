@@ -8,6 +8,40 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.42.3] - 2026-05-10
+
+Adds optional `agents.workspace.json` SessionStart integration. Architectural discussion in [#5](https://github.com/jnuyens/gsd-plugin/issues/5); implementation in [PR #6](https://github.com/jnuyens/gsd-plugin/pull/6).
+
+### Added
+- **Optional `agents.workspace.json` read on SessionStart** ([#5](https://github.com/jnuyens/gsd-plugin/issues/5)). When `.agents/agents.workspace.json` (or the legacy `agents.workspace.json` root path) is present, the plugin injects structured codebase intelligence into the model's context:
+  - Empirically-fragile files (filtered to `fragility ≥ 0.7`, with `aiModificationCount` vs `humanModificationCount` history)
+  - Detected framework manifest (filtered to `confidence ≥ 0.7`)
+  - Human-annotated fragile files and co-change patterns
+- **Spec scope honored**: only reads the four agreed buckets — `generated.frameworkManifest`, `generated.fileIndex`, `manual.fragileFiles`, `manual.coChangePatterns`. PROJECT.md remains canonical for `manual.conventions` / `techStack` / `description` (the overlapping fields).
+- **Strict major-version gating**: same major version loads, different major refuses with clear error message *"workspace.json requires version X but this plugin supports 0.1. Update gsd-plugin or regenerate your workspace.json."* No silent-corruption-via-load-future-version risk.
+- **Configurable cap**: `gsd.workspace_json_max_files` in `.planning/config.json` controls how many fragile files surface (default 5).
+- **Spec reference**: <https://workspacejson.dev/spec>
+
+### Zero-token-impact convention
+The integration adds an `existsSync` syscall to SessionStart. If the file is absent, the plugin behaves identically to v2.42.2 — no context injected, no tokens consumed. This convention now applies to all future optional integrations as a design rule: opt-in features must not cost anything to users who haven't opted in.
+
+### Safety
+- **Prompt-injection sanitization** via `bin/lib/security.cjs`'s `sanitizeForPrompt`. Every user-controlled string in `workspace.json` (file paths, framework names, fragility reasons, co-change notes) is stripped of zero-width characters and neutralized for `<system>` / `[INST]` / `<<SYS>>` markers before injection.
+- **DoS guards**: input arrays/objects capped before processing (10K index entries, 100 framework entries, 500 fragile files, 200 co-change patterns).
+- **Fail-soft read path**: never throws. Missing file, malformed JSON, schema mismatch, version mismatch — all return `null` with a clear stderr message; SessionStart behavior is unaffected.
+
+### Credits
+- **[@qmarcelle](https://github.com/qmarcelle)** — first external contributor to substantive plugin code. Wrote the implementation, the 538-line test suite, and the security/DoS hardening passes (the latter unsolicited).
+
+### Files
+- `bin/lib/workspace-json.cjs` (new, 176 lines) — the reader/parser/version-gate module
+- `bin/gsd-tools.cjs` (+27 lines) — wires into the existing SessionStart hook
+- `tests/workspace-json-integration.test.cjs` (new, 538 lines) — 22 test scenarios
+
+### Notes
+- Verified end-to-end on `debian:trixie` install-smoke + Check drift; 22/22 local tests pass.
+- The integration carries forward all existing protections from v2.40.2 (MCP stdio framing) and v2.42.1 (bundled SDK with no external prereq).
+
 ## [2.42.2] - 2026-05-10  (based on upstream GSD 1.41.1)
 
 Upstream patch sync — picks up GSD 1.41.1 (released 2026-05-09). Plugin-only patches in `bin/lib/core.cjs` (CLAUDE_PLUGIN_ROOT path resolution helpers + agent-dir override) and `bin/gsd-tools.cjs` (`migrate` / `write-phase-memory` / `checkpoint` / `hook` cases) preserved via 3-way merge. One new plugin patch in `bin/lib/model-catalog.cjs` for the flat plugin layout — same fallback pattern as `getAgentsDir()`.
