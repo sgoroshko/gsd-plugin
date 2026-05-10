@@ -1253,6 +1253,33 @@ async function runCommand(command, args, cwd, raw, defaultValue, originalCommand
               process.stderr.write('GSD: session checkpoint detected, auto-resuming...\n');
             }
           } catch { /* never break session start */ }
+
+          // workspace.json read — fail-soft, zero impact if absent
+          try {
+            const { readWorkspaceJson, buildContextString, MAX_FILES_CONFIG_KEY, DEFAULT_MAX_FILES } = require('./lib/workspace-json.cjs');
+            const workspaceJson = readWorkspaceJson(cwd);
+            if (workspaceJson) {
+              let maxFiles = DEFAULT_MAX_FILES;
+              try {
+                const { planningPaths: _pp } = require('./lib/core.cjs');
+                const cfgPath = path.join(_pp(cwd).planning, 'config.json');
+                const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf-8'));
+                const raw = cfg && cfg[MAX_FILES_CONFIG_KEY];
+                if (typeof raw === 'number' && raw >= 0) maxFiles = raw;
+              } catch (cfgErr) {
+                if (cfgErr && cfgErr.code !== 'ENOENT') {
+                  process.stderr.write(`GSD: workspace.json config read failed (${cfgErr.code || cfgErr.message}). Using default.\n`);
+                }
+              }
+              const contextString = buildContextString(workspaceJson, { maxFiles });
+              if (contextString) {
+                process.stdout.write('\n\n' + contextString);
+                process.stderr.write('GSD: workspace.json intelligence injected.\n');
+              }
+            }
+          } catch (err) {
+            process.stderr.write('GSD: workspace.json block failed: ' + (err && err.message ? err.message : String(err)) + '\n');
+          }
         }
       } else if (hookType === 'pre-compact') {
         try {
