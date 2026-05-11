@@ -8,6 +8,46 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.42.4] - 2026-05-11  (based on upstream GSD 1.41.2)
+
+Upstream patch sync — picks up GSD 1.41.2 (released 2026-05-10). Plugin patches in `bin/lib/core.cjs` and `bin/gsd-tools.cjs` untouched upstream this cycle (regression-grep verified intact). The `#PLUGIN-MODEL-CATALOG-PATH` patch shape evolved — upstream replaced the single-path require with a 3-candidate resolver; folded the plugin's flat-layout path into upstream's candidate list as the new first entry.
+
+### Changed
+- **Version bump** — plugin `2.42.3 → 2.42.4`.
+- **`bin/lib/{config-schema,config,phase,state}.cjs`** refreshed wholesale.
+- **`bin/lib/model-catalog.cjs`** ([upstream #3293](https://github.com/gsd-build/get-shit-done/pull/3293)) — replaced single-path require with prioritised candidate list (install-path → source-repo dev path → `GSD_MODEL_CATALOG` env override). Plugin patch prepends the flat-layout 2-level traversal as candidate #0; upstream's three candidates kept intact below.
+- **`agents/{gsd-intel-updater,gsd-planner,gsd-verifier}.md`** refreshed.
+- **`workflows/{execute-phase,execute-plan,forensics,plan-phase,ship,verify-phase}.md`** refreshed.
+
+### Fixed
+Upstream bug fixes flowing through automatically:
+- **State write integrity** ([#3291](https://github.com/gsd-build/get-shit-done/pull/3291)) — `state record-metric`, `state add-decision`, and `state add-blocker` no longer silently lose data. Missing target sections auto-created with canonical scaffolds; all three verbs honor `--ws <name>` workstream routing.
+- **Verifier hardening — no pass with unresolved markers** ([#3343](https://github.com/gsd-build/get-shit-done/pull/3343)) — phase verification no longer passes with unresolved `TBD` / `FIXME` / `XXX` markers in phase-modified source files. Same-line issue/PR refs and `DEF-*` IDs remain valid formal deferrals.
+- **Verifier runs probe scripts directly** ([#3350](https://github.com/gsd-build/get-shit-done/pull/3350)) — no longer accepts SUMMARY-reported probe PASS markers as evidence.
+- **Human-needed verification no longer completes phases** ([#3339](https://github.com/gsd-build/get-shit-done/pull/3339)) — SDK keeps `human_needed` and missing verification results pending; `check.ship-ready` only passes explicit pass states.
+- **Executor stall detection** ([#3329](https://github.com/gsd-build/get-shit-done/pull/3329)) — safe-resume contracts surface partial-plan drift before dispatching duplicate executor work.
+- **`phase remove --force` renumbering** ([#3367](https://github.com/gsd-build/get-shit-done/pull/3367)) — integer phase removal preserves later ROADMAP progress rows and headings instead of collapsing to the removed phase number.
+- **`detect-custom-files` scans `skills/`** ([#3318](https://github.com/gsd-build/get-shit-done/pull/3318)) — SDK custom-file detection back in parity with `bin/gsd-tools.cjs`, preventing user-added skills from being silently destroyed during `/gsd:update`.
+- **`/gsd:plan-phase` deep-work rules** ([#3326](https://github.com/gsd-build/get-shit-done/pull/3326)) — planners keep action blocks as directive prose, avoid fenced implementation dumps.
+- **Codex install hardening** — `gsd-sdk` installs reliably on Windows ([#3282](https://github.com/gsd-build/get-shit-done/pull/3282)); `gsd-tools.cjs` and CJS fallback bridge work post-install via the new `bin/shared/model-catalog.json` path ([#3293](https://github.com/gsd-build/get-shit-done/pull/3293)); `get-shit-done-cc --codex` accepts Codex `hooks.state.*` trust tables ([#3289](https://github.com/gsd-build/get-shit-done/pull/3289)); legacy GSD-managed hooks.json update hooks cleaned up after writing the TOML SessionStart hook ([#3364](https://github.com/gsd-build/get-shit-done/pull/3364)).
+- **Gemini install/conversion** — Gemini install output valid on Windows PowerShell, agent conversion drops Claude-only `AskUserQuestion` / `ask_user` tool metadata ([#3368](https://github.com/gsd-build/get-shit-done/pull/3368)); Gemini and Antigravity conversion drops Claude-only agent dispatcher tools ([#3349](https://github.com/gsd-build/get-shit-done/pull/3349)).
+- **SDK resolve-model / init.progress** ([#3361](https://github.com/gsd-build/get-shit-done/pull/3361)) — Codex runtime override models reported before `resolve_model_ids: "omit"`.
+- **Installer SDK readiness detects stale `gsd-sdk` executables** earlier on PATH ([#3363](https://github.com/gsd-build/get-shit-done/pull/3363)).
+- See full upstream release notes: <https://github.com/gsd-build/get-shit-done/releases/tag/v1.41.2>.
+
+### Removed
+- Upstream removed the vestigial `Layout detection returned 'unknown'` line from `gsd-intel-updater` on non-GSD-framework projects ([#3299](https://github.com/gsd-build/get-shit-done/pull/3299)). Plugin follows.
+
+### Plugin patches — 2 preserved verbatim, 1 evolved
+- **`bin/lib/core.cjs`** — `resolveGsdRoot` / `resolveGsdDataDir` / `resolveGsdAsset` + `getAgentsDir` w/ `GSD_AGENTS_DIR` override. Untouched upstream this cycle (regression-grep verified intact).
+- **`bin/gsd-tools.cjs`** — `migrate` / `write-phase-memory` / `checkpoint` / `hook` cases. Untouched upstream this cycle (regression-grep verified intact).
+- **`bin/lib/model-catalog.cjs`** (`#PLUGIN-MODEL-CATALOG-PATH`) — patch shape evolved. v2.42.2 used a try-plugin-first-with-existsSync-fallback pattern (since the upstream baseline was a single `require()`). v2.42.4 folds the plugin's flat-layout candidate into upstream's new prioritised candidate list as entry #0. Cleaner, integrates with upstream's `_catalogLastErr` diagnostic chain.
+
+### Notes
+- Bundled SDK at `sdk/dist/cli.js` still on `v1.50.0-canary.0`. Will refresh on the next significant SDK update.
+- v1.42.0 GA still pending — rc2 published 2026-05-10 22:10 UTC, 21 min after v1.41.2 GA. Same rolling-hotfix-while-RC pattern as v1.41.1.
+- This is the second sync this week. Cadence is fast; consider folding multiple patches into a single sync next time if upstream patches keep landing daily.
+
 ## [2.42.3] - 2026-05-10
 
 Adds optional `agents.workspace.json` SessionStart integration. Architectural discussion in [#5](https://github.com/jnuyens/gsd-plugin/issues/5); implementation in [PR #6](https://github.com/jnuyens/gsd-plugin/pull/6).
