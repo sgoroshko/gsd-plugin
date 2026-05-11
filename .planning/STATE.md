@@ -4,8 +4,8 @@ milestone: v1.2
 milestone_name: Upstream Resilience
 status: shipped
 stopped_at: v1.2 archived 2026-04-24 — milestone shipped; tags v1.2 + v2.38.4 created
-last_updated: "2026-05-10T18:55:00Z"
-last_activity: 2026-05-10
+last_updated: "2026-05-11T07:00:00Z"
+last_activity: 2026-05-11
 progress:
   total_phases: 3
   completed_phases: 3
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 Milestone: v1.2 shipped (2026-04-24) — all 9 requirements satisfied, tagged, archived.
 Phase: none active. v1.2 phase artifacts moved to `.planning/milestones/v1.2-phases/`.
 Next action: `/gsd:new-milestone` to scope v1.3.
-Last activity: 2026-05-10 — Synced upstream GSD 1.41.1 hotfix (plugin v2.42.2); picks up wave-0 plan-index fix, shared model-catalog convergence, and code-review pipeline hardening. New plugin patch in bin/lib/model-catalog.cjs for flat layout
+Last activity: 2026-05-11 — Synced upstream GSD 1.41.2 hotfix (plugin v2.42.4); picks up state-mutation data-loss fixes, verifier hardening (TBD/probe-script), executor stall detection, phase remove renumbering, Codex/Gemini install hardening. #PLUGIN-MODEL-CATALOG-PATH patch evolved: folded into upstream's new prioritised candidate list as entry #0
 
 ```
 v1.2 shipped: [==========] 100%
@@ -116,6 +116,8 @@ None.
 | 260503-ier | Sync upstream GSD v1.40.0 + bump plugin to v2.40.0 | 2026-05-03 | 8af38a3 |  | [260503-ier-1-40-0-is-release-upstream-update-gsd-pl](./quick/260503-ier-1-40-0-is-release-upstream-update-gsd-pl/) |
 | 260507-esn | Sync upstream GSD v1.41.0 + bump plugin to v2.41.0 (incl. MVP-phase workflow, 8 new MVP/SPIDR refs, runtime-homes helper, extract_learnings rename); MCP stdio framing fix released as v2.40.2 with regression test in CI (closes #3) | 2026-05-07 | 69e3843 | Verified | [260507-esn-there-is-a-new-upstream-version-see-what](./quick/260507-esn-there-is-a-new-upstream-version-see-what/) |
 | 260510-141 | Sync upstream GSD v1.41.1 + bump plugin to v2.42.2 (wave-0 plan-index fix, shared model-catalog convergence #3230, code-review pipeline hardening, dotted-command-form shim, install fixes); new plugin patch in bin/lib/model-catalog.cjs for flat layout (#PLUGIN-MODEL-CATALOG-PATH) | 2026-05-10 | b1425b1 | Verified | (no quick dir — inline sync) |
+| 260510-ws  | Workspace.json SessionStart integration (issue #5, PR #6 by @qmarcelle); released as v2.42.3 with zero-token-impact convention locked into project design rules | 2026-05-10 | 9ffa947 | Verified | (PR-driven) |
+| 260511-142 | Sync upstream GSD v1.41.2 + bump plugin to v2.42.4 (state-mutation data-loss fixes, verifier TBD/probe hardening, executor stall detection, phase remove renumbering, Codex/Gemini install hardening); #PLUGIN-MODEL-CATALOG-PATH evolved to fold into upstream's new candidate list | 2026-05-11 | 067308a | Verified | (no quick dir — inline sync) |
 
 ## Session Continuity
 
