@@ -8,6 +8,21 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.43.1] - 2026-05-15  (based on upstream GSD 1.42.2)
+
+Hotfix on v2.43.0. Adds a SessionStart hook that detects a shadowing `gsd-sdk` binary on `$PATH` (typically a leftover `npm install -g get-shit-done-cc` or `@gsd-build/sdk` from the pre-v2.42.0 prerequisite era) and emits a one-time advisory recommending the user uninstall it. The shadowing global takes PATH precedence over the plugin's bundled wrapper, does not honor `CLAUDE_PLUGIN_ROOT`, and causes spurious `agents_installed: false` reports in `/gsd:new-project` and similar workflows.
+
+### Added
+- **`hooks/gsd-shadowing-sdk-detector.js`** (`SessionStart`) cross-platform PATH walker. Resolves symlinks before comparing against the plugin's bundled wrapper at `${CLAUDE_PLUGIN_ROOT}/bin/gsd-sdk`. Silent when no shadowing is detected. Emits a structured `additionalContext` payload pointing at the offending binary and giving the exact `npm uninstall` recipe.
+- **Test coverage**, three new sub-cases in `tests/hooks-smoke.test.cjs` (16 total, previously 13): silent when only the plugin wrapper is in PATH, silent when no `gsd-sdk` is in PATH, warns when a non-plugin `gsd-sdk` is first in PATH. Validates JSON envelope shape and the presence of the `npm uninstall` guidance.
+
+### Background
+- The plugin v2.42.0 bundled `sdk/dist/cli.js` so the standalone `get-shit-done-cc` / `@gsd-build/sdk` npm package became unnecessary. Pre-v2.42.0 users who installed it via `npm -g` are still affected on every session.
+- The v2.42.5 `#PLUGIN-WRAPPER-ENV-EXPORT` patch exports `CLAUDE_PLUGIN_ROOT` and `GSD_AGENTS_DIR` from the plugin's wrapper, but only fires when the wrapper itself is invoked. With a shadowing global in `$PATH`, the wrapper is bypassed and the patch is silent. v2.43.1 closes the loop with first-line user-visible diagnosis.
+
+### Recommended user action
+If the SessionStart advisory fires, run `npm uninstall -g @gsd-build/sdk` (and `npm uninstall -g get-shit-done-cc` if also installed). `which gsd-sdk` should then resolve to a path under `.claude/plugins/cache/gsd-plugin/`.
+
 ## [2.43.0] - 2026-05-15  (based on upstream GSD 1.42.2)
 
 Upstream patch sync, picks up GSD 1.42.0 + 1.42.1 + 1.42.2 (published 2026-05-15). The plugin skipped intermediate v1.42.0 (RC pattern) and v1.42.1 via the daily-sync cadence change; this single bump consolidates all three patch releases plus the post-merge work that landed at v1.42.2. SDK source patch surface evolved (upstream consolidated CLAUDE_PLUGIN_ROOT probes into `sdk-package-compatibility.ts::legacyAssetProbes`), surgically re-applied. Bundled SDK rebundled, 1.66 MB, contains 3 CLAUDE_PLUGIN_ROOT matches (one per patched module + the consolidated probe).
