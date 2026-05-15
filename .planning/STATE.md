@@ -4,8 +4,8 @@ milestone: v1.2
 milestone_name: Upstream Resilience
 status: shipped
 stopped_at: v1.2 archived 2026-04-24 — milestone shipped; tags v1.2 + v2.38.4 created
-last_updated: "2026-05-13T00:00:00Z"
-last_activity: 2026-05-13
+last_updated: "2026-05-15T00:00:00Z"
+last_activity: 2026-05-15
 progress:
   total_phases: 3
   completed_phases: 3
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 Milestone: v1.2 shipped (2026-04-24) — all 9 requirements satisfied, tagged, archived.
 Phase: none active. v1.2 phase artifacts moved to `.planning/milestones/v1.2-phases/`.
 Next action: `/gsd:new-milestone` to scope v1.3.
-Last activity: 2026-05-13 — Pulled in 8 upstream security/correctness hook scripts (gsd-prompt-guard, gsd-workflow-guard, gsd-read-guard, gsd-read-injection-scanner, gsd-validate-commit, gsd-phase-boundary, gsd-context-monitor, gsd-session-state) + lib/git-cmd.js. Hybrid hook architecture: existing dispatcher entries preserved, new individual scripts registered alongside. One layout patch (#PLUGIN-HOOK-CONTEXT-MONITOR). v2.42.6.
+Last activity: 2026-05-15, Synced upstream GSD v1.42.2 (latest stable, published 2026-05-15 03:26 UTC) into plugin tree. Bump 2.42.6 to 2.43.0. 4 in-tree plugin patches re-applied; SDK probe consolidated into `legacyAssetProbes` (upstream restructured CLAUDE_PLUGIN_ROOT detection across the SDK source). Hooks refresh limited to gsd-context-monitor.js + gsd-workflow-guard.js (the only 2 overlapping with plugin's 8-hook set). commands/ exclusion preserved. /gsd-X to /gsd:X normalization across 28 workflows; one over-match bug found by verifier and patched (gsd-build URL in update.md). Regression trifecta passes.
 
 ```
 v1.2 shipped: [==========] 100%
@@ -119,6 +119,7 @@ None.
 | 260510-ws  | Workspace.json SessionStart integration (issue #5, PR #6 by @qmarcelle); released as v2.42.3 with zero-token-impact convention locked into project design rules | 2026-05-10 | 9ffa947 | Verified | (PR-driven) |
 | 260511-142 | Sync upstream GSD v1.41.2 + bump plugin to v2.42.4 (state-mutation data-loss fixes, verifier TBD/probe hardening, executor stall detection, phase remove renumbering, Codex/Gemini install hardening); #PLUGIN-MODEL-CATALOG-PATH evolved to fold into upstream's new candidate list | 2026-05-11 | 067308a | Verified | (no quick dir — inline sync) |
 | 260513-2zg | Pull 8 upstream security/correctness hook scripts into plugin (prompt-guard, workflow-guard, read-guard, read-injection-scanner, validate-commit, phase-boundary, context-monitor, session-state) + lib/git-cmd.js; first-ship soft-warn; `#PLUGIN-HOOK-CONTEXT-MONITOR` layout patch; smoke tests; bump 2.42.5→2.42.6 | 2026-05-13 | 346d517 |  | [260513-2zg-audit-upstream-hooks-tree-and-pull-in-se](./quick/260513-2zg-audit-upstream-hooks-tree-and-pull-in-se/) |
+| 260515-f2d | Sync upstream GSD v1.42.2 (latest stable, published 2026-05-15) into plugin tree; bump 2.42.6→2.43.0; 4 in-tree plugin patches re-applied; SDK probe consolidated into `legacyAssetProbes` (upstream restructured CLAUDE_PLUGIN_ROOT detection); hooks refresh limited to gsd-context-monitor.js + gsd-workflow-guard.js; commands/ exclusion preserved; 90 workflows + 33 agents synced; sdk/dist/cli.js rebundled (1.6MB, 3 CLAUDE_PLUGIN_ROOT matches); /gsd-X → /gsd:X normalization across 28 workflows; one over-match bug found by verifier and patched (gsd-build URL in update.md) | 2026-05-15 | 928a160 | Verified (gaps_found, both fixed) | [260515-f2d-new-upstream-version](./quick/260515-f2d-new-upstream-version/) |
 
 ## Session Continuity
 
