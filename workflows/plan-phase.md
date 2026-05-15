@@ -51,13 +51,13 @@ Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_
 
 **File paths (for <files_to_read> blocks):** `state_path`, `roadmap_path`, `requirements_path`, `context_path`, `research_path`, `verification_path`, `uat_path`, `reviews_path`. These are null if files don't exist.
 
-**If `planning_exists` is false:** Error — run `/gsd:new-project` first.
+**If `planning_exists` is false:** Error, run `/gsd:new-project` first.
 
 ## 2. Parse and Normalize Arguments
 
-Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--research-phase <N>`, `--gaps`, `--skip-verify`, `--skip-ui`, `--prd <filepath>`, `--reviews`, `--text`, `--bounce`, `--skip-bounce`, `--chunked`, `--mvp`).
+Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--research-phase <N>`, `--gaps`, `--skip-verify`, `--skip-ui`, `--prd <filepath>`, `--ingest <path-or-glob>`, `--ingest-format <auto|nygard|madr|narrative>`, `--reviews`, `--text`, `--bounce`, `--skip-bounce`, `--chunked`, `--mvp`).
 
-**`--research-phase <N>` — research-only mode (#3042 + #3044).** When this flag is present, parse `<N>` as the phase number (overrides any positional phase argument), set `RESEARCH_ONLY=true`, and treat the rest of this workflow as a research-dispatch only — the planner spawn (step 8), plan-checker, verification, gaps, bounce, and post-planning-gaps blocks all skip on `RESEARCH_ONLY`. Use this for cross-phase research, doc review before committing to a planning approach, and correction-without-replanning loops. Replaces the deleted `/gsd:research-phase` command.
+**`--research-phase <N>`, research-only mode (#3042 + #3044).** When this flag is present, parse `<N>` as the phase number (overrides any positional phase argument), set `RESEARCH_ONLY=true`, and treat the rest of this workflow as a research-dispatch only, the planner spawn (step 8), plan-checker, verification, gaps, bounce, and post-planning-gaps blocks all skip on `RESEARCH_ONLY`. Use this for cross-phase research, doc review before committing to a planning approach, and correction-without-replanning loops. Replaces the deleted `/gsd:research-phase` command.
 
 In research-only mode, two modifiers control behavior when `RESEARCH.md` already exists:
 
@@ -104,14 +104,19 @@ When `WALKING_SKELETON=true`:
 
 **Interaction with `--prd <filepath>`.** `--mvp` and `--prd` compose. The PRD express path (Step 3.5) creates `CONTEXT.md` from the PRD file and continues to research; the Walking Skeleton gate fires independently from the conditions above. When both are active on Phase 1 of a new project, the planner receives `WALKING_SKELETON=true` and PRD-derived context simultaneously — the PRD informs *what the skeleton should prove*. No precedence is needed; the two signals are orthogonal. See [`references/mvp-concepts.md`](../references/mvp-concepts.md) for the broader interaction map.
 
-Extract `--prd <filepath>` from $ARGUMENTS. If present, set PRD_FILE to the filepath.
+Extract express-path args from $ARGUMENTS: `PRD_FILE` (`--prd <filepath>`), `INGEST_PATH` (`--ingest <path-or-glob>`), and optional `INGEST_FORMAT` (`--ingest-format <auto|nygard|madr|narrative>`, default `auto`).
+
+`--prd` and `--ingest` are mutually exclusive. If both are present, error and exit:
+`Invalid arguments: cannot combine \`--prd\` with \`--ingest\`.`
 
 **If no phase number:** Detect next unplanned phase from roadmap.
 
-**If `phase_found` is false:** Validate phase exists in ROADMAP.md. If valid, create the directory using `phase_slug` and `padded_phase` from init:
+**If `phase_found` is false:** Validate phase exists in ROADMAP.md. If valid, create the directory using `expected_phase_dir` from init (includes `project_code` prefix when set):
 ```bash
-mkdir -p ".planning/phases/${padded_phase}-${phase_slug}"
+mkdir -p "${expected_phase_dir}"
 ```
+
+Set `phase_dir="${expected_phase_dir}"` after creation.
 
 **Existing artifacts from init:** `has_research`, `has_plans`, `plan_count`.
 
@@ -259,9 +264,24 @@ gsd-sdk query commit "docs(${padded_phase}): generate context from PRD" --files 
 
 **Effect:** This completely bypasses step 4 (Load CONTEXT.md) since we just created it. The rest of the workflow (research, planning, verification) proceeds normally with the PRD-derived context.
 
+## 3.6. Handle ADR Ingest Express Path
+
+**Skip if:** No `--ingest` flag in arguments.
+
+**If `--ingest <path-or-glob>` provided:**
+
+1. Display banner: `GSD ► ADR Ingest Express Path` with `{INGEST_PATH}` and `{INGEST_FORMAT}`.
+2. Parse each resolved ADR through `get-shit-done/bin/lib/adr-parser.cjs` (`--input`, `--format`) and collect normalized records.
+3. Status gate: reject `superseded`/`rejected`/`deprecated`; warn on `proposed`; missing status defaults to `accepted`.
+4. Empty-decisions fallback: if all parsed ADRs have zero `decisions[]`, emit `ADR ingest produced no locked decisions; fall back to discuss-phase for this phase.` and exit with `/gsd:discuss-phase {N}` guidance.
+5. Generate CONTEXT.md using `<domain>`, `<decisions>`, `<canonical_refs>`, `<specifics>`, `<deferred>`, `<scope_fence>`, map `consequences_positive[]` to Success Criteria and `consequences_negative[]` to Risk Summary, and include `**Source:** ADR Ingest Express Path ({INGEST_PATH})`.
+6. Commit with `gsd-sdk query commit "docs(${padded_phase}): generate context from ADR ingest" --files "${phase_dir}/${padded_phase}-CONTEXT.md"` and set `context_content`; continue to step 5.
+
+**Effect:** This bypasses step 4 (Load CONTEXT.md) since CONTEXT.md was synthesized from ADR input.
+
 ## 4. Load CONTEXT.md
 
-**Skip if:** PRD express path was used (CONTEXT.md already created in step 3.5).
+**Skip if:** PRD express path or ADR ingest express path was used (CONTEXT.md already created in step 3.5/3.6).
 
 Check `context_path` from init JSON.
 
@@ -333,12 +353,12 @@ echo "${phase_goal}" | grep -qi "agent\|llm\|rag\|chatbot\|embedding\|langchain\
   - Research its docs and best practices
   - Design an evaluation strategy
 
-  Continue planning without AI-SPEC? (non-blocking — /gsd:ai-integration-phase can be run after)
+  Continue planning without AI-SPEC? (non-blocking, /gsd:ai-integration-phase can be run after)
 ```
 
 Use AskUserQuestion with options:
 - "Continue — plan without AI-SPEC"
-- "Stop — I'll run /gsd:ai-integration-phase {N} first"
+- "Stop, I'll run /gsd:ai-integration-phase {N} first"
 
 If "Stop": Exit with `/gsd:ai-integration-phase {N}` reminder.
 If "Continue": Proceed. (Non-blocking — planner will note AI-SPEC is absent.)
@@ -361,7 +381,7 @@ Three branches in research-only mode (`--research-phase <N>`):
 
 1. **`--view`** (or user picks "View" in the prompt below): print `RESEARCH.md` to stdout, no spawn, exit. If `RESEARCH.md` is missing, error with: `--view requires an existing RESEARCH.md; drop --view to spawn the researcher.`
 2. **`--research`** (force-refresh): re-spawn researcher unconditionally — fall through to "Spawn gsd-phase-researcher" below.
-3. **Neither flag AND `has_research=true`:** emit `RESEARCH.md already exists for Phase ${PHASE}.` and prompt the user with three choices: `1. Update — re-spawn researcher and refresh RESEARCH.md`, `2. View — print existing RESEARCH.md and exit (no spawn)`, `3. Skip — exit without spawning or printing`. Map "Update" → fall through to spawn, "View" → set `VIEW_ONLY=true` and emit RESEARCH.md as in (1), "Skip" → exit cleanly. Mirrors the deleted `/gsd:research-phase` standalone's existing-artifact menu (#3042 parity).
+3. **Neither flag AND `has_research=true`:** emit `RESEARCH.md already exists for Phase ${PHASE}.` and prompt the user with three choices: `1. Update, re-spawn researcher and refresh RESEARCH.md`, `2. View, print existing RESEARCH.md and exit (no spawn)`, `3. Skip, exit without spawning or printing`. Map "Update" → fall through to spawn, "View" → set `VIEW_ONLY=true` and emit RESEARCH.md as in (1), "Skip" → exit cleanly. Mirrors the deleted `/gsd:research-phase` standalone's existing-artifact menu (#3042 parity).
 
 ```bash
 if [[ "$VIEW_ONLY" == "true" ]]; then
@@ -601,10 +621,10 @@ Output this markdown directly (not as a code block):
 ```
 ## ⚠ UI-SPEC.md missing for Phase {N}
 ▶ Recommended next step:
-`/gsd:ui-phase {N} ${GSD_WS}` — generate UI design contract before planning
+`/gsd:ui-phase {N} ${GSD_WS}`, generate UI design contract before planning
 ───────────────────────────────────────────────
 Also available:
-- `/gsd:plan-phase {N} --skip-ui ${GSD_WS}` — plan without UI-SPEC (not recommended for frontend phases)
+- `/gsd:plan-phase {N} --skip-ui ${GSD_WS}`, plan without UI-SPEC (not recommended for frontend phases)
 ```
 
 **Exit the plan-phase workflow. Do not continue.**
@@ -1064,7 +1084,7 @@ arrived). Display:
 Offer 3 options:
 1. **Accept plans** — treat as `## PLANNING COMPLETE` and continue through step 9 `## PLANNING COMPLETE` handling (so `--skip-verify` / `plan_checker_enabled=false` are honored — may skip to step 13 rather than step 10)
 2. **Retry planner** — re-spawn the planner with the same prompt (return to step 8)
-3. **Stop** — exit; user can re-run `/gsd:plan-phase {N}` to resume
+3. **Stop**, exit; user can re-run `/gsd:plan-phase {N}` to resume
 
 **If `DISK_PLANS` is 0 and no marker:** The planner produced no output. Treat as
 `## PLANNING INCONCLUSIVE` and handle accordingly.
@@ -1097,7 +1117,7 @@ rest become a follow-up phase
 
 Use AskUserQuestion with these 3 options.
 
-**If "Split":** Use `/gsd-phase --insert` to create the sub-phases, then replan each.
+**If "Split":** Use `/gsd:phase --insert` to create the sub-phases, then replan each.
 **If "Proceed":** Return to planner with instruction to attempt all items at full fidelity, accepting more plans/tasks.
 **If "Prioritize":** Use AskUserQuestion (multiSelect) to let user pick which items are "now" vs "later". Create CONTEXT.md for each sub-phase with the selected items.
 
@@ -1126,7 +1146,7 @@ Options:
 Use AskUserQuestion for each gap (or batch if multiple gaps).
 
 **If "Add plan":** Return to planner (step 8) with instruction to add plans covering the missing items, preserving existing plans.
-**If "Split":** Use `/gsd-phase --insert` for overflow items, then replan.
+**If "Split":** Use `/gsd:phase --insert` for overflow items, then replan.
 **If "Defer":** Record in CONTEXT.md `## Deferred Ideas` with developer's confirmation. Proceed to step 10.
 
 ## 10. Spawn gsd-plan-checker Agent
@@ -1224,7 +1244,7 @@ Windows stdio hang pattern — the subagent finished but the return never arrive
 Offer 3 options:
 1. **Accept verification** — treat as `## VERIFICATION PASSED` and continue to step 13
 2. **Retry checker** — re-spawn the checker with the same prompt (return to step 10)
-3. **Stop** — exit; user can re-run `/gsd:plan-phase {N}` to resume
+3. **Stop**, exit; user can re-run `/gsd:plan-phase {N}` to resume
 
 **If `DISK_PLANS` is 0:** No plans on disk — something is seriously wrong. Display error and stop.
 
@@ -1673,9 +1693,9 @@ Verification: {Passed | Passed with override | Skipped}
 
 **Also available:**
 - cat .planning/phases/{phase-dir}/*-PLAN.md — review plans
-- /gsd:plan-phase {X} --research — re-research first
-- /gsd:review --phase {X} --all — peer review plans with external AIs
-- /gsd:plan-phase {X} --reviews — replan incorporating review feedback
+- /gsd:plan-phase {X} --research, re-research first
+- /gsd:review --phase {X} --all, peer review plans with external AIs
+- /gsd:plan-phase {X} --reviews, replan incorporating review feedback
 
 ───────────────────────────────────────────────────────────────
 </offer_next>

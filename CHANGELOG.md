@@ -8,6 +8,55 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.43.0] - 2026-05-15  (based on upstream GSD 1.42.2)
+
+Upstream patch sync, picks up GSD 1.42.0 + 1.42.1 + 1.42.2 (published 2026-05-15). The plugin skipped intermediate v1.42.0 (RC pattern) and v1.42.1 via the daily-sync cadence change; this single bump consolidates all three patch releases plus the post-merge work that landed at v1.42.2. SDK source patch surface evolved (upstream consolidated CLAUDE_PLUGIN_ROOT probes into `sdk-package-compatibility.ts::legacyAssetProbes`), surgically re-applied. Bundled SDK rebundled, 1.66 MB, contains 3 CLAUDE_PLUGIN_ROOT matches (one per patched module + the consolidated probe).
+
+### Changed
+- **Version bump**, plugin `2.42.6 to 2.43.0`.
+- **`agents/`** refreshed wholesale (28 of 33 files updated, 5 new from upstream).
+- **`bin/lib/*`** refreshed wholesale (61 upstream `.cjs` files plus a new `installer-migrations/` subdir with 3 baseline scripts).
+- **`bin/gsd-tools.cjs`** refreshed; 4 plugin dispatch cases (`write-phase-memory`, `checkpoint`, `hook`, `migrate`) re-inserted before the `default:` block.
+- **`hooks/gsd-context-monitor.js` + `hooks/gsd-workflow-guard.js`** refreshed.
+- **`sdk/src/*`** refreshed wholesale (~70 TypeScript modules including new `sdk-package-compatibility.ts` seam).
+- **`workflows/` + `templates/` + `references/`** refreshed from upstream `get-shit-done/{workflows,templates,references}/`.
+- **`sdk/dist/cli.js`** rebundled via `npm run build` (`tsc + esbuild`); 1.66 MB single-file ESM bundle with `createRequire` shim.
+
+### Added (selected upstream highlights)
+- **STATE.md Document Module via generator** (v1.42.2, [#3531](https://github.com/gsd-build/get-shit-done/pull/3531)) Phase 1 of #3524, the CJS to SDK hard-seam ADR. Generated STATE.md surface enforces consistent shape across runtimes.
+- **`init.phase-op` / `init.plan-phase` expose `expected_phase_dir`** (v1.42.1, [#3287](https://github.com/gsd-build/get-shit-done/pull/3287)) projects with `project_code` set no longer accumulate two-headed naming conventions (`01-foundation/` mixed with `XR-02.1-spike/`).
+- **Statusline `context_position` config** (v1.42.x, [#2937](https://github.com/gsd-build/get-shit-done/pull/2937)) opt-in narrow-terminal layout for context utilization indicator.
+- **`gsd-sdk query commit --respect-staged`** (v1.42.x, [#3522](https://github.com/gsd-build/get-shit-done/pull/3522)) opt-in flag so SDK-driven commits no longer silently overwrite staged files.
+
+### Fixed (selected upstream highlights)
+- **ROADMAP regex consolidation** (v1.42.2, [#3538](https://github.com/gsd-build/get-shit-done/pull/3538)) every phase-number ROADMAP regex now routes through `phaseMarkdownRegexSource`; fixes spurious "phase in ROADMAP but no directory" warnings on milestone-archive layouts.
+- **`buildStateFrontmatter` counts nested plans** (v1.42.1, [#3261](https://github.com/gsd-build/get-shit-done/pull/3261)) repos using the nested `plans/<N>-PLAN-<NN>-<slug>.md` layout no longer get `progress.*` counters silently overwritten downward on every state mutation.
+- **Self-healing migration of legacy top-level `branching_strategy`** (v1.42.x, [#3523](https://github.com/gsd-build/get-shit-done/pull/3523)) CJS `loadConfig` no longer emits false-positive warnings for legacy config schemas.
+- **`phase.complete` refreshes all STATE.md fields** (v1.42.x, [#3517](https://github.com/gsd-build/get-shit-done/pull/3517)) phase completion now derives `completed_phases` from ROADMAP and rewrites the full body+frontmatter, fixing STATE drift after `phase complete`.
+- **`reapply-patches` `gsd-update` filter arm** (v1.42.x, [#3516](https://github.com/gsd-build/get-shit-done/pull/3516)) missing arm in two-way merge filter was silently skipping update-flow patches.
+- **`quick.md` cleanup-loop CWD safety** (v1.42.x, [#3521](https://github.com/gsd-build/get-shit-done/pull/3521)) bare `git` commands in the quick-task cleanup loop now pin CWD to project root before executing.
+
+### Plugin patches preserved verbatim
+- **`bin/lib/core.cjs`** (`#PLUGIN-AGENTS-DIR`) `resolveGsdRoot` / `resolveGsdDataDir` / `resolveGsdAsset` helper exports + the `getAgentsDir()` plugin-flat preference. Upstream `core.cjs` diff was substantial (~500 lines); patch surgically re-inserted at lines 21 and 1284 (HEAD), `[PLUGIN PATCH]` markers intact.
+- **`bin/lib/model-catalog.cjs`** (`#PLUGIN-MODEL-CATALOG-PATH`) flat-layout candidate prepended to upstream's 3-candidate resolver list. Upstream resolver shape unchanged this cycle; folded in as candidate #0 same as v2.42.4.
+- **`bin/gsd-tools.cjs`** 4 dispatch cases (`write-phase-memory`, `checkpoint`, `hook`, `migrate`). Hook subtypes (`session-start`, `pre-compact`, `post-tool-use`, `stop`) preserved; re-inserted as a block before the `default:` clause.
+- **`hooks/gsd-context-monitor.js`** (`#PLUGIN-HOOK-CONTEXT-MONITOR`) drops the `get-shit-done` segment from `__dirname` traversal + honors `GSD_TOOLS_PATH` env override. Re-applied at line 138, marker intact.
+- **`sdk/src/query/state-project-load.ts` + `sdk/src/query-gsd-tools-path.ts`** (SDK source patches) upstream v1.42.2 consolidated the CLAUDE_PLUGIN_ROOT probe logic into `sdk-package-compatibility::legacyAssetProbes`. Patch evolved: the functional probe lives in the consolidated helper (prepending a plugin-flat candidate), while `[PLUGIN PATCH]` markers + module-load `CLAUDE_PLUGIN_ROOT` references stay in both target files so the bundled SDK carries one match per patched module (gate expects >=2; bundle now carries 3).
+
+### Plugin-owned (untouched by sync)
+- `bin/gsd-sdk` + `bin/gsd-sdk.cmd` (`#PLUGIN-WRAPPER-ENV-EXPORT`) byte-identical (sha256 verified pre/post sync).
+- `bin/maintenance/`, `bin/validate-plugin.cjs`, `hooks/gsd-prompt-guard.js`, `hooks/gsd-read-guard.js`, `hooks/gsd-read-injection-scanner.js`, `hooks/gsd-validate-commit.sh`, `hooks/gsd-phase-boundary.sh`, `hooks/gsd-session-state.sh`, `hooks/lib/` upstream did not change these between v1.41.2 and v1.42.2, so they remain in place.
+- `commands/` remains absent (per plugin policy, see memory entry "No bundled commands/").
+
+### Excluded from this pass
+- `hooks/gsd-statusline.js`, `hooks/gsd-update-banner.js` upstream-only, plugin does not ship.
+- `gsd-check-update.js` deferred indefinitely (decision from v2.42.6 retained).
+
+### Tests
+- Regression trifecta passes against the synced tree: `tests/mcp-stdio-framing.test.cjs` (8 tools), `tests/workspace-json-integration.test.cjs` (22 checks), `tests/hooks-smoke.test.cjs` (13/13).
+
+See full upstream release notes: <https://github.com/gsd-build/get-shit-done/releases/tag/v1.42.2>
+
 ## [2.42.6] - 2026-05-13  (based on upstream GSD 1.41.2)
 
 Pull 8 upstream hook scripts (security and correctness defense-in-depth) into the plugin's `hooks/` tree. First ship is soft-warn: all guards either no-op silently or emit advisory `additionalContext` without blocking the tool call. The conventional-commits validator is the lone exception (blocks on bad commit messages) and is opt-in via `.planning/config.json` `{"hooks":{"community":true}}`. The plugin's existing 5 dispatcher entries (SessionStart auto-resume, PreToolUse Edit|Write, PostToolUse periodic checkpoint, PreCompact, Stop rate-limit nudge) are preserved unchanged: hybrid hook architecture per design.

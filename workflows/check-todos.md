@@ -37,8 +37,8 @@ Exit.
 
 <step name="parse_filter">
 Check for area filter in arguments:
-- `/gsd-capture --list` → show all
-- `/gsd-capture --list api` → filter to area:api only
+- `/gsd:capture --list` → show all
+- `/gsd:capture --list api` → filter to area:api only
 </step>
 
 <step name="list_todos">
@@ -56,7 +56,7 @@ Pending Todos:
 ---
 
 Reply with a number to view details, or:
-- `/gsd-capture --list [area]` to filter by area
+- `/gsd:capture --list [area]` to filter by area
 - `q` to exit
 ```
 
@@ -120,7 +120,7 @@ Use AskUserQuestion:
 - question: "What would you like to do with this todo?"
 - options:
   - "Work on it now" — move to done, start working
-  - "Create a phase" — /gsd:add-phase with this scope
+  - "Create a phase", /gsd:add-phase with this scope
   - "Brainstorm approach" — think through before deciding
   - "Put it back" — return to list
 </step>
