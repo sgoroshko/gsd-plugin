@@ -25,6 +25,7 @@ import { resolveModel, MODEL_PROFILES } from './config-query.js';
 import { maskIfSecret } from './secrets.js';
 import { findPhase } from './phase.js';
 import { roadmapGetPhase, getMilestoneInfo, extractCurrentMilestone, extractPhasesFromSection } from './roadmap.js';
+import { determinePhaseStatus } from './progress.js';
 import { planningPaths, normalizePhaseName, toPosixPath, resolveAgentsDir, detectRuntime } from './helpers.js';
 import { generatePhaseSlug, assertSafeProjectCode } from './phase-lifecycle-policy.js';
 // ─── Internal helpers ──────────────────────────────────────────────────────
@@ -405,6 +406,16 @@ export const initPlanPhase = async (args, projectDir, workstream) => {
     const phaseName = phaseInfo?.phase_name ?? null;
     const phaseDir = phaseInfo?.directory ?? null;
     const plans = (phaseInfo?.plans || []);
+    const summaries = (phaseInfo?.summaries || []);
+    // #3569: surface phase lifecycle status so /gsd-plan-phase can short-circuit
+    // on closed (Complete) phases instead of silently replanning over shipped
+    // code. Reuses determinePhaseStatus — the project-wide vocabulary used by
+    // `progress` (Pending | Planned | In Progress | Executed | Complete |
+    // Needs Review). When the phase has no directory on disk yet, treat it as
+    // Pending (it has not been started).
+    const phaseStatus = phaseDir
+        ? await determinePhaseStatus(plans.length, summaries.length, join(projectDir, phaseDir))
+        : 'Pending';
     // #3287: compute the canonical directory name with project_code prefix so
     // the first-touch mkdir in /gsd-plan-phase stays consistent with phase.add.
     const rawProjectCode = config.project_code || '';
@@ -437,6 +448,7 @@ export const initPlanPhase = async (args, projectDir, workstream) => {
         phase_slug: phaseInfo?.phase_slug ?? null,
         padded_phase: phaseNumber ? normalizePhaseName(phaseNumber) : null,
         phase_req_ids,
+        phase_status: phaseStatus,
         has_research: phaseInfo?.has_research || false,
         has_context: phaseInfo?.has_context || false,
         has_reviews: phaseInfo?.has_reviews || false,
