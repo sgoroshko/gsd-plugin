@@ -6854,6 +6854,12 @@ async function getMilestonePhaseFilter(projectDir, workstream) {
     const customMatch = dirName.match(/^([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*)/);
     if (customMatch && normalized.has(customMatch[1].toLowerCase()))
       return true;
+    const stripped = dirName.replace(/^[A-Z]{1,6}-(?=\d)/i, "");
+    if (stripped !== dirName) {
+      const sm = stripped.match(/^0*(\d+[A-Za-z]?(?:\.\d+)*)/);
+      if (sm && normalized.has(sm[1].toLowerCase()))
+        return true;
+    }
     return false;
   });
   isDirInMilestone.phaseCount = milestonePhaseNums.size;
@@ -9758,6 +9764,9 @@ var configSet = async (args, projectDir, workstream) => {
   const keyPath = args[0];
   const rawValue = args[1];
   if (!keyPath) {
+    throw new GSDError("Usage: config-set <key.path> <value>", ErrorClassification.Validation);
+  }
+  if (rawValue === void 0) {
     throw new GSDError("Usage: config-set <key.path> <value>", ErrorClassification.Validation);
   }
   const validation = isValidConfigKey(keyPath);
@@ -18778,18 +18787,45 @@ var validateHealth = async (args, projectDir, workstream) => {
       const roadmapContent = await readFile29(roadmapPath, "utf-8");
       const roadmapPhases = /* @__PURE__ */ new Set();
       const phasePattern = /#{2,4}\s*Phase\s+(\d+[A-Z]?(?:\.\d+)*)\s*:/gi;
+      const phaseVariants = (phase) => {
+        const variants = /* @__PURE__ */ new Set([phase]);
+        const dotIdx = phase.indexOf(".");
+        const head = dotIdx === -1 ? phase : phase.slice(0, dotIdx);
+        const tail = dotIdx === -1 ? "" : phase.slice(dotIdx);
+        const headMatch = head.match(/^(\d+)([A-Z]?)$/i);
+        if (!headMatch)
+          return variants;
+        const numericHead = headMatch[1];
+        const letterSuffix = headMatch[2] || "";
+        variants.add(`${String(parseInt(numericHead, 10))}${letterSuffix}${tail}`);
+        variants.add(`${numericHead.padStart(2, "0")}${letterSuffix}${tail}`);
+        return variants;
+      };
+      const roadmapPhaseVariants = /* @__PURE__ */ new Set();
       let m3;
       while ((m3 = phasePattern.exec(roadmapContent)) !== null) {
         roadmapPhases.add(m3[1]);
+        for (const variant of phaseVariants(m3[1]))
+          roadmapPhaseVariants.add(variant);
+      }
+      const notStartedPhases = /* @__PURE__ */ new Set();
+      const uncheckedPattern = /-\s*\[\s\]\s*\*{0,2}Phase\s+(\d+[A-Z]?(?:\.\d+)*)[:\s*]/gi;
+      let um;
+      while ((um = uncheckedPattern.exec(roadmapContent)) !== null) {
+        for (const variant of phaseVariants(um[1]))
+          notStartedPhases.add(variant);
       }
       const diskPhases = /* @__PURE__ */ new Set();
+      const activeDiskPhases = /* @__PURE__ */ new Set();
       try {
         const entries = await readdir14(phasesDir, { withFileTypes: true });
         for (const e3 of entries) {
           if (e3.isDirectory()) {
             const dm = e3.name.match(/^(\d+[A-Z]?(?:\.\d+)*)/i);
-            if (dm)
+            if (dm) {
               diskPhases.add(dm[1]);
+              activeDiskPhases.add(dm[1]);
+            }
           }
         }
       } catch {
@@ -18811,14 +18847,18 @@ var validateHealth = async (args, projectDir, workstream) => {
       } catch {
       }
       for (const p of roadmapPhases) {
-        const padded = String(parseInt(p, 10)).padStart(2, "0");
-        if (!diskPhases.has(p) && !diskPhases.has(padded)) {
+        const variants = phaseVariants(p);
+        const existsOnDisk = [...variants].some((variant) => diskPhases.has(variant));
+        const isNotStarted = [...variants].some((variant) => notStartedPhases.has(variant));
+        if (!existsOnDisk) {
+          if (isNotStarted)
+            continue;
           addIssue("warning", "W006", `Phase ${p} in ROADMAP.md but no directory on disk`, "Create phase directory or remove from roadmap");
         }
       }
-      for (const p of diskPhases) {
-        const unpadded = String(parseInt(p, 10));
-        if (!roadmapPhases.has(p) && !roadmapPhases.has(unpadded)) {
+      for (const p of activeDiskPhases) {
+        const variants = phaseVariants(p);
+        if (![...variants].some((variant) => roadmapPhaseVariants.has(variant))) {
           addIssue("warning", "W007", `Phase ${p} exists on disk but not in ROADMAP.md`, "Add to roadmap or remove directory");
         }
       }
@@ -19449,6 +19489,8 @@ var initPlanPhase = async (args, projectDir, workstream) => {
   const phaseName = phaseInfo?.phase_name ?? null;
   const phaseDir = phaseInfo?.directory ?? null;
   const plans = phaseInfo?.plans || [];
+  const summaries = phaseInfo?.summaries || [];
+  const phaseStatus = phaseDir ? await determinePhaseStatus(plans.length, summaries.length, join44(projectDir, phaseDir)) : "Pending";
   const rawProjectCode = config.project_code || "";
   assertSafeProjectCode(rawProjectCode);
   const expectedPhaseDirName = phaseDir ? null : computeExpectedPhaseDirName(phaseNumber, phaseName, rawProjectCode);
@@ -19475,6 +19517,7 @@ var initPlanPhase = async (args, projectDir, workstream) => {
     phase_slug: phaseInfo?.phase_slug ?? null,
     padded_phase: phaseNumber ? normalizePhaseName(phaseNumber) : null,
     phase_req_ids,
+    phase_status: phaseStatus,
     has_research: phaseInfo?.has_research || false,
     has_context: phaseInfo?.has_context || false,
     has_reviews: phaseInfo?.has_reviews || false,
@@ -21495,7 +21538,13 @@ function createGSDToolsRuntime(opts) {
   const nativeErrorFactory = createQueryNativeErrorFactory(opts.timeoutMs);
   const nativeDirectAdapter = new QueryNativeDirectAdapter({
     timeoutMs: opts.timeoutMs,
-    dispatch: (registryCommand, registryArgs) => registry.dispatch(registryCommand, registryArgs, opts.projectDir),
+    // #3591: forward opts.workstream to the registry so native dispatch
+    // routes planning-path queries to .planning/workstreams/<name>/
+    // instead of the root .planning tree. createGSDToolsRuntime accepts
+    // workstream and the QuerySubprocessAdapter already forwards it
+    // (line 38); the native dispatch closure was the only seam that
+    // dropped it, silently routing GSDTools-native queries to root.
+    dispatch: (registryCommand, registryArgs) => registry.dispatch(registryCommand, registryArgs, opts.projectDir, opts.workstream),
     ...nativeErrorFactory
   });
   const transport = new GSDTransport(registry, {
