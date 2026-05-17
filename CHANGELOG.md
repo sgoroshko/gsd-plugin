@@ -8,6 +8,13 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.43.2] - 2026-05-17  (based on upstream GSD 1.42.2)
+
+Docs hotfix on v2.43.1. Replaces the misleading README claim that a pre-v2.42.0 global `gsd-sdk` install "keeps working" with explicit pre-install uninstall instructions. The shadowing global at `/opt/homebrew/bin/gsd-sdk` (or `/usr/local/bin/gsd-sdk`) does NOT honor `CLAUDE_PLUGIN_ROOT` and causes `agents_installed: false` in `/gsd:new-project` and similar workflows, so users with a legacy install must remove it before the plugin can resolve its bundled agents. v2.43.1's runtime SessionStart detector now has a matching README entry to send users to.
+
+### Changed
+- **README** Replaced "No prerequisites" wording that downplayed pre-v2.42.0 shadowing globals as "no breakage". Added a new "Pre-install: remove any pre-v2.42.0 global SDK install" subsection with the `which gsd-sdk` diagnostic, the two `npm uninstall -g` commands (`@gsd-build/sdk` and `get-shit-done-cc`), expected post-uninstall outputs, and a forward reference to the v2.43.1 SessionStart detector for users who skip the step.
+
 ## [2.43.1] - 2026-05-15  (based on upstream GSD 1.42.2)
 
 Hotfix on v2.43.0. Adds a SessionStart hook that detects a shadowing `gsd-sdk` binary on `$PATH` (typically a leftover `npm install -g get-shit-done-cc` or `@gsd-build/sdk` from the pre-v2.42.0 prerequisite era) and emits a one-time advisory recommending the user uninstall it. The shadowing global takes PATH precedence over the plugin's bundled wrapper, does not honor `CLAUDE_PLUGIN_ROOT`, and causes spurious `agents_installed: false` reports in `/gsd:new-project` and similar workflows.

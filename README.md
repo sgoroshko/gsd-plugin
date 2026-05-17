@@ -2,7 +2,7 @@
 
 **Based on:** [GSD 1.42.2](https://github.com/gsd-build/get-shit-done/releases/tag/v1.42.2) base tree by **TACHES** (Lex Christopherson)
 
-**Plugin version:** `2.43.1`
+**Plugin version:** `2.43.2`
 
 **GSD Plugin for Claude Code** ensures your coding work gets done in a systematic, structured way. It prompts you only for the important design and architectural decisions that actually need your judgment, and it splits each step into its own focused subcontext so token use stays optimised across long projects.
 
@@ -16,7 +16,26 @@ GSD Plugin installs *inside* a Claude Code session, not from your host shell. If
 
 As of **v2.42.0** the plugin bundles its own copy of the GSD SDK at `sdk/dist/cli.js` and ships a `bin/gsd-sdk` wrapper that Claude Code automatically puts on `PATH` for plugin Bash calls. You no longer need to `npm install -g get-shit-done-cc`. Closes [#4](https://github.com/jnuyens/gsd-plugin/issues/4).
 
-If you already have an external `gsd-sdk` from a prior `npx get-shit-done-cc` install, it stays on your `PATH` ahead of the bundled one and keeps working — no breakage.
+### Pre-install: remove any pre-v2.42.0 global SDK install
+
+If you previously installed `get-shit-done-cc` or `@gsd-build/sdk` via `npm -g` (or `npx`), the global binary at `/opt/homebrew/bin/gsd-sdk` (Apple Silicon) or `/usr/local/bin/gsd-sdk` (Intel macOS / Linux) takes precedence in `$PATH` over the plugin's bundled wrapper. The global SDK does NOT honor `CLAUDE_PLUGIN_ROOT`, so every plugin workflow that calls bare `gsd-sdk` (init queries, agent-skill lookups, config reads) reports `agents_installed: false`, and skills like `/gsd:new-project` silently degrade by skipping the parallel research path. The plugin's v2.42.5 wrapper-env-export patch only fires when the wrapper itself is invoked, so a shadowing global bypasses it.
+
+Check whether you have a shadowing install:
+
+```bash
+which gsd-sdk
+```
+
+If the output is anything OTHER than a path under `~/.claude/plugins/cache/gsd-plugin/` (typical bad outputs are `/opt/homebrew/bin/gsd-sdk` or `/usr/local/bin/gsd-sdk`), uninstall it from your host shell before going further:
+
+```bash
+npm uninstall -g @gsd-build/sdk
+npm uninstall -g get-shit-done-cc
+```
+
+Re-run `which gsd-sdk`. The expected post-uninstall output is either a path under `~/.claude/plugins/cache/gsd-plugin/` (after the plugin is installed in Step 3) or `gsd-sdk not found` (before installation). Both are correct.
+
+If you skip this step and install the plugin anyway, v2.43.1+ ships a `gsd-shadowing-sdk-detector` SessionStart hook that will detect the conflict at the start of every Claude Code session and emit a one-time advisory pointing back to this section.
 
 ### Step 1: Trust GitHub's SSH host key (first time only on a new machine)
 
