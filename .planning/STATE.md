@@ -4,8 +4,8 @@ milestone: v1.2
 milestone_name: Upstream Resilience
 status: shipped
 stopped_at: v1.2 archived 2026-04-24 — milestone shipped; tags v1.2 + v2.38.4 created
-last_updated: "2026-05-15T00:00:00Z"
-last_activity: 2026-05-15
+last_updated: "2026-05-17T00:00:00Z"
+last_activity: 2026-05-17
 progress:
   total_phases: 3
   completed_phases: 3
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 Milestone: v1.2 shipped (2026-04-24) — all 9 requirements satisfied, tagged, archived.
 Phase: none active. v1.2 phase artifacts moved to `.planning/milestones/v1.2-phases/`.
 Next action: `/gsd:new-milestone` to scope v1.3.
-Last activity: 2026-05-15, Synced upstream GSD v1.42.2 (latest stable, published 2026-05-15 03:26 UTC) into plugin tree. Bump 2.42.6 to 2.43.0. 4 in-tree plugin patches re-applied; SDK probe consolidated into `legacyAssetProbes` (upstream restructured CLAUDE_PLUGIN_ROOT detection across the SDK source). Hooks refresh limited to gsd-context-monitor.js + gsd-workflow-guard.js (the only 2 overlapping with plugin's 8-hook set). commands/ exclusion preserved. /gsd-X to /gsd:X normalization across 28 workflows; one over-match bug found by verifier and patched (gsd-build URL in update.md). Regression trifecta passes.
+Last activity: 2026-05-17, Synced upstream GSD v1.42.3 (hotfix patch, published 2026-05-16) into plugin tree. Bump 2.43.2 to 2.43.3. 5 in-tree patches + 2 SDK source patches + 1 consolidated probe survive (5/6 auto-surviving this cycle, only bin/lib/core.cjs needed surgical re-apply since upstream hooks/, model-catalog.cjs, gsd-tools.cjs, and 3 SDK files were untouched). Refreshed: 5 agents, 8 bin/lib, 8 sdk/src, 4 workflows. commands/ exclusion preserved. Task 5 namespace rewrite skipped after classification: all 29 /gsd-X hits were false positives (agent .md path refs, /tmp paths, github.com URLs, deliberate negative refs to removed commands). sdk/dist/cli.js rebundled (1.66MB, 3 CLAUDE_PLUGIN_ROOT matches). Regression trifecta 16/16 incl. v2.43.1 shadowing-sdk-detector.
 
 ```
 v1.2 shipped: [==========] 100%
@@ -120,6 +120,9 @@ None.
 | 260511-142 | Sync upstream GSD v1.41.2 + bump plugin to v2.42.4 (state-mutation data-loss fixes, verifier TBD/probe hardening, executor stall detection, phase remove renumbering, Codex/Gemini install hardening); #PLUGIN-MODEL-CATALOG-PATH evolved to fold into upstream's new candidate list | 2026-05-11 | 067308a | Verified | (no quick dir — inline sync) |
 | 260513-2zg | Pull 8 upstream security/correctness hook scripts into plugin (prompt-guard, workflow-guard, read-guard, read-injection-scanner, validate-commit, phase-boundary, context-monitor, session-state) + lib/git-cmd.js; first-ship soft-warn; `#PLUGIN-HOOK-CONTEXT-MONITOR` layout patch; smoke tests; bump 2.42.5→2.42.6 | 2026-05-13 | 346d517 |  | [260513-2zg-audit-upstream-hooks-tree-and-pull-in-se](./quick/260513-2zg-audit-upstream-hooks-tree-and-pull-in-se/) |
 | 260515-f2d | Sync upstream GSD v1.42.2 (latest stable, published 2026-05-15) into plugin tree; bump 2.42.6→2.43.0; 4 in-tree plugin patches re-applied; SDK probe consolidated into `legacyAssetProbes` (upstream restructured CLAUDE_PLUGIN_ROOT detection); hooks refresh limited to gsd-context-monitor.js + gsd-workflow-guard.js; commands/ exclusion preserved; 90 workflows + 33 agents synced; sdk/dist/cli.js rebundled (1.6MB, 3 CLAUDE_PLUGIN_ROOT matches); /gsd-X → /gsd:X normalization across 28 workflows; one over-match bug found by verifier and patched (gsd-build URL in update.md) | 2026-05-15 | 928a160 | Verified (gaps_found, both fixed) | [260515-f2d-new-upstream-version](./quick/260515-f2d-new-upstream-version/) |
+| 260515-vrk | v2.43.1 hotfix, SessionStart hook gsd-shadowing-sdk-detector.js detects pre-v2.42.0 global gsd-sdk shadowing the plugin's bundled wrapper in PATH (root cause of agents_installed: false in /gsd:new-project for users with legacy npm install of @gsd-build/sdk or get-shit-done-cc); 3 new hooks-smoke sub-cases (16/16); cross-platform PATH walker with symlink resolution; uninstalled the legacy global on the maintainer's machine as immediate fix | 2026-05-15 | f5fa004 | Verified | (inline hotfix, no quick dir) |
+| 260515-ndo | v2.43.2 docs hotfix, README now has a Pre-install subsection with which-gsd-sdk diagnostic + npm uninstall recipe + forward reference to the v2.43.1 detector hook; replaces the misleading No prerequisites claim that downplayed shadowing globals as no breakage; layered defense pairing docs warning + runtime detector | 2026-05-17 | e43968c | Verified | (inline hotfix, no quick dir) |
+| 260517-fpp | Sync upstream GSD v1.42.3 (hotfix patch, published 2026-05-16) into plugin tree; bump 2.43.2→2.43.3; 4 in-tree patches + 2 SDK source patches + consolidated probe survive (5/6 auto-surviving this cycle, only bin/lib/core.cjs surgical re-apply); upstream hooks/ unchanged this cycle so plugin hooks tree untouched; commands/ exclusion preserved; 5 agents + 8 bin/lib + 8 sdk/src + 4 workflows refreshed; sdk/dist/cli.js rebundled (1.66MB, 3 CLAUDE_PLUGIN_ROOT matches); Task 5 namespace rewrite skipped, all 29 detected /gsd-X hits classified as false positives (agent .md paths, /tmp paths, github.com URLs, deliberate negative refs to removed commands); regression trifecta 16/16 incl. v2.43.1 detector | 2026-05-17 | 3b3557c | Verified | [260517-fpp-sync-upstream-v1-42-3](./quick/260517-fpp-sync-upstream-v1-42-3/) |
 
 ## Session Continuity
 
