@@ -308,6 +308,73 @@ test('gsd-shadowing-sdk-detector: silent when no gsd-sdk anywhere', async () => 
   }
 });
 
+// 9a. gsd-staleness-reminder.js — silent for fresh plugin (today's CHANGELOG)
+test('gsd-staleness-reminder: silent when plugin is fresh', async () => {
+  const tmp = mkTmp('staleness-fresh');
+  const today = new Date().toISOString().slice(0, 10);
+  fs.writeFileSync(path.join(tmp, 'CHANGELOG.md'),
+    '# Changelog\n\n## [2.43.4] - ' + today + '\n\nFresh release.\n');
+  const r = await runHook(path.join(HOOKS, 'gsd-staleness-reminder.js'), '', {
+    env: { ...process.env, CLAUDE_PLUGIN_ROOT: tmp },
+  });
+  if (r.code !== 0) throw new Error('expected exit 0, got ' + r.code + '; stderr=' + r.stderr);
+  if (r.stdout.trim() !== '') {
+    throw new Error('expected silent for fresh plugin; got: ' + JSON.stringify(r.stdout));
+  }
+});
+
+// 9b. gsd-staleness-reminder.js — warns when CHANGELOG top entry is >14 days old
+test('gsd-staleness-reminder: warns when plugin is stale (30 days)', async () => {
+  const tmp = mkTmp('staleness-old');
+  const old = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  fs.writeFileSync(path.join(tmp, 'CHANGELOG.md'),
+    '# Changelog\n\n## [2.38.8] - ' + old + '\n\nOld release.\n');
+  const r = await runHook(path.join(HOOKS, 'gsd-staleness-reminder.js'), '', {
+    env: { ...process.env, CLAUDE_PLUGIN_ROOT: tmp },
+  });
+  if (r.code !== 0) throw new Error('expected exit 0, got ' + r.code + '; stderr=' + r.stderr);
+  let parsed;
+  try { parsed = JSON.parse(r.stdout); }
+  catch { throw new Error('expected JSON output; got: ' + JSON.stringify(r.stdout)); }
+  if (parsed.hookSpecificOutput?.hookEventName !== 'SessionStart') {
+    throw new Error('expected hookEventName=SessionStart');
+  }
+  const ctx = parsed.hookSpecificOutput?.additionalContext || '';
+  if (!/30 days old/.test(ctx)) throw new Error('expected "30 days old" in advisory');
+  if (!/\/plugin marketplace update/.test(ctx)) throw new Error('expected update recipe in advisory');
+  if (!/v2\.38\.8/.test(ctx)) throw new Error('expected installed version in advisory');
+});
+
+// 9c. gsd-staleness-reminder.js — silent when CHANGELOG missing
+test('gsd-staleness-reminder: silent when CHANGELOG missing', async () => {
+  const tmp = mkTmp('staleness-no-changelog');
+  const r = await runHook(path.join(HOOKS, 'gsd-staleness-reminder.js'), '', {
+    env: { ...process.env, CLAUDE_PLUGIN_ROOT: tmp },
+  });
+  if (r.code !== 0) throw new Error('expected exit 0, got ' + r.code + '; stderr=' + r.stderr);
+  if (r.stdout.trim() !== '') {
+    throw new Error('expected silent when CHANGELOG missing; got: ' + JSON.stringify(r.stdout));
+  }
+});
+
+// 9d. gsd-staleness-reminder.js — honors GSD_STALENESS_DAYS env override
+test('gsd-staleness-reminder: GSD_STALENESS_DAYS=7 fires at 10 days old', async () => {
+  const tmp = mkTmp('staleness-override');
+  const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  fs.writeFileSync(path.join(tmp, 'CHANGELOG.md'),
+    '# Changelog\n\n## [2.43.0] - ' + tenDaysAgo + '\n');
+  const r = await runHook(path.join(HOOKS, 'gsd-staleness-reminder.js'), '', {
+    env: { ...process.env, CLAUDE_PLUGIN_ROOT: tmp, GSD_STALENESS_DAYS: '7' },
+  });
+  if (r.code !== 0) throw new Error('expected exit 0, got ' + r.code + '; stderr=' + r.stderr);
+  let parsed;
+  try { parsed = JSON.parse(r.stdout); }
+  catch { throw new Error('expected JSON when threshold lowered to 7 days; got: ' + JSON.stringify(r.stdout)); }
+  if (!/threshold: 7 days/.test(parsed.hookSpecificOutput?.additionalContext || '')) {
+    throw new Error('expected threshold=7 in advisory');
+  }
+});
+
 (async () => {
   let pass = 0;
   let fail = 0;
