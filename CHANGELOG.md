@@ -8,6 +8,21 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.43.4] - 2026-05-19  (based on upstream GSD 1.42.3)
+
+Discoverability fix. Adds a SessionStart hook that nudges users with stale caches to run `/plugin marketplace update`. Triggered by the fourth re-report of the v2.40.2-fixed MCP framing bug from a user on v2.38.x ([#7](https://github.com/jnuyens/gsd-plugin/issues/7)): the bug has been gone for 12 days, but the marketplace does not auto-update by default and four reporters in a row didn't run the update recipe even though the README documents it.
+
+### Added
+- **`hooks/gsd-staleness-reminder.js`** (`SessionStart`) reads the plugin's `CHANGELOG.md`, parses the topmost `## [X.Y.Z] - YYYY-MM-DD` entry, computes the age in days, and if older than the staleness threshold (default 14 days, override via `GSD_STALENESS_DAYS` env var) emits a structured `additionalContext` advisory naming the installed version, age, threshold, and the exact 3-command refresh recipe (`/plugin marketplace update`, `/plugin install gsd@gsd-plugin`, `/reload-plugins`). Silent when the cache is fresh, when `CHANGELOG.md` is unreadable, or when no valid release-date entry is found (defensive failure mode is silence, not noise).
+- **Test coverage**, four new sub-cases in `tests/hooks-smoke.test.cjs` (20 total, up from 16): silent when fresh, warns when 30 days stale, silent when CHANGELOG missing, honors `GSD_STALENESS_DAYS=7` override at 10 days.
+
+### Background
+- Issues [#1](https://github.com/jnuyens/gsd-plugin/issues/1), [#2](https://github.com/jnuyens/gsd-plugin/issues/2), [#3](https://github.com/jnuyens/gsd-plugin/issues/3), and [#7](https://github.com/jnuyens/gsd-plugin/issues/7) all reported the same MCP framing bug. All four reporters were on v2.38.x; the fix has been on master since v2.40.2 (2026-05-07). The v2.38.x README's "Updating" section already documents the correct recipe, so docs are not the gap; the gap is friction between "user starts a session" and "user thinks to update". A SessionStart advisory closes that gap without requiring user opt-in.
+- This is the third user-protection hook in the SessionStart chain after v2.43.1's `gsd-shadowing-sdk-detector.js` (shadowing global SDK in PATH) and the long-standing `gsd-session-state.sh` (project state reminder). The chain is now 4 entries: dispatcher, session-state, shadowing-detector, staleness-reminder.
+
+### Recommended user response
+When the advisory fires, run the 3-command refresh recipe. The advisory will then disappear until the next 14-day window. If a user wants the threshold tighter or looser, they can set `GSD_STALENESS_DAYS` in their environment.
+
 ## [2.43.3] - 2026-05-17  (based on upstream GSD 1.42.3)
 
 Upstream hotfix sync from v1.42.2 to v1.42.3 (35 commits, primarily phase-removal logic hardening and a `plan-phase` closed-phase guard). All 4 in-tree plugin patches and the 3 SDK source patch markers survive automatically this cycle because upstream did not touch the patched files; only `bin/lib/core.cjs` required surgical re-apply of the `#PLUGIN-AGENTS-DIR` blocks. The bundled SDK was rebuilt because 8 other `sdk/src/` modules changed.
