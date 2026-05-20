@@ -8,6 +8,19 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.43.5] - 2026-05-21  (based on upstream GSD 1.42.3)
+
+Robustness fix in plan-id resolution. The `phase.plan-index` query now resolves `depends_on` references case-insensitively, so a plan with frontmatter `depends_on: [05c-01]` matches a sibling plan whose filename is `05C-01-PLAN.md` (and vice versa). Previously the lookup was strict-case via `Map.has()` on the raw plan ID, which silently dropped the edge, collapsed the dependent into wave 1, and surfaced a misleading "declared wave: N but depends_on DAG places it in wave 1" warning. Real-world repro: plans authored by the `gsd-planner` agent occasionally lowercase letter-suffix phases (e.g. `05c` while files are `05C`), and the dropped edge would only surface once execution ordering produced a downstream failure.
+
+### Fixed
+- **`sdk/src/query/phase.ts`** and **`bin/lib/phase.cjs`** (parallel CJS) plan-id lookup maps (`planMap`, `canonicalToId`, `shortFormToId`) now key on the lowercased plan ID, and `dep` is lowercased at lookup time. Resolved deps preserve the canonical-cased plan ID stored as the map value, so output wave assignments and warning messages still use the on-disk casing. The collision surface is negligible: the plan-id namespace is `NN`, `NN-NN`, or `NN-NN-slug` with an optional letter suffix on the phase segment, and a single phase directory cannot host two plans whose IDs differ only in case (POSIX filesystems treat them as distinct files, but the second file would still collide on canonical-prefix indexing).
+
+### Added
+- **Test coverage**, new `phase.test.ts` case (30 total, up from 29): a `05C` phase with an uppercase-suffix plan `05C-01-PLAN.md` and a sibling `05C-02-PLAN.md` whose `depends_on: [05c-01]` uses lowercase canonical-prefix form. Asserts wave 1 contains `05C-01`, wave 2 contains `05C-02`, and `warnings` is empty (no unresolved-reference warning, no wave-mismatch warning).
+
+### Plugin patches added
+- **`sdk/src/query/phase.ts` + `bin/lib/phase.cjs`** (`#PLUGIN-DEPS-ON-CASE-INSENSITIVE`) tracked in the plugin-patches inventory. Proposed to upstream `gsd-build/get-shit-done` in a separate PR (see commit message for link). If upstream accepts, the markers can be retired during a future sync cycle.
+
 ## [2.43.4] - 2026-05-19  (based on upstream GSD 1.42.3)
 
 Discoverability fix. Adds a SessionStart hook that nudges users with stale caches to run `/plugin marketplace update`. Triggered by the fourth re-report of the v2.40.2-fixed MCP framing bug from a user on v2.38.x ([#7](https://github.com/jnuyens/gsd-plugin/issues/7)): the bug has been gone for 12 days, but the marketplace does not auto-update by default and four reporters in a row didn't run the update recipe even though the README documents it.
