@@ -7326,14 +7326,14 @@ var phasePlanIndex = async (args, projectDir, workstream) => {
       hasSummary
     });
   }
-  const planMap = new Map(rawPlans.map((p) => [p.id, p]));
-  const canonicalToId = new Map(rawPlans.map((p) => [extractCanonicalPlanId(p.id), p.id]));
+  const planMap = new Map(rawPlans.map((p) => [p.id.toLowerCase(), p]));
+  const canonicalToId = new Map(rawPlans.map((p) => [extractCanonicalPlanId(p.id).toLowerCase(), p.id]));
   const shortFormToId = /* @__PURE__ */ new Map();
   for (const p of rawPlans) {
     const canonical = extractCanonicalPlanId(p.id);
     const lastDash = canonical.lastIndexOf("-");
     if (lastDash > 0 && lastDash < canonical.length - 1) {
-      const shortForm = canonical.slice(lastDash + 1);
+      const shortForm = canonical.slice(lastDash + 1).toLowerCase();
       if (!shortFormToId.has(shortForm)) {
         shortFormToId.set(shortForm, p.id);
       }
@@ -7349,13 +7349,14 @@ var phasePlanIndex = async (args, projectDir, workstream) => {
     if (!adj.has(p.id))
       adj.set(p.id, []);
     for (const dep of p.dependsOn) {
+      const depKey = dep.toLowerCase();
       let resolvedDep;
-      if (planMap.has(dep)) {
-        resolvedDep = dep;
-      } else if (canonicalToId.has(dep)) {
-        resolvedDep = canonicalToId.get(dep);
-      } else if (shortFormToId.has(dep)) {
-        resolvedDep = shortFormToId.get(dep);
+      if (planMap.has(depKey)) {
+        resolvedDep = planMap.get(depKey).id;
+      } else if (canonicalToId.has(depKey)) {
+        resolvedDep = canonicalToId.get(depKey);
+      } else if (shortFormToId.has(depKey)) {
+        resolvedDep = shortFormToId.get(depKey);
       }
       if (!resolvedDep) {
         unresolvedDeps.push({ planId: p.id, dep });
