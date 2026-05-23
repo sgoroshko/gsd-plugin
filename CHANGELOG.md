@@ -8,6 +8,20 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.43.7] - 2026-05-23  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Workflow robustness fix and branding polish. Two workflows had `config-get workflow.nyquist_validation` calls that didn't supply a `--default` value: `workflows/validate-phase.md` was fully unguarded (would emit `Error: Key not found` to stderr and leave the variable empty when the key is unset), and `workflows/audit-milestone.md` redirected stderr but had no fallback (silent empty variable). The downstream "is the variable equal to false" checks behaved correctly by accident (empty != "false" treats absent-key as enabled, matching the documented default), but the stderr noise was real and the empty-variable trail through audit-milestone.md is the kind of silent-failure mode that breaks once a future patch adds a meaningful `--raw` consumer.
+
+### Fixed
+- **`workflows/validate-phase.md:28`**: `NYQUIST_CFG=$(gsd-sdk query config-get workflow.nyquist_validation --raw --default true)` (was missing `--default`, also missing `2>/dev/null` and `|| echo`). Now uses `--default true` to match the documented default-when-absent semantic and silence the stderr noise.
+- **`workflows/audit-milestone.md:146`**: Same fix. `--raw --default true` replaces `--raw 2>/dev/null`. Removes the silent-empty trap.
+
+### Changed
+- **README header**: dropped redundant "GSD Plugin --" prefix from H1 (the new branding logo above the H1 already conveys "GSD plugin"). Title is now "Get Shit Done for Claude Code".
+
+### Upstream
+- Same bugs exist in `open-gsd/get-shit-done-redux` at `get-shit-done/workflows/validate-phase.md` and `get-shit-done/workflows/audit-milestone.md`. Filed bug issue and patch PR following the redux contribution-rules ceremony (typed bug_report.yml form, fix.md PR template, `Fixes #NNN` link). PR pending maintainer triage for `confirmed-bug` label.
+
 ## [2.43.6] - 2026-05-22  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Upstream pointer change. The original `gsd-build/get-shit-done` repo was locked on 2026-05-22 after the founder rug-pulled the associated `$GSD` Solana token and deleted his social accounts (see [intellectia.ai](https://intellectia.ai/news/crypto/gsd-token-allegedly-rugpulled-after-founder-exit) and [ourcryptotalk](https://ourcryptotalk.com/news/bags-hackathon-winner-gsd-cloud-rug-pull) for independent coverage). Within hours, GSD collaborator [trek-e](https://github.com/trek-e) (Tom Boucher) launched a bit-perfect community continuation at [open-gsd/get-shit-done-redux](https://github.com/open-gsd/get-shit-done-redux): same MIT-licensed code, all 394 branches and 229 tags mirrored, all 77 open issues and 17 open PRs imported with cross-references. The plugin treats `open-gsd/get-shit-done-redux` as upstream from this release forward.

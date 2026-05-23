@@ -143,7 +143,7 @@ For each REQ-ID, determine status using all three sources:
 Skip if `workflow.nyquist_validation` is explicitly `false` (absent = enabled).
 
 ```bash
-NYQUIST_CONFIG=$(gsd-sdk query config-get workflow.nyquist_validation --raw 2>/dev/null)
+NYQUIST_CONFIG=$(gsd-sdk query config-get workflow.nyquist_validation --raw --default true)
 ```
 
 If `false`: skip entirely.
