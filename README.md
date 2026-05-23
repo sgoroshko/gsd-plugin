@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/gsd-plugin-logo.png" alt="GSD Plugin" width="320" />
+</p>
+
 # GSD Plugin -- Get Shit Done for Claude Code
 
 **Based on:** [GSD 1.42.3](https://github.com/open-gsd/get-shit-done-redux/releases/tag/v1.42.3) base tree by **TACHES** (Lex Christopherson), now maintained by the community at [open-gsd/get-shit-done-redux](https://github.com/open-gsd/get-shit-done-redux)
