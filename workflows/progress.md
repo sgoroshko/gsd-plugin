@@ -168,6 +168,49 @@ When `MVP_MODE=false` (mode is null, absent, or the phase has no `**Mode:**` lin
 <step name="route">
 **Determine next action based on verified counts.**
 
+**Step 0: Resume-incomplete-phase invariant (Route 0)**
+
+Before any current-phase-scoped counting, scan ALL phases for incomplete execution. This catches the case where STATE.md's `current_phase` was advanced past the phase that actually has unfinished work (common after a mid-execution session death from hang, token exhaustion, or API disruption). Without this guard, the current-phase-scoped count in Step 1 would inspect the wrong phase and the routing would skip the unfinished work.
+
+**Skip if `--no-resume` or `--force` is present in `$ARGUMENTS`.**
+
+Scan all phases via the `$ROADMAP` JSON already loaded in `analyze_roadmap`. For each phase entry, compare `plans` length to `summaries` length (or check the `disk_status` field if it exposes `"partial"` directly). Stop at the first (lowest-numbered) phase where `plans.length > summaries.length`. Record its phase number as `INCOMPLETE_PHASE`.
+
+```bash
+INCOMPLETE_PHASE=""
+for PHASE_NUM in $(echo "$ROADMAP" | jq -r '.phases[] | (.number // .phase_number)'); do
+  PHASE_DATA=$(echo "$ROADMAP" | jq --arg n "$PHASE_NUM" '.phases[] | select((.number // .phase_number) == ($n | tonumber))')
+  PLAN_COUNT=$(echo "$PHASE_DATA" | jq '(.plans // []) | length')
+  SUMMARY_COUNT=$(echo "$PHASE_DATA" | jq '(.summaries // []) | length')
+  if [ "${PLAN_COUNT:-0}" -gt "${SUMMARY_COUNT:-0}" ]; then
+    INCOMPLETE_PHASE="$PHASE_NUM"
+    break
+  fi
+done
+```
+
+**If `INCOMPLETE_PHASE` is non-empty:** emit a one-line resume notice in the routing output and route to `/gsd:execute-phase ${INCOMPLETE_PHASE}` instead of running Step 1's current-phase routing. The progress report (already displayed by the `report` step above) gives the user full project status before this routing decision is shown.
+
+```
+---
+
+## ▶ Next Up — Resuming incomplete Phase ${INCOMPLETE_PHASE}
+
+`/clear` then:
+
+`/gsd:execute-phase ${INCOMPLETE_PHASE} ${GSD_WS}`
+
+(plans without summaries detected; use --no-resume to skip this check and route by current_phase instead; --force to skip all gates)
+
+---
+```
+
+Then exit the route step. Do NOT run Steps 1 through Routes A-F.
+
+**If `INCOMPLETE_PHASE` is empty:** continue to Step 1.
+
+**Why this is Route 0 and not part of Step 1:** Step 1 only counts files in `[current-phase-dir]`, which means the count operates on `current_phase` from STATE.md. When that pointer is stale, Step 1's routing is wrong. Route 0 is independent of `current_phase` so it catches stale-pointer failure modes regardless of why STATE.md got out of sync.
+
 **Step 1: Count plans, summaries, and issues in current phase**
 
 List files in the current phase directory:

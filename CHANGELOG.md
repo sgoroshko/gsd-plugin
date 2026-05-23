@@ -8,6 +8,21 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.43.11] - 2026-05-23  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Extends the v2.43.10 Route 0 resume-incomplete-phase invariant from `/gsd:next` to `/gsd:progress` (default mode). The two commands are sibling entry points; `/gsd:next` was patched in v2.43.10, but the default `/gsd:progress` report-and-route flow doesn't go through next.md and so still inherited the same bug-shape: routing based on `current_phase` from STATE.md without first verifying that all earlier phases have complete execution.
+
+Audit performed against all workflows that route on phase state. Surfaced one additional vulnerable workflow (progress.md). Confirmed five other workflows are NOT vulnerable because they already scan all phases via `gsd-sdk query roadmap.analyze` or explicit `find PLAN without SUMMARY` loops: `autonomous.md` iterate (uses disk_status filter), `complete-milestone.md` (disk_status check), `resume-project.md` (explicit incomplete-plan loop), `discuss-phase-assumptions.md` auto_advance (within-phase only), `execute-phase.md` (requires explicit phase argument).
+
+### Fixed
+- **`workflows/progress.md` `route` step**: new "Step 0: Resume-incomplete-phase invariant" added before the existing Step 1. Scans all phases via the `$ROADMAP` JSON already loaded in `analyze_roadmap`, finds the lowest-numbered phase where `plans.length > summaries.length`, routes to `/gsd:execute-phase <that phase>` if found. The progress report from the `report` step still displays first, so the user sees full project status before the routing decision. Skip with `--no-resume` (falls through to existing current-phase counting) or `--force` (bypasses all gates).
+
+### Changed
+- **`workflows/help.md` `/gsd:progress` description**: documents the new mid-execution session safety behavior, including the `--no-resume` opt-out.
+
+### Upstream
+- Same Route 0 fix applies. Will extend issue #160 (the existing /gsd:next fix issue) with the progress.md diff. Both files have the same bug-shape and the fix shape is identical, so bundling reduces maintainer review surface.
+
 ## [2.43.10] - 2026-05-23  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Fix for a session-resume bug in `/gsd:next` (and `/gsd:progress --next`). When a session died mid-execution (hang, token exhaustion, API connection disruption) and STATE.md's `current_phase` got advanced past the phase that still had unfinished work, `/gsd:next` would route to a forward action and silently skip the partially-executed phase's incomplete plans. The prior-phase scan in `safety_gates` detected the situation but offered Stop/Defer/Force without a "Resume" option, so the default user response either stopped the workflow (Stop) or filed the unfinished plans to a `999.x` backlog and advanced anyway (Defer).

@@ -260,7 +260,7 @@ Usage: `/gsd:complete-milestone 1.0.0`
 
 ### Progress Tracking
 
-**`/gsd:progress [--next | --forensic | --do "<description>"]`**
+**`/gsd:progress [--next | --forensic | --do "<description>"] [--no-resume | --force]`**
 Check project status and intelligently route to next action.
 
 - Shows visual progress bar and completion percentage
@@ -269,6 +269,7 @@ Check project status and intelligently route to next action.
 - Lists key decisions and open issues
 - Offers to execute next plan or create it if missing
 - Detects 100% milestone completion
+- **Mid-execution session safety**: before routing, scans all phases for plans without summaries. If found, routes to `/gsd:execute-phase <lowest-numbered incomplete>` to continue the unfinished work, regardless of where `current_phase` points in STATE.md. Use `--no-resume` to skip this check, or `--force` to bypass all safety gates.
 
 Modes:
 - **default**: progress report + intelligent routing
