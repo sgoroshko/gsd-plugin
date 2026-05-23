@@ -8,6 +8,28 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.43.12] - 2026-05-23  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Tightens roadmap granularity defaults in `gsd-roadmapper` to reduce thin-phase / over-fragmentation. The user-side observation that drove this change: roadmaps tended to come back with ~15-20% too many phases, often manifesting as "GSD maintenance" phases (single-requirement, internal-quality goal like "improve performance" or "add tests for X", success criteria that read as tasks not user-observable outcomes) that would have been better folded into the most-related neighbor.
+
+The prior Standard 5-8 default was the main driver: it gave the LLM permission to overshoot by padding for "completeness" even when the work didn't justify a separate phase. Tightening Standard to 4-6 forces consolidation as the baseline; the explicit Fine 6-10 bucket remains available for projects that genuinely need it.
+
+### Changed
+- **`agents/gsd-roadmapper.md` Granularity Calibration table**: Coarse moves from 3-5 to 2-4, Standard from 5-8 to 4-6, Fine from 8-12 to 6-10. Added an inline guidance paragraph below the table naming the thin-phase failure pattern (single requirement, internal-quality goal phrasing, task-shaped success criteria) and instructing the agent to prefer folding into a neighbor over creating a standalone phase in those cases.
+
+### Affected entry points
+- `/gsd:new-project` (initial roadmap generation)
+- `/gsd:new-milestone` (next-milestone roadmap)
+- `/gsd:plan-milestone-gaps` (post-audit fix phases)
+
+All three spawn `gsd-roadmapper`, so the granularity shift applies uniformly.
+
+### Why default-shift not consolidation-pass
+A consolidation pass (re-reading the draft and self-merging thin phases) is a stronger intervention but adds prompt complexity and re-read cost. The granularity tweak is a lighter-touch baseline change; if the pattern persists, a consolidation pass remains the natural next iteration. Tracked as a follow-up if v2.43.12's behavior change is insufficient.
+
+### Upstream
+- Same `gsd-roadmapper` agent exists upstream in `open-gsd/get-shit-done-redux` at `get-shit-done/agents/gsd-roadmapper.md` with identical granularity table. Will file as enhancement issue (this is a behavior tuning, not a bug); same Gate 0 workaround applies (fork-PRs blocked; diff ships via issue comment).
+
 ## [2.43.11] - 2026-05-23  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Extends the v2.43.10 Route 0 resume-incomplete-phase invariant from `/gsd:next` to `/gsd:progress` (default mode). The two commands are sibling entry points; `/gsd:next` was patched in v2.43.10, but the default `/gsd:progress` report-and-route flow doesn't go through next.md and so still inherited the same bug-shape: routing based on `current_phase` from STATE.md without first verifying that all earlier phases have complete execution.
