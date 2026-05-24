@@ -8,6 +8,18 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.44.2] - 2026-05-24  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Adds `/gsd:new-ddd` to `/gsd:do` smart-router routing. Freeform text describing DDD-shape projects (CLI, library, SDK, API, plugin system) or explicit DDD-mode triggers ("DDD", "docs-driven", "docs-first", "API-first", "README-driven", "write the docs first") now route to `/gsd:new-ddd` instead of `/gsd:new-project`. Generic "start a new project" intent without DDD-shape signals stays on `/gsd:new-project`.
+
+### Changed
+- **`workflows/do.md`** routing table: two new rules added BEFORE the existing `/gsd:new-project` rule (since the table uses first-match precedence). The first rule catches explicit DDD-mode triggers. The second rule catches DDD-shape project descriptions that don't explicitly invoke a specific mode and routes to `/gsd:new-ddd` with the option to disambiguate via the new ambiguity-handling section.
+- **`workflows/do.md`** project-required exception list updated to include `/gsd:new-ddd` alongside `/gsd:new-project` (neither requires an existing `.planning/` directory).
+- **`workflows/do.md`** new "Common ambiguity: `/gsd:new-project` vs. `/gsd:new-ddd`" section documents the prompt template for the dispatcher to ask when shape-ambiguous inputs land. Default fallback is `/gsd:new-project` (older, more general mode) when the user does not pick.
+
+### Upstream
+- DDD mode is plugin-native (see #212 enhancement proposal); the `/gsd:do` routing extension follows naturally. No upstream change needed until DDD itself lands upstream.
+
 ## [2.44.1] - 2026-05-24  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Docs catch-up for v2.44.0. The `Added features beyond upstream` table in README.md did not list the new Documentation-Driven Development mode shipped in v2.44.0; this release adds the entry. Patch-level bump so existing users get prompted to update via `/plugin marketplace update` and see the corrected feature listing without a fresh install.
