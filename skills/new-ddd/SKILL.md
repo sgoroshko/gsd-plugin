@@ -1,6 +1,6 @@
 ---
 name: gsd:new-ddd
-description: Initialize a new project using Documentation-Driven Development. Research, then write user-facing docs (DOCS.md) as the spec, then user validates docs, then phases derive from doc sections. Best for CLIs, libraries, SDKs, APIs, plugin systems, anything with a well-defined user-facing surface.
+description: Initialize a new project using Documentation-Driven Development. Research, then write user-facing docs (SPEC.md) as the spec, then user validates docs, then phases derive from doc sections. Best for CLIs, libraries, SDKs, APIs, plugin systems, anything with a well-defined user-facing surface.
 argument-hint: "[--auto]"
 allowed-tools:
   - Read
@@ -18,9 +18,9 @@ allowed-tools:
 
 Differs from `/gsd:new-project` in three ways:
 
-1. The artifact users validate is `DOCS.md` (user-facing documentation: README, USAGE, CONCEPTS, API surface) rather than `REQUIREMENTS.md` (REQ-IDs and acceptance criteria).
-2. Phases are derived from `DOCS.md` sections / chapters rather than from REQ-ID clusters.
-3. The success criterion for each phase is "implementation matches the corresponding DOCS.md section" rather than "tests pass and UAT satisfied."
+1. The artifact users validate is `SPEC.md` (user-facing documentation: README, USAGE, CONCEPTS, API surface) rather than `REQUIREMENTS.md` (REQ-IDs and acceptance criteria).
+2. Phases are derived from `SPEC.md` sections / chapters rather than from REQ-ID clusters.
+3. The success criterion for each phase is "implementation matches the corresponding SPEC.md section" rather than "tests pass and UAT satisfied."
 
 **When to use DDD vs. standard new-project:**
 - CLIs (the help text IS the spec)
@@ -43,21 +43,21 @@ Initialize a new project through Documentation-Driven Development:
 
 1. Questioning (deep context gathering, same as new-project)
 2. Research (parallel, same as new-project)
-3. **DOCS.md drafting** (NEW, writes user-facing documentation as the spec)
-4. **User validation of DOCS.md** (NEW, read-through and approve before any phase work)
-5. Roadmap generation (phases derived from DOCS.md sections)
+3. **SPEC.md drafting** (NEW, writes user-facing documentation as the spec)
+4. **User validation of SPEC.md** (NEW, read-through and approve before any phase work)
+5. Roadmap generation (phases derived from SPEC.md sections)
 6. STATE.md initialization
 
 **Creates:**
 - `.planning/PROJECT.md`, project context
 - `.planning/config.json`, workflow preferences (`mode: ddd` set)
 - `.planning/research/`, domain research (optional)
-- `.planning/DOCS.md`, user-facing documentation as the spec
-- `.planning/REQUIREMENTS.md`, thin traceability shell, each entry pointing at a DOCS.md section
-- `.planning/ROADMAP.md`, phase structure derived from DOCS.md sections
+- `docs/SPEC.md`, user-facing documentation as the spec
+- `.planning/REQUIREMENTS.md`, thin traceability shell, each entry pointing at a SPEC.md section
+- `.planning/ROADMAP.md`, phase structure derived from SPEC.md sections
 - `.planning/STATE.md`, project memory (with `mode: ddd` marker)
 
-**After this command:** Run `/gsd:plan-phase 1` to start execution. Per-phase work proceeds the same as standard GSD; DOCS.md is the canonical spec that each phase implements against. Manual doc updates during execution are expected; per-phase doc-sync automation is held for a future release.
+**After this command:** Run `/gsd:plan-phase 1` to start execution. Per-phase work proceeds the same as standard GSD; SPEC.md is the canonical spec that each phase implements against. Manual doc updates during execution are expected; per-phase doc-sync automation is held for a future release.
 </objective>
 
 <execution_context>

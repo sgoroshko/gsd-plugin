@@ -8,6 +8,24 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.44.3] - 2026-05-24  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Three changes from real-project use of `/gsd:new-ddd`: fixes a synthesizer bug that affects standard `/gsd:new-project` too, moves the DDD spec file to a user-facing path, and adds explicit role separation between PROJECT.md and SPEC.md so GSD-internal language does not leak into the user-facing spec.
+
+### Fixed
+- **`agents/gsd-research-synthesizer.md` Step 6 (Write SUMMARY.md)**: agent prompt strengthened with hard rules to prevent the "wrong assumption about restrictions" failure mode observed in real runs. The previous prompt said "ALWAYS use the Write tool" but the LLM sometimes hallucinated a restriction and returned SUMMARY.md content in the response instead of writing the file, leaving the orchestrator to write it manually. New prompt enumerates five hard rules: use the Write tool (it's in the frontmatter allowlist, no restrictions), do not return content in the response, do not ask permission to write, do not use heredoc, surface Write errors instead of silent fallback. Affects both `/gsd:new-project` and `/gsd:new-ddd`.
+
+### Changed (DDD mode)
+- **SPEC file path moved from `.planning/DOCS.md` to `docs/SPEC.md`** across `workflows/new-ddd.md`, `agents/gsd-roadmapper.md` `<ddd_mode>` block, `workflows/help.md`, `workflows/do.md`, `skills/new-ddd/SKILL.md`, and README features-table description. Reason: the file is user-facing documentation that ships with the project; `.planning/` is the GSD-internal directory and is conventionally hidden / sometimes gitignored. `docs/SPEC.md` puts the file at a discoverable, user-facing location that survives gitignore patterns and reads as project documentation rather than GSD planning state. Filename "SPEC.md" replaces "DOCS.md" everywhere since "spec" more accurately describes the file's role (canonical specification, not just documentation).
+- **New "Role separation between PROJECT.md and `docs/SPEC.md`" subsection** in `workflows/new-ddd.md` Step 6. Explicit guidance table for the orchestrator drafting both files: PROJECT.md is GSD-internal (can talk about phases, plans, roadmap, agent constraints, REQ-IDs, internal decisions); SPEC.md is user-facing (must NOT mention GSD internals; reads as the project's own documentation). Two heuristics for the orchestrator to self-check. Closes a real failure mode observed in early DDD runs where SPEC.md drafts referenced phase numbers and planning artifacts.
+
+### Strategic
+- **DDD work stays in gsd-plugin main branch.** A temporary branch-isolation rule (created earlier on 2026-05-24 while the user considered making DDD a standalone sibling project) was rescinded same-day. The user may split DDD into its own project later "when it works decently, which is not yet the case." Until then, DDD evolves in master like any other plugin feature. The `ddd-spike` branch at https://github.com/jnuyens/gsd-plugin/tree/ddd-spike is retired (no longer the destination for new DDD work) but kept on the remote as historical marker.
+
+### Upstream
+- Synthesizer fix exists upstream in `open-gsd/get-shit-done-redux` at `get-shit-done/agents/gsd-research-synthesizer.md` with the identical bug-shape (same agent, same Step 6 prompt). Will file as fix-track bug issue with the proposed diff.
+- DDD path / role-separation changes extend the existing enhancement issue #212; will be added as a follow-up comment with the new diffs.
+
 ## [2.44.2] - 2026-05-24  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Adds `/gsd:new-ddd` to `/gsd:do` smart-router routing. Freeform text describing DDD-shape projects (CLI, library, SDK, API, plugin system) or explicit DDD-mode triggers ("DDD", "docs-driven", "docs-first", "API-first", "README-driven", "write the docs first") now route to `/gsd:new-ddd` instead of `/gsd:new-project`. Generic "start a new project" intent without DDD-shape signals stays on `/gsd:new-project`.

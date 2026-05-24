@@ -78,7 +78,7 @@ Which approach fits better?
 
 ```
 "I want to build a CLI tool for syncing config files" could initialize as:
-1. /gsd:new-ddd, Documentation-Driven Development. Write user-facing docs (DOCS.md) as the spec, then derive phases from doc sections. Recommended for CLIs / libraries / SDKs / APIs / plugin systems where the user-facing surface is the deliverable.
+1. /gsd:new-ddd, Documentation-Driven Development. Write user-facing docs (SPEC.md) as the spec, then derive phases from doc sections. Recommended for CLIs / libraries / SDKs / APIs / plugin systems where the user-facing surface is the deliverable.
 2. /gsd:new-project, Standard initialization. Write REQUIREMENTS.md with REQ-IDs and acceptance criteria, then derive phases from REQ-ID clusters. Recommended for exploratory work or projects where the system shape is not yet clear.
 
 Which approach fits better?
