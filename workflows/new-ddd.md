@@ -150,7 +150,40 @@ Length: {X} lines / {Y} words
 What's next?
 ```
 
-Use AskUserQuestion (or text-mode equivalent for non-Claude runtimes):
+**Auto-approve gate (non-critical artifact):**
+
+SPEC.md drafts are classified as non-critical: the artifact lives on disk and can be revised by re-invoking the workflow, no destructive action is taken at this gate, and the user retains full ability to intervene later. By default these prompts auto-approve to avoid blocking AFK users on a yes-answer.
+
+```bash
+AUTO_APPROVE=$(gsd-sdk query config-get workflow.auto_approve_non_critical --default true)
+```
+
+**If `AUTO_APPROVE` is `true`:** Skip the approval prompt. Log the auto-decision:
+
+```bash
+TS=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+mkdir -p .planning
+if [ ! -f .planning/AUTO-DECISIONS.md ]; then
+  cat > .planning/AUTO-DECISIONS.md <<EOF
+# Auto-Decisions Log
+
+GSD workflows logged these decisions as auto-approved (config: \`workflow.auto_approve_non_critical=true\`).
+To require interactive approval on these prompts, set \`workflow.auto_approve_non_critical=false\` in \`.planning/config.json\`.
+
+## Decisions Log
+
+| Timestamp | Workflow | Decision | Artifact |
+|---|---|---|---|
+EOF
+fi
+echo "| ${TS} | /gsd:new-ddd | Auto-approved SPEC.md draft | docs/SPEC.md |" >> .planning/AUTO-DECISIONS.md
+```
+
+Emit: `▶ Auto-approved SPEC.md draft (workflow.auto_approve_non_critical=true). Logged to .planning/AUTO-DECISIONS.md. Set the config to false to require interactive approval.`
+
+Then continue to Step 8 (REQUIREMENTS.md generation).
+
+**If `AUTO_APPROVE` is `false`:** Use AskUserQuestion (or text-mode equivalent for non-Claude runtimes):
 
 ```
 AskUserQuestion(

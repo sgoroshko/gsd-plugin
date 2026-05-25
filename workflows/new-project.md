@@ -1287,11 +1287,40 @@ Success criteria:
 ---
 ```
 
-**If auto mode:** Skip approval gate — auto-approve and commit directly.
+**Auto-approve gate (non-critical artifact):**
 
-**CRITICAL: Ask for approval before committing (interactive mode only):**
+ROADMAP drafts are classified as non-critical: the artifact lives on disk and can be revised by re-invoking the workflow, no destructive action is taken at this gate, and the user retains full ability to intervene later. By default these prompts auto-approve to avoid blocking AFK users on a yes-answer.
 
-Use AskUserQuestion:
+```bash
+AUTO_APPROVE=$(gsd-sdk query config-get workflow.auto_approve_non_critical --default true)
+```
+
+**If auto mode OR `AUTO_APPROVE` is `true`:** Skip the approval prompt. Log the auto-decision and continue:
+
+```bash
+TS=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+mkdir -p .planning
+if [ ! -f .planning/AUTO-DECISIONS.md ]; then
+  cat > .planning/AUTO-DECISIONS.md <<EOF
+# Auto-Decisions Log
+
+GSD workflows logged these decisions as auto-approved (config: \`workflow.auto_approve_non_critical=true\`).
+To require interactive approval on these prompts, set \`workflow.auto_approve_non_critical=false\` in \`.planning/config.json\`.
+
+## Decisions Log
+
+| Timestamp | Workflow | Decision | Artifact |
+|---|---|---|---|
+EOF
+fi
+echo "| ${TS} | /gsd:new-project | Auto-approved ROADMAP draft | .planning/ROADMAP.md |" >> .planning/AUTO-DECISIONS.md
+```
+
+Emit: `▶ Auto-approved ROADMAP draft (workflow.auto_approve_non_critical=true). Logged to .planning/AUTO-DECISIONS.md. Set the config to false to require interactive approval.`
+
+Then continue to commit.
+
+**If `AUTO_APPROVE` is `false`:** Ask for approval interactively via AskUserQuestion:
 
 - header: "Roadmap"
 - question: "Does this roadmap structure work for you?"

@@ -8,6 +8,46 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.44.4] - 2026-05-25  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Removes two AFK-blocking approval prompts on non-critical artifact drafts. When the user invokes `/gsd:new-project` or `/gsd:new-ddd` and walks away, the workflow no longer waits indefinitely on a yes-answer for the roadmap or SPEC.md draft. Auto-decisions are logged to a new `.planning/AUTO-DECISIONS.md` file the user can spot-check.
+
+### Background
+
+User report: "if then gsd-plugin comes back to ask for a relatively stupid 'ok to proceed', the end user needs to wait before the system continues, losing valuable total project time." The fix is to skip the prompt for non-critical artifacts (ROADMAP draft, SPEC.md draft) where the user retains full ability to intervene after the fact by editing the artifact or re-invoking the workflow.
+
+Investigated implementing a 5-minute interactive keyboard timeout but Claude Code's Bash tool does not expose stdin to spawned commands, so the obvious `read -t 300` pattern is not feasible. Auto-proceed with prominent logging is the closest workable shape and addresses the actual AFK pain.
+
+### Added
+- **`workflow.auto_approve_non_critical` config field** (default `true`). When `true`, approval prompts classified as non-critical are skipped and auto-approved. Set to `false` to restore the old prompt-everything behavior.
+- **`.planning/AUTO-DECISIONS.md` file** auto-created on first auto-decision. Markdown table with `| Timestamp | Workflow | Decision | Artifact |` rows. User reviews periodically to spot-check; can revert any artifact and re-run the workflow if disagreement found.
+
+### Changed
+- **`workflows/new-project.md` ROADMAP approval gate**: new "Auto-approve gate (non-critical artifact)" subsection added before the existing AskUserQuestion logic. When config is `true` (default), the workflow skips the prompt, logs the auto-decision to `.planning/AUTO-DECISIONS.md`, and continues to commit. When config is `false`, falls through to the original interactive Approve/Adjust/Review prompt.
+- **`workflows/new-ddd.md` SPEC.md approval gate**: same shape applied to the DDD spec approval. Default auto-approves; config opt-out restores interactive Approve/Revise/Edit-manually prompt.
+
+### What's classified as non-critical (and why)
+
+Non-critical = the artifact lives on disk after the decision, no destructive action is taken at the gate, and the user can intervene after the fact by editing the artifact or re-invoking the workflow.
+
+- ROADMAP draft: meets all three criteria. Lives at `.planning/ROADMAP.md`; commit is non-destructive; user can edit and re-run `/gsd:plan-phase 1`.
+- SPEC.md draft: meets all three. Lives at `docs/SPEC.md`; commit is non-destructive; user can edit before phase execution begins.
+
+### What's still critical (and stays prompting)
+
+- **Verification gaps** (`/gsd:verify-work`): the human-judgment cases where the user's input genuinely matters. Auto-anything here risks accepting bad output.
+- **Architectural deviations** (executor agent Rule 4): structural changes requiring user decision. The executor's existing classification (Rules 1-3 auto-fix, Rule 4 always prompt) already handles this layer correctly; no changes needed.
+- **Package install failures** (executor Rule 3 exclusion): possible slopsquatted or hallucinated package names. Always require human verification before installing a substitute.
+- **`--auto` is not the same as this config**: `--auto` enables a fully automatic flow assuming an idea document is provided. The new config skips only the artifact-approval prompts, not other interactive gates.
+
+### Held for a future release
+- **Executor deviation classification with logging**: the executor agent's Rules 1-3 already auto-proceed (no user permission needed), but the auto-decisions go to SUMMARY.md rather than the new central AUTO-DECISIONS.md log. Cross-referencing both logs would give a single pane of glass; held for v2.44.x or v2.45.x.
+- **REQUIREMENTS.md approval gate**: `/gsd:new-project` does not have a single explicit "approve REQUIREMENTS.md" prompt; the requirements get built up through several smaller AskUserQuestion prompts. Refactoring to a single approval gate (and applying the auto-approve treatment) is a larger change deferred until the value is clear from real-project use.
+- **Other workflows with approval-shaped prompts**: `/gsd:new-milestone` ROADMAP approval, `/gsd:plan-milestone-gaps` plan approval, etc. Same pattern applies; will fold in when users report friction or in a sweep release.
+
+### Upstream
+- Plugin-native concept (the `.planning/AUTO-DECISIONS.md` log + `workflow.auto_approve_non_critical` config). Will file as an upstream enhancement proposing the model and per-workflow integration once the pattern has stabilized in real-project use.
+
 ## [2.44.3] - 2026-05-24  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Three changes from real-project use of `/gsd:new-ddd`: fixes a synthesizer bug that affects standard `/gsd:new-project` too, moves the DDD spec file to a user-facing path, and adds explicit role separation between PROJECT.md and SPEC.md so GSD-internal language does not leak into the user-facing spec.
