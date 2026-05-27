@@ -8,6 +8,32 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.44.6] - 2026-05-27  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Fixes [#8](https://github.com/jnuyens/gsd-plugin/issues/8): `/gsd:update` was 404ing because workflows referenced the unscoped `get-shit-done-redux` npm package name instead of the actual scoped `@opengsd/get-shit-done-redux`. Reported by @chendrizzy with a complete patch attached. Thank you.
+
+### Background
+
+The v2.43.6 upstream switch renamed `get-shit-done-cc` to `get-shit-done-redux` across docs, but the npm package actually lives at the scoped name `@opengsd/get-shit-done-redux`. The bundled `bin/check-latest-version.cjs` correctly encoded the scoped name (per a comment explaining it was made a constant *specifically* to prevent LLM-driven misuse of wrong-shaped names), but the workflow-side install commands drifted. Result: `/gsd:update` would reach the install step and 404 on the npm registry.
+
+### Fixed
+- **`workflows/update.md`**: four call sites at L329 (manual-install hint), L530 (LOCAL install), L535 (GLOBAL install), L540 (UNKNOWN-fallback install). All now use `@opengsd/get-shit-done-redux@latest`. Patch matches the upstream-tree form exactly.
+- **`workflows/new-project.md` L89**: `npx @opengsd/get-shit-done-redux@latest --global` in the agents-not-installed remediation hint.
+- **`workflows/new-milestone.md` L238**: same hint, scoped.
+- **`workflows/help.md` L21, L579**: install-method docs + the comparison line.
+- **`workflows/quick.md` L132**: install-fallback hint when `gsd-sdk` is missing.
+- **`README.md`**: Pre-install uninstall list (added the scoped name as a new line), "For users of upstream GSD" reference, comparison table.
+
+### Notes
+- The unscoped form `npm uninstall -g get-shit-done-redux` is retained in the Pre-install uninstall list as a clean-up sweep for users who tried installing the unscoped name during the v2.43.6 to v2.44.5 window (it 404s, so nothing was installed, but the uninstall is harmless).
+- The bin name `get-shit-done-redux` (without scope prefix) is unchanged: the scoped package registers its CLI entry under that bare name. So `npx -y --package=@opengsd/get-shit-done-redux@latest -- get-shit-done-redux --global` is the correct invocation form.
+
+### Acknowledgments
+Thanks @chendrizzy for the issue report with a turnkey patch.
+
+### Upstream
+- Upstream `open-gsd/get-shit-done-redux` already has the correct scoped form at all call sites. This is a downstream-only drift fix; no upstream issue needed.
+
 ## [2.44.5] - 2026-05-25  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Auth-recipe memory: GSD now auto-detects when you authenticate to external systems and lets you save the recipe for future sessions and future projects. User report: "can you add auto-remembering how to connect to other systems or how to gain access to certain accounts?"

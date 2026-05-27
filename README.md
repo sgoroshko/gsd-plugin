@@ -6,7 +6,7 @@
 
 **Based on:** [GSD 1.42.3](https://github.com/open-gsd/get-shit-done-redux/releases/tag/v1.42.3) base tree by **TACHES** (Lex Christopherson), now maintained by the community at [open-gsd/get-shit-done-redux](https://github.com/open-gsd/get-shit-done-redux)
 
-**Plugin version:** `2.44.5`
+**Plugin version:** `2.44.6`
 
 **GSD Plugin for Claude Code** ensures your coding work gets done in a systematic, structured way. It prompts you only for the important design and architectural decisions that actually need your judgment, and it splits each step into its own focused subcontext so token use stays optimised across long projects.
 
@@ -44,7 +44,8 @@ If the output is anything OTHER than a path under `~/.claude/plugins/cache/gsd-p
 npm uninstall -g @gsd-build/sdk
 npm uninstall -g get-shit-done-cc
 npm uninstall -g @gsd-redux/sdk
-npm uninstall -g get-shit-done-redux
+npm uninstall -g @opengsd/get-shit-done-redux
+npm uninstall -g get-shit-done-redux   # if you tried the unscoped name (404s on npm; v2.43.x docs incorrectly referenced this form, fixed in v2.44.6)
 ```
 
 Re-run `which gsd-sdk`. The expected post-uninstall output is either a path under `~/.claude/plugins/cache/gsd-plugin/` (after the plugin is installed in Step 3) or `gsd-sdk not found` (before installation). Both are correct.
@@ -165,7 +166,7 @@ Lightweight Node scripts live in `bin/maintenance/` for plugin upkeep tasks that
 
 ## For users of upstream GSD
 
-If you already have GSD installed via `npx get-shit-done-cc`, `npx get-shit-done-redux`, or the legacy `~/.claude/get-shit-done/` setup, this section covers the move to the plugin. Skip this entirely if you're a new user.
+If you already have GSD installed via `npx get-shit-done-cc`, `npx @opengsd/get-shit-done-redux`, or the legacy `~/.claude/get-shit-done/` setup, this section covers the move to the plugin. Skip this entirely if you're a new user.
 
 ### What changed from upstream GSD
 
@@ -175,7 +176,7 @@ This plugin starts from upstream GSD's source tree and adds Claude-Code-native f
 
 | Aspect | Upstream GSD | This plugin |
 |--------|-------------|-------------|
-| Install | `npx get-shit-done-redux` (or pre-rug `get-shit-done-cc`) | `/plugin marketplace add jnuyens/gsd-plugin && /plugin install gsd@gsd-plugin` (run inside Claude Code) |
+| Install | `npx @opengsd/get-shit-done-redux` (or pre-rug `get-shit-done-cc`) | `/plugin marketplace add jnuyens/gsd-plugin && /plugin install gsd@gsd-plugin` (run inside Claude Code) |
 | Context overhead | ~3,000-5,000 tokens/turn via CLAUDE.md | ~200 tokens (92% reduction) |
 | Skill isolation | Inline execution; orchestration prompts pollute parent context | `context: fork` sub-agent isolation; orchestration runs in clean child contexts |
 | State access | BashTool roundtrips to `gsd-tools` CLI | MCP resources + tools; structured queries replace prompt injection |
@@ -240,8 +241,8 @@ Type these at the Claude Code prompt:
 #### 2. Uninstall the global `get-shit-done-*` npm package (now safe -- v2.42.0+)
 
 ```bash
-npm uninstall -g get-shit-done-cc      # pre-rug package, may still be installed
-npm uninstall -g get-shit-done-redux   # post-rug package, if you installed it
+npm uninstall -g get-shit-done-cc                  # pre-rug package, may still be installed
+npm uninstall -g @opengsd/get-shit-done-redux      # post-rug package, if you installed it
 ```
 
 > **History:** this step's wording has changed twice. Versions ≤ v2.41.0 told users to uninstall while the plugin still needed the package's `gsd-sdk` binary, which silently broke every `/gsd:*` command ([#4](https://github.com/jnuyens/gsd-plugin/issues/4)). v2.41.1 corrected the README to "keep installed". v2.42.0 bundles the SDK inside the plugin, making the uninstall genuinely safe again. Thanks to @ThomasHezard for catching the original bug and @herman925 for confirming. The post-rug package name (`get-shit-done-redux`) was added in v2.43.6.
@@ -299,7 +300,7 @@ claude plugin uninstall gsd
 # (or restore from ~/.claude/get-shit-done-legacy/ if you've already cut over)
 ```
 
-If you want to switch from the legacy backup to the post-rug upstream (`get-shit-done-redux`), install it via `npx get-shit-done-redux@latest`; it preserves all commits/branches/tags from the pre-rug tree, so any `.planning/` directory built with the legacy install continues to work without changes.
+If you want to switch from the legacy backup to the post-rug upstream (`get-shit-done-redux`), install it via `npx @opengsd/get-shit-done-redux@latest`; it preserves all commits/branches/tags from the pre-rug tree, so any `.planning/` directory built with the legacy install continues to work without changes.
 
 ### Migration audit
 
