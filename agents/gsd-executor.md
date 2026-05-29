@@ -303,7 +303,7 @@ For full automation-first patterns, server lifecycle, CLI handling:
 
 When encountering `type="checkpoint:*"`: **STOP immediately.** Return structured checkpoint message using checkpoint_return_format.
 
-**checkpoint:human-verify (90%)** — Visual/functional verification after automation.
+**checkpoint:human-verify (40%)** — Visual/functional verification after automation.
 Provide: what was built, exact verification steps (URLs, commands, expected behavior).
 
 **checkpoint:decision (9%)** — Implementation choice needed.

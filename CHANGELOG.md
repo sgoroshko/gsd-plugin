@@ -8,6 +8,17 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.45.6] - 2026-05-29  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Nudges the `gsd-executor` agent's bias toward self-testing instead of asking the user. The agent prompt at `agents/gsd-executor.md:306` historically declared that `checkpoint:human-verify` should fire on ~90% of executor checkpoints. In practice this trained the executor to default to "can you verify X?" prompts even when the verification had a plausible automation path (file existence, grep, command exit code, test run). Lowering the declared share to 40% leaves 40% + 9% (decision) + 1% (human-action) = 50%, with the implicit remainder being silent automated checks the executor performs without emitting a checkpoint at all. That is the behavior shift: more self-testing, fewer interruptions for the user.
+
+Why 40 specifically: a starting point we can tune later. If users observe the executor self-testing things it should not have (false positives), bump to 50 or 60. If users still feel over-prompted, drop to 30. The number is a knob, not a measurement; the value of the change is the bias signal, not the precise threshold.
+
+Tradeoff to weigh: an executor that self-tests on a flawed automation (regex passes but semantics are wrong) could ship broken code with a green status. Mitigation: the executor already logs the exact commands it ran in commit bodies and SUMMARY.md, so spot-checks are cheap. We will revisit if the false-positive rate becomes observable.
+
+### Changed
+- **`agents/gsd-executor.md` line 306**: `checkpoint:human-verify (90%)` to `checkpoint:human-verify (40%)`. Sibling checkpoint types (`decision (9%)`, `human-action (1%)`) left untouched. The non-summing distribution (50% total declared) is intentional: it tells the executor that the remaining ~50% of checkpoints are silent automated checks, not user prompts.
+
 ## [2.45.5] - 2026-05-29  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Fixes [#11](https://github.com/jnuyens/gsd-plugin/issues/11) reported by @tinmanlab (Hyeonseok Seong): all six MCP write tools (`gsd_advance_plan`, `gsd_record_metric`, `gsd_add_decision`, `gsd_add_blocker`, `gsd_resolve_blocker`, `gsd_record_session`) returned the misleading "state module not available" error for every call. The read tool `gsd_plan_status` was unaffected, which is why this slipped past most users (BashTool consumers use the `gsd-sdk query state.*` path which always worked).
