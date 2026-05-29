@@ -8,6 +8,15 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.45.2] - 2026-05-29  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Fixes a noisy-resume regression on cold-start after auto-compact. When PreCompact fired in an idle session (between milestones, before any active phase, or after a STATE.md parse failure), the resulting `HANDOFF.json` had `phase: null` and `task: null` (the schema-valid skeleton from `bin/lib/checkpoint.cjs`), but the SessionStart hook unconditionally emitted a `Phase: unknown, Plan: ?, Task: ?` resume nudge plus the "Do this immediately without waiting for user input" directive. Wasteful and confusing on every cold-start in idle projects.
+
+Thanks to @dboeckenhoff (PR [#12](https://github.com/jnuyens/gsd-plugin/pull/12)) for the diagnosis and fix.
+
+### Fixed
+- **`bin/gsd-tools.cjs` session-start hook**: skips the resume system message when the `HANDOFF.json` shape is trivial (`phase === null && task === null`). Legacy or missing-field shapes (`undefined !== null` is true) still emit, so the guard is safe-by-default on unknown handoff shapes. Regression test added at `tests/session-start-skip-trivial-handoff.test.cjs` covers 6 cases (the new null-null silence path, both populated-fields paths, the legacy/missing-field path, and the no-handoff-at-all path).
+
 ## [2.45.1] - 2026-05-29  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Tracks Anthropic's 2026-05-28 release of `claude-opus-4-8`. Drop-in ID bump across the four Anthropic-compatible runtimes (`claude`, `opencode`, `copilot`, `hermes`); pricing parity with 4.7. Effort controls (`high`/`xhigh`/`max`) and Fast Mode integration are a separate, larger piece of work (tracked upstream as open-gsd/get-shit-done-redux#443) and are NOT included here.
