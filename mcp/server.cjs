@@ -26,11 +26,38 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 
 // Resolve GSD bin/lib from plugin root (server lives at <root>/mcp/server.cjs)
 const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT || path.resolve(__dirname, '..');
 const libDir = path.join(pluginRoot, 'bin', 'lib');
+const gsdTools = path.join(pluginRoot, 'bin', 'gsd-tools.cjs');
+
+// Spawn gsd-tools.cjs to dispatch a state subcommand through
+// bin/lib/state-command-router.cjs (the canonical argv-shape router).
+// Routes ALL state mutations through the same code path as CLI use, so any
+// future state.cjs refactor stays in sync with no MCP-specific drift. See #11
+// (the reason this exists: the previous in-process captureCmd approach poked
+// at state.cmd* exports directly and broke when state.cjs renamed them to
+// cmdState*). Also: bin/lib/core.cjs::output() writes via fs.writeSync(1, ...)
+// which bypasses process.stdout.write intercepts, making in-process capture
+// fundamentally unreliable, so spawn-and-capture is the durable fix.
+function runStateSubcommand(subcommand, argvExtras, defaultText) {
+  const argv = ['state', subcommand, ...argvExtras];
+  const result = spawnSync('node', [gsdTools, ...argv], {
+    cwd: process.cwd(),
+    encoding: 'utf-8',
+    timeout: 10000,
+  });
+  if (result.error) {
+    return { content: [{ type: 'text', text: `gsd-tools spawn failed: ${result.error.message}` }], isError: true };
+  }
+  if (result.status !== 0) {
+    const errText = (result.stderr || result.stdout || `gsd-tools exited ${result.status}`).trim();
+    return { content: [{ type: 'text', text: errText || defaultText }], isError: true };
+  }
+  return { content: [{ type: 'text', text: (result.stdout || '').trim() || defaultText }] };
+}
 
 // Import GSD library modules
 let core, state, roadmap, frontmatter, phase;
@@ -320,96 +347,53 @@ function handleToolCall(name, args) {
         return { content: [{ type: 'text', text: stateContent }] };
       }
 
+      // Write tools route through bin/gsd-tools.cjs which dispatches via
+      // bin/lib/state-command-router.cjs to state.cmdStateX(cwd, options, raw).
+      // Same argv-shape as direct CLI use, so MCP and BashTool consumers run
+      // through identical code paths and stay in sync across refactors. See
+      // #11 (reported by @tinmanlab) for why this exists.
       case 'gsd_advance_plan': {
-        if (state && state.cmdAdvancePlan) {
-          const result = captureCmd(state.cmdAdvancePlan);
-          return { content: [{ type: 'text', text: result.output || 'Plan advanced' }] };
-        }
-        return { content: [{ type: 'text', text: 'state module not available' }], isError: true };
+        return runStateSubcommand('advance-plan', ['--raw'], 'Plan advanced');
       }
 
       case 'gsd_record_metric': {
-        if (state && state.cmdRecordMetric) {
-          const fakeArgv = ['node', 'gsd-tools.cjs', 'state', 'record-metric',
-            '--phase', args.phase || '', '--plan', args.plan || '',
-            '--duration', args.duration || ''];
-          if (args.tasks) fakeArgv.push('--tasks', String(args.tasks));
-          if (args.files) fakeArgv.push('--files', String(args.files));
-          const origArgv = process.argv;
-          process.argv = fakeArgv;
-          try {
-            const result = captureCmd(state.cmdRecordMetric);
-            return { content: [{ type: 'text', text: result.output || 'Metric recorded' }] };
-          } finally {
-            process.argv = origArgv;
-          }
-        }
-        return { content: [{ type: 'text', text: 'state module not available' }], isError: true };
+        const extras = ['--raw'];
+        if (args.phase != null)    extras.push('--phase',    String(args.phase));
+        if (args.plan != null)     extras.push('--plan',     String(args.plan));
+        if (args.duration != null) extras.push('--duration', String(args.duration));
+        if (args.tasks != null)    extras.push('--tasks',    String(args.tasks));
+        if (args.files != null)    extras.push('--files',    String(args.files));
+        return runStateSubcommand('record-metric', extras, 'Metric recorded');
       }
 
       case 'gsd_add_decision': {
-        if (state && state.cmdAddDecision) {
-          const fakeArgv = ['node', 'gsd-tools.cjs', 'state', 'add-decision',
-            '--summary', args.summary || ''];
-          if (args.phase) fakeArgv.push('--phase', args.phase);
-          const origArgv = process.argv;
-          process.argv = fakeArgv;
-          try {
-            const result = captureCmd(state.cmdAddDecision);
-            return { content: [{ type: 'text', text: result.output || 'Decision added' }] };
-          } finally {
-            process.argv = origArgv;
-          }
-        }
-        return { content: [{ type: 'text', text: 'state module not available' }], isError: true };
+        const extras = ['--raw', '--summary', String(args.summary || '')];
+        if (args.phase != null)          extras.push('--phase',          String(args.phase));
+        if (args.summary_file != null)   extras.push('--summary-file',   String(args.summary_file));
+        if (args.rationale != null)      extras.push('--rationale',      String(args.rationale));
+        if (args.rationale_file != null) extras.push('--rationale-file', String(args.rationale_file));
+        return runStateSubcommand('add-decision', extras, 'Decision added');
       }
 
       case 'gsd_add_blocker': {
-        if (state && state.cmdAddBlocker) {
-          const fakeArgv = ['node', 'gsd-tools.cjs', 'state', 'add-blocker',
-            '--text', args.text || ''];
-          const origArgv = process.argv;
-          process.argv = fakeArgv;
-          try {
-            const result = captureCmd(state.cmdAddBlocker);
-            return { content: [{ type: 'text', text: result.output || 'Blocker added' }] };
-          } finally {
-            process.argv = origArgv;
-          }
-        }
-        return { content: [{ type: 'text', text: 'state module not available' }], isError: true };
+        const extras = ['--raw', '--text', String(args.text || '')];
+        if (args.text_file != null) extras.push('--text-file', String(args.text_file));
+        return runStateSubcommand('add-blocker', extras, 'Blocker added');
       }
 
       case 'gsd_resolve_blocker': {
-        if (state && state.cmdResolveBlocker) {
-          const fakeArgv = ['node', 'gsd-tools.cjs', 'state', 'resolve-blocker',
-            '--text', args.text || ''];
-          const origArgv = process.argv;
-          process.argv = fakeArgv;
-          try {
-            const result = captureCmd(state.cmdResolveBlocker);
-            return { content: [{ type: 'text', text: result.output || 'Blocker resolved' }] };
-          } finally {
-            process.argv = origArgv;
-          }
-        }
-        return { content: [{ type: 'text', text: 'state module not available' }], isError: true };
+        const extras = ['--raw', '--text', String(args.text || '')];
+        return runStateSubcommand('resolve-blocker', extras, 'Blocker resolved');
       }
 
       case 'gsd_record_session': {
-        if (state && state.cmdRecordSession) {
-          const fakeArgv = ['node', 'gsd-tools.cjs', 'state', 'record-session',
-            '--stopped-at', args.stopped_at || ''];
-          const origArgv = process.argv;
-          process.argv = fakeArgv;
-          try {
-            const result = captureCmd(state.cmdRecordSession);
-            return { content: [{ type: 'text', text: result.output || 'Session recorded' }] };
-          } finally {
-            process.argv = origArgv;
-          }
-        }
-        return { content: [{ type: 'text', text: 'state module not available' }], isError: true };
+        // Per v2.45.0 state-handler preservation contract, omit --resume-file
+        // when the caller did not pass one so the existing Resume File value
+        // is preserved instead of being clobbered to literal 'None'.
+        const extras = ['--raw'];
+        if (args.stopped_at != null)  extras.push('--stopped-at',  String(args.stopped_at));
+        if (args.resume_file != null) extras.push('--resume-file', String(args.resume_file));
+        return runStateSubcommand('record-session', extras, 'Session recorded');
       }
 
       case 'gsd_commit_docs': {

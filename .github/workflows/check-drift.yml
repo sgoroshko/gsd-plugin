@@ -41,6 +41,17 @@ jobs:
       - name: Run MCP stdio ndjson framing regression test
         run: node tests/mcp-stdio-framing.test.cjs
 
+  mcp-write-tools:
+    name: MCP write-tools end-to-end (regression for #11)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run MCP write-tools end-to-end test
+        run: node tests/mcp-write-tools-end-to-end.test.cjs
+
   user-docs-jargon:
     name: User-docs jargon ratchet
     runs-on: ubuntu-latest

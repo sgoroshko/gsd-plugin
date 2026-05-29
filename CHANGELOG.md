@@ -8,6 +8,28 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.45.5] - 2026-05-29  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Fixes [#11](https://github.com/jnuyens/gsd-plugin/issues/11) reported by @tinmanlab (Hyeonseok Seong): all six MCP write tools (`gsd_advance_plan`, `gsd_record_metric`, `gsd_add_decision`, `gsd_add_blocker`, `gsd_resolve_blocker`, `gsd_record_session`) returned the misleading "state module not available" error for every call. The read tool `gsd_plan_status` was unaffected, which is why this slipped past most users (BashTool consumers use the `gsd-sdk query state.*` path which always worked).
+
+## Root cause (two-layer drift)
+
+The `bin/lib/state.cjs` module was refactored to expose `cmdStateX` (e.g. `cmdStateAdvancePlan`) but `mcp/server.cjs` still referenced the pre-refactor names `cmdX` (e.g. `cmdAdvancePlan`). The guard `if (state && state.cmdAdvancePlan)` evaluated false because the export was undefined, so the handler short-circuited to the "state module not available" branch. Even with names aliased, the in-process call would still fail because the handlers used a `process.argv`-mutation + `captureCmd` pattern that the refactored functions do not support. The refactored API expects explicit `(cwd, options, raw)` arguments.
+
+A secondary issue: `bin/lib/core.cjs::output()` writes via `fs.writeSync(1, ...)` directly to file descriptor 1 to dodge the `process.exit` flush race. This bypasses `process.stdout.write` interception, so any in-process capture approach is fundamentally unreliable for state-library output.
+
+## The fix
+
+Replaced the in-process `captureCmd(state.cmdX)` dance with `spawnSync('node', ['bin/gsd-tools.cjs', 'state', '<subcommand>', '--raw', ...])`. This routes through `bin/lib/state-command-router.cjs` (the canonical argv-shape router) which dispatches to `state.cmdStateX(cwd, options, raw)`. MCP consumers now run through the exact same code path as direct CLI use, eliminating future drift. The spawn pattern matches the existing `gsd_commit_docs` handler.
+
+Per the v2.45.0 state-handler preservation contract, `gsd_record_session` omits `--resume-file` when the caller does not pass one, so the existing `Resume File` value is preserved instead of being clobbered to literal `None`.
+
+Thanks to @tinmanlab for the unusually thorough diagnosis. They cited the exact files, line numbers, and the calling-convention drift on first read.
+
+### Fixed
+- **`mcp/server.cjs`**: 6 MCP write tool handlers now route through `bin/gsd-tools.cjs state <subcommand>` via `spawnSync`, fixing the state-library API mismatch from the v2.42.x state.cjs refactor. New end-to-end regression test at `tests/mcp-write-tools-end-to-end.test.cjs` drives the MCP server as a child process, asserts no "state module not available" responses, and confirms `gsd_add_blocker` actually mutates STATE.md on disk. Wired into CI as a new `mcp-write-tools` job.
+- **`bin/maintenance/pre-commit-drift-baseline.sh`**: the v2.45.4 jargon-ratchet block was unreachable because the file-layout PASS path had an early `exit 0` above it. Restructured as an explicit `if/else` so the jargon detector now runs unconditionally on every commit. Verified by injecting a `.planning/` reference into README.md, confirming the hook aborts, then reverting and confirming it passes.
+
 ## [2.45.4] - 2026-05-29  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Adds a CI guard that catches GSD-jargon leaks into the plugin's own user-facing documentation (`README.md`, `CHANGELOG.md`). Scope is PLUGIN SELF ONLY. The guard does NOT police downstream user-project docs because downstream projects can legitimately use phase numbers and plan IDs for their own domain reasons (chemistry phase transitions, deployment phases, project-management methodologies, etc.). Policing user projects would be presumptuous and would generate noise.

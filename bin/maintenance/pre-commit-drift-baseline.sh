@@ -52,9 +52,12 @@ DRIFT_OUTPUT="$(node "$DRIFT_SCRIPT" 2>&1)" || DRIFT_STATUS=$?
 DRIFT_STATUS="${DRIFT_STATUS:-0}"
 
 if [ "$DRIFT_STATUS" -eq 0 ]; then
-  # PASS, nothing to do
-  exit 0
-fi
+  # File-layout passes. Skip its auto-regen branch and proceed to the
+  # jargon check below (the jargon detector runs UNCONDITIONALLY so that
+  # commits which add CHANGELOG/README jargon but do not affect file-layout
+  # drift still trip the ratchet).
+  :
+else
 
 # FAIL. Parse to determine which counter regressed.
 # Sample fail line: "  genuinely_missing 5 > 0"
@@ -80,6 +83,7 @@ if [ -f tests/drift-baseline.json ]; then
   git add tests/drift-baseline.json
   echo "→ Staged updated tests/drift-baseline.json (will land in this commit)."
 fi
+fi  # end of else-branch for $DRIFT_STATUS
 
 # ── User-docs jargon detector (separate detector, NO auto-regen) ──────────
 #
