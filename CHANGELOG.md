@@ -8,6 +8,21 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.45.1] - 2026-05-29  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Tracks Anthropic's 2026-05-28 release of `claude-opus-4-8`. Drop-in ID bump across the four Anthropic-compatible runtimes (`claude`, `opencode`, `copilot`, `hermes`); pricing parity with 4.7. Effort controls (`high`/`xhigh`/`max`) and Fast Mode integration are a separate, larger piece of work (tracked upstream as open-gsd/get-shit-done-redux#443) and are NOT included here.
+
+### Changed
+- **`sdk/shared/model-catalog.json`**: `runtimeTierDefaults.{claude,opencode,copilot,hermes}.opus.model` now `claude-opus-4-8` (or `anthropic/claude-opus-4-8` for the `anthropic/`-prefixed runtimes). Sonnet and Haiku unchanged.
+- **`workflows/settings-advanced.md`**: tier table updated for the same four runtimes.
+- **`workflows/execute-phase.md`**: example model reference updated.
+- **`README.md`**: "Added features beyond upstream" table notes the bump.
+
+### Not changed
+- Test fixtures hardcoded to historical IDs (`sdk/src/*.test.ts`, `sdk/src/runtime-gate.ts`, `sdk/src/types.ts`) are intentional and left as-is.
+- Non-Anthropic runtime defaults (`codex`, `gemini`, `qwen`) track their own vendor cadences.
+- Effort-control / fast-mode schema. See open-gsd/get-shit-done-redux#443.
+
 ## [2.45.0] - 2026-05-27  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Fixes [#9](https://github.com/jnuyens/gsd-plugin/issues/9) reported by @jasonburks23: SDK state handlers (`state.advance-plan`, `state.record-session`, `state.planned-phase`) were overwriting executor-authored STATE.md content with template defaults. Data-loss-shape bug: rich `last_activity`, narrative `Status`, contextual `Stopped at`, and executor-set `Resume file` pointers all got clobbered when the post-execution handlers ran.
