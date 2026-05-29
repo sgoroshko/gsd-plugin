@@ -605,7 +605,7 @@ Parse the JSON to extract all phases. Identify phases with `number > current_pha
 
 Before writing VERIFICATION.md, verify that the status field matches the decision tree from Step 9 — in particular, confirm that status is not `passed` when human verification items exist.
 
-Structure gaps in YAML frontmatter for `/gsd:plan-phase --gaps`:
+Structure gaps in YAML frontmatter so the orchestrator can route them either to backlog (default, via `/gsd:add-backlog`) or to a follow-up phase (escalation, via `/gsd:plan-phase --gaps`). The user makes the routing choice after seeing the gap summary; do not pre-bias the recommendation in your verification output. The same YAML shape feeds both downstream paths:
 
 ```yaml
 gaps:
@@ -812,7 +812,7 @@ All must-haves verified. Phase goal achieved. Ready to proceed.
 1. **{Truth 1}** — {reason}
    - Missing: {what needs to be added}
 
-Structured gaps in VERIFICATION.md frontmatter for `/gsd:plan-phase --gaps`.
+Structured gaps in VERIFICATION.md frontmatter feed the orchestrator's gap-handling choice (default: park to backlog via `/gsd:add-backlog`; escalation: `/gsd:plan-phase --gaps`).
 
 {If human_needed:}
 ### Human Verification Required
@@ -833,7 +833,7 @@ Automated checks passed. Awaiting human verification.
 
 **DO NOT skip key link verification.** 80% of stubs hide here — pieces exist but aren't connected.
 
-**Structure gaps in YAML frontmatter** for `/gsd:plan-phase --gaps`.
+**Structure gaps in YAML frontmatter** so the orchestrator can route them to backlog (default) or to a follow-up phase (escalation). Don't pre-bias the recommendation.
 
 **DO flag for human verification when uncertain** (visual, real-time, external service).
 

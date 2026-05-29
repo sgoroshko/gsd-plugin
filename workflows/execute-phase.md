@@ -1491,7 +1491,7 @@ grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
 |--------|--------|
 | `passed` | → update_roadmap |
 | `human_needed` | Persist and present human testing items; keep phase pending until verification reruns as `passed` |
-| `gaps_found` | Present gap summary, offer `/gsd:plan-phase {phase} --gaps ${GSD_WS}` |
+| `gaps_found` | Present gap summary, ask user to choose: **park to backlog** (default — gaps become 999.x entries via `/gsd:add-backlog`, milestone ships when remaining phases close) OR **escalate to current milestone** (gaps become a follow-up phase via `/gsd:plan-phase {phase} --gaps ${GSD_WS}`). Default biases toward backlog to prevent unbounded phase multiplication; user explicitly opts into escalation when gaps actually block milestone goal. |
 
 **If human_needed:**
 
@@ -1565,6 +1565,51 @@ Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/gsd:progress
 ### What's Missing
 {Gap summaries from VERIFICATION.md}
 
+### What happens next
+
+Two paths. The plugin defaults to **park to backlog** because turning every verifier gap into a new in-scope phase tends to balloon milestones unbounded; most gaps are legitimately follow-up work, not blockers. Use **escalate to current milestone** only when at least one gap genuinely blocks the milestone's ship criteria.
+```
+
+Then ask the user (or auto-default to "Park" when running non-interactively):
+
+```
+AskUserQuestion(
+  header: "Gaps handling",
+  question: "How should these {N} gap(s) be handled?",
+  options: [
+    {
+      label: "Park to backlog (Recommended)",
+      description: "Each gap becomes a 999.x backlog entry via /gsd:add-backlog. Milestone can ship when remaining in-scope phases close. Best when gaps are real but not blocking the milestone goal."
+    },
+    {
+      label: "Escalate to current milestone",
+      description: "Gaps become a follow-up phase via /gsd:plan-phase {X} --gaps. New verification cycle opens. Best when at least one gap blocks the milestone goal and MUST close before ship."
+    },
+    {
+      label: "Decide later",
+      description: "Just present the gaps and let me decide manually. Phase stays in gaps_found state until I run /gsd:add-backlog, /gsd:plan-phase --gaps, or override."
+    }
+  ],
+  multiSelect: false
+)
+```
+
+If "Park to backlog": for each gap, run `/gsd:add-backlog "{gap.truth}: {gap.evidence}"`. Mark the phase as `gaps_parked` in STATE.md (continuation allowed; ship not blocked). Print:
+
+```
+---
+## ▶ Next Up — [${PROJECT_CODE}] ${PROJECT_TITLE}
+
+{N} gap(s) parked as backlog items (999.{next}-999.{last}). Milestone can ship when remaining in-scope phases close.
+
+`/gsd:next` — continue with next pending phase
+Also: `cat .planning/ROADMAP.md` — review parked items
+Also: `/gsd:plan-phase {X} --gaps ${GSD_WS}` — escalate later if you change your mind
+```
+
+If "Escalate to current milestone" (current behavior, preserved):
+
+```
 ---
 ## ▶ Next Up — [${PROJECT_CODE}] ${PROJECT_TITLE}
 
@@ -1576,7 +1621,11 @@ Also: `cat {phase_dir}/{phase_num}-VERIFICATION.md` — full report
 Also: `/gsd:verify-work {X} ${GSD_WS}` — manual testing first
 ```
 
-Gap closure cycle: `/gsd:plan-phase {X} --gaps ${GSD_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/gsd:execute-phase {X} --gaps-only ${GSD_WS}` → verifier re-runs.
+If "Decide later": just print the gap summary plus both follow-up commands, no automatic action.
+
+Gap closure cycle (escalation path): `/gsd:plan-phase {X} --gaps ${GSD_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/gsd:execute-phase {X} --gaps-only ${GSD_WS}` → verifier re-runs.
+
+Parking path: gaps land in `.planning/ROADMAP.md` under `## Backlog` as 999.x entries. They surface naturally at `/gsd:new-milestone` planning time, when scope decisions for the next milestone are made deliberately rather than as an in-flight reaction.
 </step>
 
 <step name="update_roadmap">
@@ -1689,7 +1738,7 @@ gsd-sdk query commit "docs(phase-{X}): evolve PROJECT.md after phase completion"
 
 <step name="offer_next">
 
-**Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the gap-closure path (`/gsd:plan-phase {X} --gaps`). No additional routing needed — skip auto-advance.
+**Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the user with the gap-handling choice (park to backlog by default, or escalate to a follow-up phase via `/gsd:plan-phase {X} --gaps`). No additional routing needed — skip auto-advance regardless of which path the user picks.
 
 **No-transition check (spawned by auto-advance chain):**
 

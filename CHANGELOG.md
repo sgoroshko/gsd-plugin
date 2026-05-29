@@ -8,6 +8,25 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.45.9] - 2026-05-29  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Behavior change addressing a real felt issue: in larger projects, GSD-managed milestones tend toward unbounded growth because the architecture has 4 workflows that add phases (`add-phase`, `insert-phase`, `add-backlog`, `plan-milestone-gaps`) against 1 that effectively closes them (`complete-milestone`). When `gsd-verifier` returns `gaps_found`, the historical default was to route the gaps into a follow-up phase via `/gsd:plan-phase --gaps`. That kept gap-driven phase multiplication going indefinitely.
+
+This release flips the default. When `gaps_found`, the orchestrator now asks the user how to handle the gaps with three options: **Park to backlog** (recommended, gaps become 999.x backlog entries via `/gsd:add-backlog`, milestone ships when remaining in-scope phases close), **Escalate to current milestone** (gaps become a follow-up phase via `/gsd:plan-phase --gaps`, current behavior preserved), or **Decide later** (just print the summary, no action). The "Park to backlog" option is presented as the recommended default because most gaps are legitimately follow-up work, not blockers, and parking them surfaces the scope decision at the next milestone planning gate rather than mid-flight.
+
+Why this matters: this project's own milestones (v1.0, v1.1, v1.2) all shipped at 3, 2, 3 phases with zero decimal-numbered inserts, which only works because the maintainer actively scope-polices. Larger team projects can't lean on a single judgment-bearer the same way, so the architectural bias toward addition becomes load-bearing.
+
+Tradeoff: looser scope discipline. Teams that WANT exhaustive coverage and want every gap to close before milestone ship will prefer the previous default. They can still pick "Escalate to current milestone" on any individual gaps_found event. A config flag (`workflow.gaps_default_action: park | escalate`) is plausible if requests come in; not shipped yet.
+
+Also bundled: the test stability commit from `834fa51` that landed unreleased on 2026-05-29 (refactor of `tests/mcp-write-tools-end-to-end.test.cjs` to drop the 6-sequential-spawn check, keeping `gsd_add_blocker` end-to-end + `gsd_plan_status` control case). 20/20 deterministic.
+
+### Changed
+- **`workflows/execute-phase.md`** verify_phase_goal step: `gaps_found` handling now presents an `AskUserQuestion` with three options ("Park to backlog (Recommended)", "Escalate to current milestone", "Decide later") instead of unconditionally routing to `/gsd:plan-phase --gaps`. Park-to-backlog runs `/gsd:add-backlog` for each gap and marks the phase as `gaps_parked` so the milestone can ship when remaining in-scope phases close. The escalation path is unchanged from the previous behavior.
+- **`agents/gsd-verifier.md`**: softened the "Structure gaps for `/gsd:plan-phase --gaps`" guidance in 3 places to mention both downstream paths (backlog and escalation), so the verifier no longer pre-biases the orchestrator's routing choice.
+
+### Fixed
+- **`tests/mcp-write-tools-end-to-end.test.cjs`** (from unreleased commit `834fa51`): dropped the racy "all 6 write tools in one server" check. Each MCP write tool's spawnSync of `bin/gsd-tools.cjs` takes 1-3 seconds (node startup cost), so 6 sequential calls hit the test budget. Kept `gsd_add_blocker actually mutates STATE.md` + `gsd_plan_status (control)` which together preserve the regression signal for #11. 20/20 deterministic.
+
 ## [2.45.8] - 2026-05-29  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Test stability fix for `tests/mcp-write-tools-end-to-end.test.cjs`. The v2.45.5 fix routes each MCP write-tool call through a `spawnSync('node', ['bin/gsd-tools.cjs', 'state', '<subcommand>'])` subprocess. The end-to-end test sends 6 sequential write-tool calls in one case, which means 6 sequential node-subprocess spawns inside the MCP server, each ~100-200ms. The test's original 1.5s post-request window was too tight: 5 of 5 local runs at v2.45.7 ship produced 1-2 of 3 passes instead of 3 of 3. Bumped the post-request wait to 5s and the overall test timeout to 15s. 5 of 5 runs now pass deterministically. The MCP server behavior itself is unchanged; this is purely a test budget adjustment.
