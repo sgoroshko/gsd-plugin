@@ -8,6 +8,21 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [2.45.4] - 2026-05-29  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
+
+Adds a CI guard that catches GSD-jargon leaks into the plugin's own user-facing documentation (`README.md`, `CHANGELOG.md`). Scope is PLUGIN SELF ONLY. The guard does NOT police downstream user-project docs because downstream projects can legitimately use phase numbers and plan IDs for their own domain reasons (chemistry phase transitions, deployment phases, project-management methodologies, etc.). Policing user projects would be presumptuous and would generate noise.
+
+The detector mirrors the existing file-layout drift detector: counts-based ratchet, baseline lives at `tests/drift-baseline.json` under a new `user_docs_jargon` section, regenerate with `--write-baseline` when a legitimate addition lands. Fenced code blocks are stripped before scanning so `/gsd:` command examples and file-path examples in `bash` blocks do NOT pollute the ratchet.
+
+Design note: the pre-commit hook deliberately does NOT auto-regen the jargon baseline on regression (unlike the file-layout detector, which auto-regens benign growth). Auto-regen would defeat the catch. The point is to make the author pause, confirm the new mention was intentional, then explicitly run `--write-baseline`. That moment of explicit acknowledgment is the whole feature.
+
+### Added
+- **`bin/maintenance/check-user-docs-jargon.cjs`**: counts-based ratchet detector with four pattern categories (`planning_paths`, `artifact_names`, `plan_files`, `generic_phase_num`). Mirrors `check-file-layout.cjs` conventions: `--write-baseline`, `--dry`, requires repo root with `.git/` + `skills/`.
+- **`tests/user-docs-jargon.test.cjs`**: 4-case discrimination test (clean fixture passes, injected jargon fails, code-block-stripped jargon is ignored, baseline write preserves the sibling `file_layout` section).
+- **`tests/drift-baseline.json`**: new `user_docs_jargon` section with current counts captured as legitimate (36 planning_paths, 41 artifact_names, 3 plan_files, 17 generic_phase_num at v2.45.4 ship).
+- **`.github/workflows/check-drift.yml`**: new `user-docs-jargon` job running the detector and the discrimination test on every push and PR.
+- **`bin/maintenance/pre-commit-drift-baseline.sh`**: extended to fail-loud when the jargon ratchet regresses, with a clear message telling the author how to regenerate the baseline or override.
+
 ## [2.45.3] - 2026-05-29  (based on upstream GSD 1.42.3, hosted at open-gsd/get-shit-done-redux)
 
 Adds regression tests for three plugin-flat-layout patches that have been wiped or contested across past upstream sync cycles. Principle: only test patches that have already broken (paying down debt), not speculative coverage. Each new test discriminates: temporarily reverting the patch produces failures, restoring restores green. Total +9 cases, 3 new files, single commit.

@@ -81,4 +81,32 @@ if [ -f tests/drift-baseline.json ]; then
   echo "→ Staged updated tests/drift-baseline.json (will land in this commit)."
 fi
 
+# ── User-docs jargon detector (separate detector, NO auto-regen) ──────────
+#
+# Unlike the file-layout detector, the jargon ratchet does NOT auto-regen
+# on regression. Auto-regen would defeat the catch: the point is to make
+# the author pause and confirm a jargon mention in user-facing docs was
+# intentional. Each plugin release that adds a CHANGELOG entry describing
+# internal work will trip this check; the author must run
+#   node bin/maintenance/check-user-docs-jargon.cjs --write-baseline
+# explicitly and commit the new baseline. That moment of explicit
+# acknowledgement is the whole point.
+JARGON_SCRIPT="bin/maintenance/check-user-docs-jargon.cjs"
+if [ -f "$JARGON_SCRIPT" ] && command -v node >/dev/null 2>&1; then
+  if ! node "$JARGON_SCRIPT" >/dev/null 2>&1; then
+    echo "" >&2
+    echo "ERROR: user-docs jargon ratchet regressed." >&2
+    echo "" >&2
+    node "$JARGON_SCRIPT" >&2 || true
+    echo "" >&2
+    echo "If the new mentions are intentional (e.g., CHANGELOG describing internal work):" >&2
+    echo "  node bin/maintenance/check-user-docs-jargon.cjs --write-baseline" >&2
+    echo "  git add tests/drift-baseline.json" >&2
+    echo "  # then re-run the commit" >&2
+    echo "" >&2
+    echo "Override entirely: git commit --no-verify" >&2
+    exit 1
+  fi
+fi
+
 exit 0

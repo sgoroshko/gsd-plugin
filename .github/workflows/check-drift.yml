@@ -40,3 +40,16 @@ jobs:
           node-version: '22'
       - name: Run MCP stdio ndjson framing regression test
         run: node tests/mcp-stdio-framing.test.cjs
+
+  user-docs-jargon:
+    name: User-docs jargon ratchet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run user-docs jargon detector
+        run: node bin/maintenance/check-user-docs-jargon.cjs
+      - name: Run user-docs jargon discrimination test
+        run: node tests/user-docs-jargon.test.cjs
