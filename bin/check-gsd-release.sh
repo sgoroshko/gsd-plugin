@@ -2,7 +2,12 @@
 set -euo pipefail
 
 # --- Configuration ---
-REPO="gsd-build/get-shit-done"
+# Upstream moved twice: gsd-build/get-shit-done (original, now locked) ->
+# open-gsd/get-shit-done-redux (May 2026 community continuation) ->
+# open-gsd/gsd-core (canonical repo + npm package @opengsd/gsd-core).
+# get-shit-done-redux still mirrors the same release tags, but gsd-core is the
+# source of truth, so the release watch points here.
+REPO="open-gsd/gsd-core"
 VERSION_FILE="$HOME/.gsd-last-known-version"
 GH="/opt/homebrew/bin/gh"
 CURL="/usr/bin/curl"
