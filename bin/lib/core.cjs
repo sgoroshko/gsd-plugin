@@ -1071,48 +1071,74 @@ function extractCurrentMilestone(content, cwd) {
 
   const sectionStart = sectionMatch.index;
 
-  // Find the end: next milestone heading at same or higher level, or EOF.
-  // Milestone headings look like: ## v2.0, ## Roadmap v2.0, ## ✅ v1.0, etc.
-  // Scan line-by-line so that heading-like lines inside fenced code blocks
-  // (``` or ~~~) are not mistaken for milestone boundaries. See #2787.
-  const headingLevel = sectionMatch[1].match(/^(#{1,3})\s/)[1].length;
-  const restContent = content.slice(sectionStart + sectionMatch[0].length);
-  // Exclude phase headings (e.g. "### Phase 12: v1.0 Tech-Debt Closure") from
-  // being treated as milestone boundaries just because they mention vX.Y in
-  // the title. Phase headings always start with the literal `Phase `. See #2619.
-  const nextMilestonePattern = new RegExp(
-    `^#{1,${headingLevel}}\\s+(?!Phase\\s+\\S)(?:.*v\\d+\\.\\d+|✅|📋|🚧)`,
-    'i'
-  );
-
-  let sectionEnd = content.length;
-  let fenceChar = null;
-  let fenceLen = 0;
-  let charOffset = 0;
-  for (const line of restContent.split('\n')) {
-    const fenceMatch = line.match(/^\s{0,3}((?:`{3,}|~{3,}))(.*)/);
-    if (fenceMatch) {
-      const char = fenceMatch[1][0];
-      const len = fenceMatch[1].length;
-      const trailing = fenceMatch[2] || '';
-      if (!fenceChar) {
-        fenceChar = char;
-        fenceLen = len;
-      } else if (char === fenceChar && len >= fenceLen && /^\s*$/.test(trailing)) {
-        fenceChar = null;
-        fenceLen = 0;
+  // Find the end of a section: the next milestone heading at the heading's own
+  // level or higher, or EOF. Scans line-by-line so heading-like lines inside
+  // fenced code blocks (``` or ~~~) are not mistaken for milestone boundaries
+  // (#2787), and excludes `### Phase N:` headings (which may mention vX.Y in
+  // their title, e.g. "### Phase 12: v1.0 Tech-Debt Closure") via the
+  // (?!Phase ...) guard (#2619).
+  const computeSectionEnd = (headingText, headingStart) => {
+    const headingLevel = headingText.match(/^(#{1,3})\s/)[1].length;
+    const restContent = content.slice(headingStart + headingText.length);
+    const nextMilestonePattern = new RegExp(
+      `^#{1,${headingLevel}}\\s+(?!Phase\\s+\\S)(?:.*v\\d+\\.\\d+|✅|📋|🚧)`,
+      'i'
+    );
+    let end = content.length;
+    let fenceChar = null;
+    let fenceLen = 0;
+    let charOffset = 0;
+    for (const line of restContent.split('\n')) {
+      const fenceMatch = line.match(/^\s{0,3}((?:`{3,}|~{3,}))(.*)/);
+      if (fenceMatch) {
+        const char = fenceMatch[1][0];
+        const len = fenceMatch[1].length;
+        const trailing = fenceMatch[2] || '';
+        if (!fenceChar) {
+          fenceChar = char;
+          fenceLen = len;
+        } else if (char === fenceChar && len >= fenceLen && /^\s*$/.test(trailing)) {
+          fenceChar = null;
+          fenceLen = 0;
+        }
+      } else if (!fenceChar && nextMilestonePattern.test(line)) {
+        end = headingStart + headingText.length + charOffset;
+        break;
       }
-    } else if (!fenceChar && nextMilestonePattern.test(line)) {
-      sectionEnd = sectionStart + sectionMatch[0].length + charOffset;
-      break;
+      charOffset += line.length + 1;
     }
-    charOffset += line.length + 1;
+    return end;
+  };
+
+  const sectionEnd = computeSectionEnd(sectionMatch[0], sectionStart);
+
+  // #730 (upstream edd3c6c3): a multi-milestone ROADMAP splits each milestone
+  // across a `## Phases` checklist subsection (early) and a separate
+  // `## Milestone vX.Y … (Phase Details)` section (late) holding the
+  // `### Phase N:` detail headers. The primary window above stops at the next
+  // version-bearing heading — the current milestone's OWN Phase Details heading —
+  // so phases of any milestone after the first are invisible to phase-op /
+  // plan-phase / validate until a .planning/phases/ dir exists. Pull in the
+  // current milestone's own (Phase Details) section, anchored boundary-aware to
+  // its exact version token so sibling sub-milestones sharing a prefix (v3.0 vs
+  // v3.0-A) do not cross-pollinate.
+  let phaseDetailsSection = '';
+  const detailsHeadingPattern = new RegExp(
+    `^#{1,3}\\s+(?!Phase\\s+\\S)(?=[^\\n]*${escapedVersion}(?![\\w.-]))(?=[^\\n]*\\(Phase Details\\))[^\\n]*`,
+    'mi'
+  );
+  const tail = content.slice(sectionEnd);
+  const detailsMatch = tail.match(detailsHeadingPattern);
+  if (detailsMatch) {
+    const detailsStart = sectionEnd + detailsMatch.index;
+    const detailsEnd = computeSectionEnd(detailsMatch[0], detailsStart);
+    phaseDetailsSection = content.slice(detailsStart, detailsEnd);
   }
 
   // Return everything before the current milestone section (non-milestone content
   // like title, overview) plus the current milestone section
   const beforeMilestones = content.slice(0, sectionStart);
-  const currentSection = content.slice(sectionStart, sectionEnd);
+  const currentSection = content.slice(sectionStart, sectionEnd) + phaseDetailsSection;
 
   // Also include any content before the first milestone heading (title, overview, etc.)
   // but strip any <details> blocks in it (these are definitely shipped)
