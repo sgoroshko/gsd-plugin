@@ -8,6 +8,11 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [3.4.5] - 2026-06-09  (adapts gsd-core #936 from v1.4.3)
+
+### Fixed
+- **`workflows/plan-review-convergence.md`** (cherry-pick of upstream #936, `16d9b2e8`): the cross-AI plan-convergence workflow (`/gsd:review` convergence loop) wrapped `gsd-plan-phase` inside `Agent()` at both the initial-planning and replan sites. `gsd-plan-phase` is a spawner skill (it spawns `gsd-planner` and `gsd-plan-checker`); on Claude Code a depth-1 `Agent` has no Agent tool, so the wrapped plan-phase could never spawn its sub-agents and the **replan loop silently produced no revised plan when reviewers flagged HIGH concerns**. Both sites now run plan-phase **inline** (bare `Skill()` at depth 0) so it can spawn its sub-agents at depth 1. `gsd-review` stays wrapped in `Agent()` (it is a Bash leaf with no sub-agent spawns). Adds `tests/plan-convergence-inline-planphase.test.cjs` with a structural guard that no workflow wraps `gsd-plan-phase` in `Agent()`. The other two gsd-core v1.4.3 fixes were assessed and skipped: #934 prunes orphan `gsd-pristine/get-shit-done/` snapshots from the upstream get-shit-done->gsd-core rename, which the plugin's flat layout never had; #935 is upstream changeset-CLI release infrastructure.
+
 ## [3.4.4] - 2026-06-09
 
 ### Added
