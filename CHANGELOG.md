@@ -8,6 +8,11 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [3.4.4] - 2026-06-09
+
+### Added
+- **Claude Fable 5 as a new top model tier.** Fable 5 (`claude-fable-5`) is Anthropic's new flagship, a tier above `opus` (1M context, priced ~2x Opus at $10/$50 per Mtok). Added as a first-class `fable` tier in `sdk/shared/model-catalog.json` for every runtime: the Anthropic-compatible runtimes (claude/copilot -> `claude-fable-5`; opencode/hermes -> `anthropic/claude-fable-5`) get the real model; non-Claude runtimes (codex/gemini/qwen) alias `fable` to their most capable model so a fable-tier agent still resolves; Group-B runtimes carry `fable: null`. The **quality profile** now uses `fable` for the 9 heaviest agents (`routingTier: heavy` — planner, roadmapper, debugger, assumptions-analyzer, debug-session-manager, eval-planner, framework-selector, security-auditor, user-profiler). Standard/light agents and the balanced/budget profiles are unchanged, so cost only rises for quality-profile users on those heavy agents. `fable` is first-class everywhere tiers are accepted: `core.cjs` `VALID_TIERS` and the `config-schema.cjs` `model_profile_overrides.<runtime>.<tier>` regex both include it, so `models.<phase>: fable` and `model_profile_overrides.<runtime>.fable` work too. `settings-advanced.md` tier docs/table updated; the SDK source tier-union types include `fable` and the bundled SDK was rebuilt. Both `bin/lib` and `sdk/dist` read the catalog at runtime. New `tests/fable-tier.test.cjs` (26 checks); full suite 14/14. Verified end-to-end: with `model_profile: quality`, `gsd-planner` resolves to `claude-fable-5` while `gsd-executor` stays `claude-opus-4-8`.
+
 ## [3.4.3] - 2026-06-09  (adapts gsd-core #730)
 
 Integrates the highest-value deferred TIER-2 fix from the gsd-core v1.4.x survey.
