@@ -8,6 +8,15 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [3.4.3] - 2026-06-09  (adapts gsd-core #730)
+
+Integrates the highest-value deferred TIER-2 fix from the gsd-core v1.4.x survey.
+
+### Fixed
+- **`bin/lib/core.cjs` `extractCurrentMilestone`** (adapts upstream #730, `edd3c6c3`): in a multi-milestone `ROADMAP.md`, the current-milestone window stopped at the next version-bearing heading, which is the milestone's *own* `## Milestone vX.Y … (Phase Details)` section. So every phase of any milestone after the first was invisible to `/gsd:discuss-phase`, `/gsd:plan-phase`, `state`, `roadmap list`, and `validate health` (W006) until a `.planning/phases/<N>/` directory already existed. The parser now also pulls in the current milestone's own `(Phase Details)` section, anchored boundary-aware to its exact version token (so `v3.0` does not match a `v3.0-A` sub-milestone). The fence-aware section-end scan was refactored into a reusable `computeSectionEnd` closure. This is a bespoke adaptation onto the plugin's older single-match base (we never took upstream's intervening `selected[]`-index refactor), not a verbatim port. No-op when no versioned Phase Details section exists, so single-milestone roadmaps are unaffected. Adds `tests/milestone-phase-details-scope.test.cjs` (two- and three-milestone reproduction + non-regression); suite 12/12.
+
+Note on #768 (the other deferred TIER-2 item, CC permissions prepopulation): verified against current Claude Code docs that there is **no supported mechanism** for a plugin to seed `permissions.allow`/`deny` — `plugin.json` has no `permissions` field, and a plugin-bundled `settings.json` only honors `agent`/`subagentStatusLine` (permissions are ignored; an unknown manifest key fails `claude plugin validate --strict`). The only path is a documented snippet users paste into their own `settings.json`, so #768 stays deferred pending that doc decision.
+
 ## [3.4.2] - 2026-06-09  (follows gsd-core 1.4.2)
 
 Hotfix follow-on to 3.4.1, integrating both real fixes from gsd-core's v1.4.2 hotfix (the rest of that release was changelog/version chores). Both refine capabilities 3.4.1 just shipped.
