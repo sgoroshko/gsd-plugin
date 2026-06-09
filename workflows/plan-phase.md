@@ -33,10 +33,12 @@ The calling workflow already runs plan-phase inline via Skill() on Claude Code s
 the plan-checker subagent can still spawn. plan-phase itself does not need to detect this.
 
 **Other runtimes:**
-If the Agent tool is genuinely absent (a backgrounded agent, or a non-Claude runtime
-that does not expose Agent/agent), log the gap and stop — do NOT perform
-researcher/planner/checker roles inline. Independent agent contexts are required for
-the plan-checker gate to be meaningful.
+Do not pre-judge Agent availability by introspection. Always attempt the actual Agent()
+call for gsd-phase-researcher, gsd-planner, and gsd-plan-checker. Only a real
+tool-unavailable error returned by Agent() is a reliable absence signal — never stop based
+on a self-assessed "I think Agent is unavailable." If the call fails with a tool-unavailable
+error, log the gap and stop — do NOT collapse researcher/planner/checker roles inline.
+Independent agent contexts are required for the plan-checker gate to be meaningful.
 </runtime_compatibility>
 
 <process>

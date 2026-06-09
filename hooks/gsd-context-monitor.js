@@ -181,7 +181,13 @@ process.stdin.on('end', () => {
 
     const output = {
       hookSpecificOutput: {
-        hookEventName: process.env.GEMINI_API_KEY ? "AfterTool" : "PostToolUse",
+        // #925: echo the ACTUAL invoking hook event. The same script is
+        // registered under PostToolUse, Stop, SubagentStop, and PreCompact, and
+        // Claude Code rejects output whose hookEventName does not match the
+        // triggering event ("expected Stop but got PostToolUse"). Fall back to
+        // the runtime heuristic only when the payload omits hook_event_name.
+        hookEventName: (data.hook_event_name && data.hook_event_name.trim())
+          || (process.env.GEMINI_API_KEY ? "AfterTool" : "PostToolUse"),
         additionalContext: message
       }
     };
