@@ -8,6 +8,15 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [3.4.2] - 2026-06-09  (follows gsd-core 1.4.2)
+
+Hotfix follow-on to 3.4.1, integrating both real fixes from gsd-core's v1.4.2 hotfix (the rest of that release was changelog/version chores). Both refine capabilities 3.4.1 just shipped.
+
+### Fixed
+- **`hooks/gsd-context-monitor.js`** (upstream #925, `27af8183`): the monitor now echoes the actual invoking hook event (`data.hook_event_name`) instead of hardcoding `PostToolUse`. This is a **required companion** to the #770 `SubagentStop` wiring shipped in 3.4.1: Claude Code rejects hook output whose `hookEventName` does not match the triggering event ("expected SubagentStop but got PostToolUse"), so without this the Stop/SubagentStop/PreCompact context-headroom warnings were silently dropped. Falls back to the runtime heuristic only when the payload omits the field.
+- **`workflows/plan-phase.md`** (upstream #921/#922, `a6229ec1`, plan-phase portion): the `<runtime_compatibility>` Agent gate is now attempt-based. Never pre-judge Agent availability by introspection; always attempt the actual `Agent()` call and treat only a real tool-unavailable error as the absence signal. Refines the #913 role-collapse guard. The `commands/` portions of the upstream PR are not applicable (no bundled commands).
+- **`tests/context-monitor-hook-event.test.cjs`**: 6 checks locking the #770 + #925 pairing (the SubagentStop wiring and the event-echo fix ship together). Full suite now 11/11.
+
 ## [3.4.1] - 2026-06-09  (follows gsd-core 1.4.x; base = GSD 1.42.3-era + selective cherry-picks)
 
 **Version scheme re-base.** Upstream moved to `@opengsd/gsd-core`, which restarted numbering at `1.x`. This release re-bases the plugin version to track the gsd-core line with a `+2` major offset: gsd-core `1.4.1` -> plugin `3.4.1`. The `+2` (rather than the old `+1`) keeps the version monotonically above the prior `2.45.x` lineage instead of regressing to `2.4.x`. See [README Versioning](./README.md#versioning). This single release bundles the auto-memory feature below and the 5 gsd-core v1.4.x cherry-picks.
