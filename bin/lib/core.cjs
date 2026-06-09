@@ -1424,7 +1424,7 @@ function resolveModelInternal(cwd, agentType) {
   // Only honor phase-type tier if it's one of the recognized aliases.
   // Anything else falls through to profile lookup so a typo doesn't
   // silently break tier resolution.
-  const VALID_TIERS = new Set(['opus', 'sonnet', 'haiku', 'inherit']);
+  const VALID_TIERS = new Set(['fable', 'opus', 'sonnet', 'haiku', 'inherit']);
   // Resolve tier: phase-type wins when valid; else profile-derived; else
   // (when profile === 'inherit') propagate inherit so the later short-
   // circuit fires. CR Major (#3030): a config like

@@ -76,6 +76,7 @@ Runtime / Output:
 
 Runtime Model Tiers:
 - `runtime` (default: `null` — reads as `"claude"`)
+- `model_profile_overrides.<runtime>.fable` (default: built-in for the runtime, or absent)
 - `model_profile_overrides.<runtime>.opus` (default: built-in for the runtime, or absent)
 - `model_profile_overrides.<runtime>.sonnet` (default: built-in for the runtime, or absent)
 - `model_profile_overrides.<runtime>.haiku` (default: built-in for the runtime, or absent)
@@ -331,7 +332,7 @@ AskUserQuestion([
 ### Section 7 — Runtime Model Tiers
 
 This section lets the user inspect and override the built-in model IDs GSD resolves for each
-profile tier (`opus` / `sonnet` / `haiku`) on their configured runtime.
+profile tier (`fable` / `opus` / `sonnet` / `haiku`) on their configured runtime. `fable` is the top tier (Claude Fable 5), used by the quality profile's heaviest agents.
 
 **Step A — Show current runtime and built-in defaults:**
 
@@ -341,16 +342,18 @@ tier map from the table below. For each tier, also read the current override fro
 
 Built-in tier defaults by runtime:
 
-| Runtime    | `opus`                        | `sonnet`                        | `haiku`                       |
-|------------|-------------------------------|---------------------------------|-------------------------------|
-| `claude`   | `claude-opus-4-8`             | `claude-sonnet-4-6`             | `claude-haiku-4-5`            |
-| `codex`    | `gpt-5.4`                     | `gpt-5.3-codex`                 | `gpt-5.4-mini`                |
-| `gemini`   | `gemini-3-pro`                | `gemini-3-flash`                | `gemini-2.5-flash-lite`       |
-| `qwen`     | `qwen3-max-2026-01-23`        | `qwen3-coder-plus`              | `qwen3-coder-next`            |
-| `opencode` | `anthropic/claude-opus-4-8`   | `anthropic/claude-sonnet-4-6`   | `anthropic/claude-haiku-4-5`  |
-| `copilot`  | `claude-opus-4-8`             | `claude-sonnet-4-6`             | `claude-haiku-4-5`            |
-| `hermes`   | `anthropic/claude-opus-4-8`   | `anthropic/claude-sonnet-4-6`   | `anthropic/claude-haiku-4-5`  |
-| Group B (`kilo`, `cline`, `cursor`, `windsurf`, `augment`, `trae`, `codebuddy`, `antigravity`) | (no built-in default — your runtime handles model selection) | | |
+| Runtime    | `fable`                       | `opus`                        | `sonnet`                        | `haiku`                       |
+|------------|-------------------------------|-------------------------------|---------------------------------|-------------------------------|
+| `claude`   | `claude-fable-5`              | `claude-opus-4-8`             | `claude-sonnet-4-6`             | `claude-haiku-4-5`            |
+| `codex`    | `gpt-5.4`                     | `gpt-5.4`                     | `gpt-5.3-codex`                 | `gpt-5.4-mini`                |
+| `gemini`   | `gemini-3-pro`                | `gemini-3-pro`               | `gemini-3-flash`                | `gemini-2.5-flash-lite`       |
+| `qwen`     | `qwen3-max-2026-01-23`        | `qwen3-max-2026-01-23`       | `qwen3-coder-plus`              | `qwen3-coder-next`            |
+| `opencode` | `anthropic/claude-fable-5`    | `anthropic/claude-opus-4-8`   | `anthropic/claude-sonnet-4-6`   | `anthropic/claude-haiku-4-5`  |
+| `copilot`  | `claude-fable-5`              | `claude-opus-4-8`             | `claude-sonnet-4-6`             | `claude-haiku-4-5`            |
+| `hermes`   | `anthropic/claude-fable-5`    | `anthropic/claude-opus-4-8`   | `anthropic/claude-sonnet-4-6`   | `anthropic/claude-haiku-4-5`  |
+| Group B (`kilo`, `cline`, `cursor`, `windsurf`, `augment`, `trae`, `codebuddy`, `antigravity`) | (no built-in default — your runtime handles model selection) | | | |
+
+`fable` is Claude Fable 5, the top tier above `opus` (1M context, priced ~2x Opus). Only the Anthropic-compatible runtimes have a true Fable model; for non-Claude runtimes (`codex`, `gemini`, `qwen`) `fable` aliases to that runtime's most capable model (same as `opus`), so a fable-tier agent still resolves to something there.
 
 Display a table to the user showing the effective configuration:
 
@@ -359,6 +362,7 @@ Runtime model tiers — runtime: <current runtime or "claude (default)">
 
 | Tier   | Built-in default                  | Current override (if any)         |
 |--------|-----------------------------------|-----------------------------------|
+| fable  | <built-in or "(no built-in)">     | <override value or "(none)">      |
 | opus   | <built-in or "(no built-in)">     | <override value or "(none)">      |
 | sonnet | <built-in or "(no built-in)">     | <override value or "(none)">      |
 | haiku  | <built-in or "(no built-in)">     | <override value or "(none)">      |

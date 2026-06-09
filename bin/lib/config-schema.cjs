@@ -104,8 +104,8 @@ const DYNAMIC_KEY_PATTERNS = [
   { topLevel: 'claude_md_assembly',    test: (k) => /^claude_md_assembly\.blocks\.[a-zA-Z0-9_]+$/.test(k),      description: 'claude_md_assembly.blocks.<section>' },
   // #2517 — runtime-aware model profile overrides: model_profile_overrides.<runtime>.<tier>
   // <runtime> is a free string (so users can map non-built-in runtimes); <tier> is enum-restricted.
-  { topLevel: 'model_profile_overrides', test: (k) => /^model_profile_overrides\.[a-zA-Z0-9_-]+\.(opus|sonnet|haiku)$/.test(k),
-    description: 'model_profile_overrides.<runtime>.<opus|sonnet|haiku>' },
+  { topLevel: 'model_profile_overrides', test: (k) => /^model_profile_overrides\.[a-zA-Z0-9_-]+\.(fable|opus|sonnet|haiku)$/.test(k),
+    description: 'model_profile_overrides.<runtime>.<fable|opus|sonnet|haiku>' },
   // #3023 — per-phase-type model map: models.<phase_type> = <tier>
   // Six named slots (planning/discuss/research/execution/verification/completion);
   // unknown phase-types are rejected. Per-agent model_overrides still take

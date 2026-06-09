@@ -4,9 +4,9 @@ interface RuntimeTierEntry {
 }
 type RuntimeTierTable = Record<string, Record<string, RuntimeTierEntry | null>>;
 interface AgentCatalogEntry {
-    golden: 'opus' | 'sonnet' | 'haiku';
-    balanced: 'opus' | 'sonnet' | 'haiku';
-    budget: 'opus' | 'sonnet' | 'haiku';
+    golden: 'fable' | 'opus' | 'sonnet' | 'haiku';
+    balanced: 'fable' | 'opus' | 'sonnet' | 'haiku';
+    budget: 'fable' | 'opus' | 'sonnet' | 'haiku';
     phaseType: string;
     routingTier: 'light' | 'standard' | 'heavy';
 }

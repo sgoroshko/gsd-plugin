@@ -9,9 +9,11 @@ interface RuntimeTierEntry {
 type RuntimeTierTable = Record<string, Record<string, RuntimeTierEntry | null>>;
 
 interface AgentCatalogEntry {
-  golden: 'opus' | 'sonnet' | 'haiku';
-  balanced: 'opus' | 'sonnet' | 'haiku';
-  budget: 'opus' | 'sonnet' | 'haiku';
+  // 'fable' is the top model tier (Claude Fable 5), above 'opus'. The quality
+  // profile (golden) uses it for the heaviest agents.
+  golden: 'fable' | 'opus' | 'sonnet' | 'haiku';
+  balanced: 'fable' | 'opus' | 'sonnet' | 'haiku';
+  budget: 'fable' | 'opus' | 'sonnet' | 'haiku';
   phaseType: string;
   routingTier: 'light' | 'standard' | 'heavy';
 }
