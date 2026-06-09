@@ -8,7 +8,9 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
-## [2.46.0] - 2026-06-09  (based on upstream GSD 1.42.3)
+## [3.4.1] - 2026-06-09  (follows gsd-core 1.4.x; base = GSD 1.42.3-era + selective cherry-picks)
+
+**Version scheme re-base.** Upstream moved to `@opengsd/gsd-core`, which restarted numbering at `1.x`. This release re-bases the plugin version to track the gsd-core line with a `+2` major offset: gsd-core `1.4.1` -> plugin `3.4.1`. The `+2` (rather than the old `+1`) keeps the version monotonically above the prior `2.45.x` lineage instead of regressing to `2.4.x`. See [README Versioning](./README.md#versioning). This single release bundles the auto-memory feature below and the 5 gsd-core v1.4.x cherry-picks.
 
 New capability: automatic capture of durable decisions during ad-hoc work, so context persists between milestones without the user manually typing "remember".
 
@@ -23,6 +25,13 @@ Background: the plugin previously only auto-wrote memory at planned-phase comple
 
 ### Fixed
 - **`bin/gsd-tools.cjs` `write-phase-memory`**: now calls `cmdWritePhaseMemory` (was the undefined `writePhaseMemory`) and reads the phase number from `args[1]` (was `args[0]`, the command name). The command was orphaned (never wired into a workflow), so neither bug had surfaced.
+
+### Fixed (cherry-picks from gsd-core v1.4.x)
+- **`bin/lib/state.cjs`** (upstream #905, `e0f67c75`): `syncStateFrontmatter` and `cmdStateJson` now preserve `current_phase` / `current_phase_name` / `current_plan` (plus `stopped_at` / `paused_at` / `progress`) from the existing frontmatter when the body lacks those annotations, instead of silently dropping them on rewrite. A real STATE.md data-loss fix, extending the plugin's state-preservation lineage.
+- **`bin/lib/init.cjs` + `bin/lib/commands.cjs`** (upstream #904, `bf77c0b2`): normalize the phase token in the `phase_branch_template` so a set `project_code` no longer leaks into branch names (`gsd/phase-CK-01-foo` -> `gsd/phase-01-foo`), which broke branch resolution and could spawn duplicate branches.
+- **`agents/` (14 agents)** (upstream #771, `3aed0282`): `color:` frontmatter values changed from hex/`magenta` to the 8 documented Claude Code named colors, so per-agent TUI coloring actually renders.
+- **`agents/gsd-verifier.md`** (upstream #25, `ad1203f9`): Step 7b now proves a test EXISTS by enumeration (`--list` / `--collect-only`) and one PASSES by name, and forbids more than one full-suite run per verification, stopping the cross-language full-suite re-runs (`cargo`/`pytest`/`go`) that wasted minutes per must-have.
+- **`workflows/plan-phase.md`** (upstream #913, `bb27263d`): adds a `<runtime_compatibility>` block (the Agent tool is available top-level; never collapse researcher/planner/checker roles inline; `--chain`/`--auto` suppress prompts only) and relabels all 7 orchestrator-rule markers from `CODEX RUNTIME` to `ALL RUNTIMES`. The `execute-phase` background-dispatch scoping is deferred (it crosses a plugin divergence).
 
 ## [2.45.10] - 2026-06-08  (based on upstream GSD 1.42.3, with 5 cherry-picks from upstream v1.3.1)
 

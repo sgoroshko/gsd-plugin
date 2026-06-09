@@ -136,7 +136,7 @@ This plugin starts from upstream GSD's source tree but adds Claude-Code-native c
 
 | Feature | What it does | Command / hook |
 |---------|--------------|----------------|
-| **Auto-capture durable decisions in ad-hoc work** (v2.46.0) | `/gsd:quick`, `/gsd:debug`, and `/gsd:fast` now save durable decisions (hard preferences, non-obvious rationale, resolved-bug root causes) to Claude Code's auto-memory at task close-out, so context survives between milestones without you typing "remember". Conservative by default: most tasks capture nothing, and the writer is idempotent + flat-indexed in `MEMORY.md`. Also fixes the long-orphaned phase-completion memory writer (it called a non-existent export and read the wrong arg slot, so it had never actually fired). Config: `workflow.auto_memory_capture` (default `true`). | `workflow.auto_memory_capture` |
+| **Auto-capture durable decisions in ad-hoc work** (v3.4.1) | `/gsd:quick`, `/gsd:debug`, and `/gsd:fast` now save durable decisions (hard preferences, non-obvious rationale, resolved-bug root causes) to Claude Code's auto-memory at task close-out, so context survives between milestones without you typing "remember". Conservative by default: most tasks capture nothing, and the writer is idempotent + flat-indexed in `MEMORY.md`. Also fixes the long-orphaned phase-completion memory writer (it called a non-existent export and read the wrong arg slot, so it had never actually fired). Config: `workflow.auto_memory_capture` (default `true`). | `workflow.auto_memory_capture` |
 | **Gaps default to backlog, not new phase** (v2.45.9) | When the verifier returns `gaps_found`, the orchestrator now asks the user how to route them: **Park to backlog** (recommended, gaps become 999.x backlog entries via `/gsd:add-backlog`, milestone ships when in-scope phases close), **Escalate to current milestone** (previous behavior, gaps spawn a follow-up phase via `/gsd:plan-phase --gaps`), or **Decide later**. Default flip prevents unbounded milestone growth from verifier-driven phase multiplication. Escalation path preserved for gaps that genuinely block the milestone goal. | `workflows/execute-phase.md`, `agents/gsd-verifier.md` |
 | **Amend docs into work commit** (v2.45.7) | `/gsd:quick` now folds the docs (PLAN, SUMMARY, STATE updates) into the preceding work commit via `git commit --amend --no-edit` instead of emitting a separate `docs(quick-NN): ...` commit. Common case: one commit per task instead of two. Falls back to a separate commit when the amend would be unsafe (no new work commit, HEAD is a merge commit, `commit_docs: false`, or nothing staged). | `workflows/quick.md` |
 | **Executor self-test bias** (v2.45.6) | Nudges `gsd-executor` toward running automated checks (file existence, grep, command exit code, test runs) instead of emitting `checkpoint:human-verify` prompts that interrupt the user. Single-knob change: the agent prompt's declared `human-verify` share drops from 90% to 40%, with the implicit remainder being silent self-tests. Tunable based on observed false-positive rate. | `agents/gsd-executor.md` |
@@ -333,15 +333,17 @@ After migration, verify the plugin is active:
 
 ## Versioning
 
-The plugin version mirrors upstream GSD with the major bumped by one to signal that this is a derivative with extra features layered on top:
+The plugin version tracks the upstream `@opengsd/gsd-core` release line it follows, with the major bumped by **two** to signal a distinct, more-featured derivative:
 
 ```
-plugin_major = upstream_major + 1
-plugin_minor = upstream_minor
-plugin_patch = upstream_patch
+plugin_major = gsd-core_major + 2
+plugin_minor = gsd-core_minor     (the upstream line this release follows)
+plugin_patch = plugin's own release counter on that line
 ```
 
-So upstream GSD `1.38.3` ships here as plugin `2.38.3`. When upstream advances to `2.x`, this plugin will move to `3.x`. Patch-level changes that are plugin-only (not tied to an upstream sync) bump the patch number further (e.g. `2.38.4`).
+So upstream gsd-core `1.4.x` ships here as plugin `3.4.x` (this release: `3.4.1`, aligned to gsd-core `1.4.1`). When upstream advances to `1.5.0`, the plugin moves to `3.5.0`; when upstream reaches `2.0.0`, the plugin moves to `4.0.0`. Plugin-only changes between upstream releases bump the patch (`3.4.2`, `3.4.3`, ...).
+
+**Why `+2`, and the v3.4.1 re-base:** earlier releases used a `+1` offset against the original `gsd-build/get-shit-done` 1.x line, so the plugin had reached `2.45.x`. After upstream moved to `@opengsd/gsd-core` (which restarted numbering at `1.x`), a `+1` re-align would have produced `2.4.x` — a version regression below the existing `2.45.x`. The `+2` offset re-aligns the minor.patch to the gsd-core line being tracked while staying monotonically above the prior `2.x` lineage. Content is selectively cherry-picked from gsd-core, not a full vendor sync, so `3.4.x` signals "follows the gsd-core 1.4.x line", not byte-identical parity.
 
 This project repackages the GSD workflow system as a native Claude Code plugin with additional optimizations: skill isolation via `context: fork`, structured MCP tools replacing prompt injection, and cross-session memory via memdir.
 
