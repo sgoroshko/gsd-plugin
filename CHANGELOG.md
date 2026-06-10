@@ -2,11 +2,23 @@
 
 All notable changes to this plugin are documented here.
 
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Plugin version in section brackets; upstream GSD base version in trailing parentheses. See [README § Versioning](./README.md#versioning) for the `plugin_major = upstream_major + 1` scheme.
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Plugin version in section brackets; upstream GSD base version in trailing parentheses. See [README § Versioning](./README.md#versioning) for the `plugin_major = upstream_major + 2` scheme (the plugin tracks the `@opengsd/gsd-core` 1.x line with a +2 major offset, so gsd-core 1.4.x maps to plugin 3.4.x).
 
 History before 2.38.2 lives in git + the per-milestone archive (see `.planning/milestones/v1.0-ROADMAP.md` and `.planning/milestones/v1.1-ROADMAP.md`).
 
 ## [Unreleased]
+
+## [3.4.6] - 2026-06-11  (community-reported fixes; no upstream change)
+
+Batch of three plugin-local correctness fixes raised through the project's issues and a contributor PR. None are upstream adaptations; all are flat-layout/plugin-install bugs that only surface in the packaged plugin.
+
+### Fixed
+- **Agent spawns now use the `gsd:` namespace** (closes #14). Under a Claude Code plugin, `plugin.json` `name: "gsd"` registers every agent as `gsd:gsd-<name>`, so a bare `subagent_type="gsd-<name>"` fails with "agent type not found" and the spawn silently falls back or errors. All 69 bare `subagent_type="gsd-*"` references across `workflows/`, `skills/`, and `agents/` are now `subagent_type="gsd:gsd-*"`, and the `<available_agent_types>` prose lists are namespaced to match. Adds `tests/agent-namespace-spawn.test.cjs`.
+- **`workspace.json` lookup extended to a three-slot fallback chain** (closes #10; PR #15 by @qmarcelle, cherry-picked as `41459a5` with authorship preserved). `bin/lib/workspace-json.cjs` now resolves `.agents/workspace.json` first, then the legacy `.agents/agents.workspace.json`, then the oldest `agents.workspace.json`, so workspaces written by any prior layout are still found after upgrade instead of being treated as missing. Adds `tests/workspace-json-integration.test.cjs`.
+- **Skill docs point CJS invocations at the plugin resolver** (closes #13). `skills/intel`, `skills/graphify`, and `skills/from-gsd2` documented `gsd-tools.cjs` calls against a hardcoded `$HOME/.claude/get-shit-done/bin/gsd-tools.cjs` path that does not exist in the flat plugin layout, so every documented CJS call was broken on a real install. All 12 references now use the `${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs` pattern already used by `resume-work`. Adds `tests/skill-cjs-path-resolution.test.cjs`. Full suite 16/16.
+
+### Docs
+- Corrected the CHANGELOG header's versioning note from the old `+ 1` offset to the current `+ 2` scheme (gsd-core 1.4.x maps to plugin 3.4.x).
 
 ## [3.4.5] - 2026-06-09  (adapts gsd-core #936 from v1.4.3)
 
