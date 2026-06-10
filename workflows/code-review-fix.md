@@ -7,8 +7,8 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-- gsd-code-fixer: Applies fixes to code review findings
-- gsd-code-reviewer: Reviews source files for bugs and issues
+- gsd:gsd-code-fixer: Applies fixes to code review findings
+- gsd:gsd-code-reviewer: Reviews source files for bugs and issues
 </available_agent_types>
 
 <process>
@@ -189,7 +189,7 @@ echo "Fix scope: ${FIX_SCOPE}"
 Use Agent() to spawn agent:
 
 ```text
-Agent(subagent_type="gsd-code-fixer", prompt="
+Agent(subagent_type="gsd:gsd-code-fixer", prompt="
 <files_to_read>
 ${REVIEW_PATH}
 </files_to_read>
@@ -272,7 +272,7 @@ if [ "$AUTO_MODE" = "true" ]; then
     
     # Spawn gsd-code-reviewer agent to re-review
     # (This overwrites REVIEW_PATH with latest review state)
-    Agent(subagent_type="gsd-code-reviewer", prompt="
+    Agent(subagent_type="gsd:gsd-code-reviewer", prompt="
 <config>
 depth: ${REVIEW_DEPTH}
 phase_dir: ${PHASE_DIR}
@@ -306,7 +306,7 @@ Do NOT commit the output — the orchestrator handles that.
     # Still has issues — spawn fixer again
     echo "Issues remain. Applying fixes for iteration ${ITERATION}..."
     
-    Agent(subagent_type="gsd-code-fixer", prompt="
+    Agent(subagent_type="gsd:gsd-code-fixer", prompt="
 <files_to_read>
 ${REVIEW_PATH}
 </files_to_read>

@@ -14,10 +14,10 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-phase-researcher — Researches technical approaches for a phase
-- gsd-pattern-mapper — Analyzes codebase for existing patterns, produces PATTERNS.md
-- gsd-planner — Creates detailed plans from phase scope
-- gsd-plan-checker — Reviews plan quality before execution
+- gsd:gsd-phase-researcher — Researches technical approaches for a phase
+- gsd:gsd-pattern-mapper — Analyzes codebase for existing patterns, produces PATTERNS.md
+- gsd:gsd-planner — Creates detailed plans from phase scope
+- gsd:gsd-plan-checker — Reviews plan quality before execution
 </available_agent_types>
 
 <runtime_compatibility>
@@ -550,7 +550,7 @@ Write to: {phase_dir}/{phase_num}-RESEARCH.md
 ```
 Agent(
   prompt=research_prompt,
-  subagent_type="gsd-phase-researcher",
+  subagent_type="gsd:gsd-phase-researcher",
   model="{researcher_model}",
   description="Research Phase {phase}"
 )
@@ -865,7 +865,7 @@ Spawn with:
 ```
 Agent(
   prompt="{above}",
-  subagent_type="gsd-pattern-mapper",
+  subagent_type="gsd:gsd-pattern-mapper",
   model="{researcher_model}",
 )
 ```
@@ -1007,7 +1007,7 @@ Every task MUST include these fields — they are NOT optional:
 ```text
 Agent(
   prompt=filled_prompt,
-  subagent_type="gsd-planner",
+  subagent_type="gsd:gsd-planner",
   model="{planner_model}",
   description="Plan Phase {phase}"
 )
@@ -1063,7 +1063,7 @@ Agent(
   Plan ID | Objective | Wave | Depends On | Requirements
 
   Return: ## OUTLINE COMPLETE with plan count.",
-  subagent_type="gsd-planner",
+  subagent_type="gsd:gsd-planner",
   model="{planner_model}",
   description="Outline Phase {phase} (chunked)"
 )
@@ -1107,7 +1107,7 @@ For each plan entry extracted from `PLAN-OUTLINE.md`:
      Phase requirement IDs to cover in this plan: {plan_requirements}
 
      Return: ## PLAN COMPLETE with the plan ID.",
-     subagent_type="gsd-planner",
+     subagent_type="gsd:gsd-planner",
      model="{planner_model}",
      description="Plan {plan_id} (chunked {k}/{N})"
    )
@@ -1265,7 +1265,7 @@ ${AGENT_SKILLS_CHECKER}
 ```
 Agent(
   prompt=checker_prompt,
-  subagent_type="gsd-plan-checker",
+  subagent_type="gsd:gsd-plan-checker",
   model="{checker_model}",
   description="Verify Phase {phase} plans"
 )
@@ -1380,7 +1380,7 @@ Return what changed.
 ```
 Agent(
   prompt=revision_prompt,
-  subagent_type="gsd-planner",
+  subagent_type="gsd:gsd-planner",
   model="{planner_model}",
   description="Revise Phase {phase} plans"
 )

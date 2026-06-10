@@ -52,7 +52,7 @@ Then spawn `gsd-codebase-mapper` agents with the `--paths` hint:
 
 ```text
 Agent(
-  subagent_type="gsd-codebase-mapper",
+  subagent_type="gsd:gsd-codebase-mapper",
   description="Incremental codebase remap (drift)",
   prompt="Focus: arch
 Today's date: {date}

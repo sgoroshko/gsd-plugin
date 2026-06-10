@@ -85,7 +85,7 @@ goal: {goal}
 ```
 Agent(
   prompt=filled_prompt,
-  subagent_type="gsd-debugger",
+  subagent_type="gsd:gsd-debugger",
   model="{debugger_model}",
   description="Debug {slug}"
 )

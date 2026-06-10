@@ -6,8 +6,8 @@ User tests, Claude records. One test at a time. Plain text responses.
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-planner — Creates detailed plans from phase scope
-- gsd-plan-checker — Reviews plan quality before execution
+- gsd:gsd-planner — Creates detailed plans from phase scope
+- gsd:gsd-plan-checker — Reviews plan quality before execution
 </available_agent_types>
 
 <philosophy>
@@ -579,7 +579,7 @@ Output consumed by /gsd:execute-phase
 Plans must be executable prompts.
 </downstream_consumer>
 """,
-  subagent_type="gsd-planner",
+  subagent_type="gsd:gsd-planner",
   model="{planner_model}",
   description="Plan gap fixes for Phase {phase}"
 )
@@ -630,7 +630,7 @@ Return one of:
 - ## ISSUES FOUND — structured issue list
 </expected_output>
 """,
-  subagent_type="gsd-plan-checker",
+  subagent_type="gsd:gsd-plan-checker",
   model="{checker_model}",
   description="Verify Phase {phase} fix plans"
 )
@@ -676,7 +676,7 @@ Read existing PLAN.md files. Make targeted updates to address checker issues.
 Do NOT replan from scratch unless issues are fundamental.
 </instructions>
 """,
-  subagent_type="gsd-planner",
+  subagent_type="gsd:gsd-planner",
   model="{planner_model}",
   description="Revise Phase {phase} plans"
 )

@@ -8,7 +8,7 @@ Orchestrator coordinates, not executes. Each subagent loads the full execute-pla
 
 <runtime_compatibility>
 **Subagent spawning is runtime-specific:**
-- **Claude Code:** Uses `Agent(subagent_type="gsd-executor", ...)` — blocks until complete, returns result
+- **Claude Code:** Uses `Agent(subagent_type="gsd:gsd-executor", ...)` — blocks until complete, returns result
 - **Copilot:** Subagent spawning does not reliably return completion signals. **Default to
   sequential inline execution**: read and follow execute-plan.md directly for each plan
   instead of spawning parallel agents. Only attempt parallel spawning if the user
@@ -34,18 +34,18 @@ Read STATE.md before any operation to load project context.
 These are the valid GSD subagent types registered in .claude/agents/ (or equivalent for your runtime).
 Always use the exact name from this list — do not fall back to 'general-purpose' or other built-in types:
 
-- gsd-executor — Executes plan tasks, commits, creates SUMMARY.md
-- gsd-verifier — Verifies phase completion, checks quality gates
-- gsd-planner — Creates detailed plans from phase scope
-- gsd-phase-researcher — Researches technical approaches for a phase
-- gsd-plan-checker — Reviews plan quality before execution
-- gsd-debugger — Diagnoses and fixes issues
-- gsd-codebase-mapper — Maps project structure and dependencies
-- gsd-integration-checker — Checks cross-phase integration
-- gsd-nyquist-auditor — Validates verification coverage
-- gsd-ui-researcher — Researches UI/UX approaches
-- gsd-ui-checker — Reviews UI implementation quality
-- gsd-ui-auditor — Audits UI against design requirements
+- gsd:gsd-executor — Executes plan tasks, commits, creates SUMMARY.md
+- gsd:gsd-verifier — Verifies phase completion, checks quality gates
+- gsd:gsd-planner — Creates detailed plans from phase scope
+- gsd:gsd-phase-researcher — Researches technical approaches for a phase
+- gsd:gsd-plan-checker — Reviews plan quality before execution
+- gsd:gsd-debugger — Diagnoses and fixes issues
+- gsd:gsd-codebase-mapper — Maps project structure and dependencies
+- gsd:gsd-integration-checker — Checks cross-phase integration
+- gsd:gsd-nyquist-auditor — Validates verification coverage
+- gsd:gsd-ui-researcher — Researches UI/UX approaches
+- gsd:gsd-ui-checker — Reviews UI implementation quality
+- gsd:gsd-ui-auditor — Audits UI against design requirements
 </available_agent_types>
 
 <process>
@@ -538,7 +538,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
    ```text
    Agent(
-     subagent_type="gsd-executor",
+     subagent_type="gsd:gsd-executor",
      description="Execute plan {plan_number} of phase {phase_number}",
      # Only include model= when executor_model is an explicit model name.
      # When executor_model is "inherit", omit this parameter entirely so
@@ -1475,7 +1475,7 @@ ${CONTEXT_WINDOW >= 500000 ? `- {phase_dir}/*-CONTEXT.md (User decisions — ver
 </files_to_read>
 
 ${VERIFIER_SKILLS}",
-  subagent_type="gsd-verifier",
+  subagent_type="gsd:gsd-verifier",
   model="{verifier_model}"
 )
 ```

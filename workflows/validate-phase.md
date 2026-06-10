@@ -8,7 +8,7 @@ Audit Nyquist validation gaps for a completed phase. Generate missing tests. Upd
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-nyquist-auditor — Validates verification coverage
+- gsd:gsd-nyquist-auditor — Validates verification coverage
 </available_agent_types>
 
 <process>
@@ -100,7 +100,7 @@ Agent(
     "<test_infrastructure>{framework, config, commands}</test_infrastructure>" +
     "<constraints>Never modify impl files. Max 3 debug iterations. Escalate impl bugs.</constraints>" +
     "${AGENT_SKILLS_AUDITOR}",
-  subagent_type="gsd-nyquist-auditor",
+  subagent_type="gsd:gsd-nyquist-auditor",
   model="{AUDITOR_MODEL}",
   description="Fill validation gaps for Phase {N}"
 )

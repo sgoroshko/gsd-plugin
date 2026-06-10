@@ -160,7 +160,7 @@ goal: find_and_fix
 specialist_dispatch_enabled: true
 </session_params>
 """,
-  subagent_type="gsd-debug-session-manager",
+  subagent_type="gsd:gsd-debug-session-manager",
   model="{debugger_model}",
   description="Continue debug session {SLUG}"
 )
@@ -238,7 +238,7 @@ goal: {if diagnose_only: "find_root_cause_only", else: "find_and_fix"}
 specialist_dispatch_enabled: true
 </session_params>
 """,
-  subagent_type="gsd-debug-session-manager",
+  subagent_type="gsd:gsd-debug-session-manager",
   model="{debugger_model}",
   description="Debug session {slug}"
 )

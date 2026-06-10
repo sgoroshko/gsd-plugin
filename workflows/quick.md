@@ -18,12 +18,12 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-phase-researcher — Researches technical approaches for a phase
-- gsd-planner — Creates detailed plans from phase scope
-- gsd-plan-checker — Reviews plan quality before execution
-- gsd-executor — Executes plan tasks, commits, creates SUMMARY.md
-- gsd-verifier — Verifies phase completion, checks quality gates
-- gsd-code-reviewer — Reviews source files for bugs, security issues, and code quality
+- gsd:gsd-phase-researcher — Researches technical approaches for a phase
+- gsd:gsd-planner — Creates detailed plans from phase scope
+- gsd:gsd-plan-checker — Reviews plan quality before execution
+- gsd:gsd-executor — Executes plan tasks, commits, creates SUMMARY.md
+- gsd:gsd-verifier — Verifies phase completion, checks quality gates
+- gsd:gsd-code-reviewer — Reviews source files for bugs, security issues, and code quality
 </available_agent_types>
 
 <process>
@@ -437,7 +437,7 @@ Use standard research format but keep it lean — skip sections that don't apply
 Return: ## RESEARCH COMPLETE with file path
 </output>
 ",
-  subagent_type="gsd-phase-researcher",
+  subagent_type="gsd:gsd-phase-researcher",
   model="{planner_model}",
   description="Research: ${DESCRIPTION}"
 )
@@ -495,7 +495,7 @@ Write plan to: ${QUICK_DIR}/${quick_id}-PLAN.md
 Return: ## PLANNING COMPLETE with plan path
 </output>
 ",
-  subagent_type="gsd-planner",
+  subagent_type="gsd:gsd-planner",
   model="{planner_model}",
   description="Quick plan: ${DESCRIPTION}"
 )
@@ -561,7 +561,7 @@ ${DISCUSS_MODE ? '- Context compliance: Does the plan honor locked decisions fro
 ```
 Agent(
   prompt=checker_prompt,
-  subagent_type="gsd-plan-checker",
+  subagent_type="gsd:gsd-plan-checker",
   model="{checker_model}",
   description="Check quick plan: ${DESCRIPTION}"
 )
@@ -608,7 +608,7 @@ Return what changed.
 ```
 Agent(
   prompt=revision_prompt,
-  subagent_type="gsd-planner",
+  subagent_type="gsd:gsd-planner",
   model="{planner_model}",
   description="Revise quick plan: ${DESCRIPTION}"
 )
@@ -759,7 +759,7 @@ SUMMARY.md and stop — the user must rerun with worktrees disabled.
 - Do NOT update ROADMAP.md (quick tasks are separate from planned phases)
 </constraints>
 ",
-  subagent_type="gsd-executor",
+  subagent_type="gsd:gsd-executor",
   model="{executor_model}",
   ${USE_WORKTREES !== "false" ? 'isolation="worktree",' : ''}
   description="Execute: ${DESCRIPTION}"
@@ -964,7 +964,7 @@ Agent(
   Files: ${CHANGED_FILES}
   Output: ${QUICK_DIR}/${quick_id}-REVIEW.md
   Depth: quick",
-  subagent_type="gsd-code-reviewer",
+  subagent_type="gsd:gsd-code-reviewer",
   model="{executor_model}"
 )
 ```
@@ -1001,7 +1001,7 @@ Task goal: ${DESCRIPTION}
 ${AGENT_SKILLS_VERIFIER}
 
 Check must_haves against actual codebase. Create VERIFICATION.md at ${QUICK_DIR}/${quick_id}-VERIFICATION.md.",
-  subagent_type="gsd-verifier",
+  subagent_type="gsd:gsd-verifier",
   model="{verifier_model}",
   description="Verify: ${DESCRIPTION}"
 )

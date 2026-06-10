@@ -8,7 +8,7 @@ Output: .planning/codebase/ folder with 7 structured documents about the codebas
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-codebase-mapper — Maps project structure and dependencies
+- gsd:gsd-codebase-mapper — Maps project structure and dependencies
 </available_agent_types>
 
 <philosophy>
@@ -140,7 +140,7 @@ Before spawning agents, detect whether the current runtime supports the `Agent` 
 <step name="spawn_agents" condition="Agent tool is available">
 Spawn 4 parallel gsd-codebase-mapper agents.
 
-Use Agent tool with `subagent_type="gsd-codebase-mapper"`, `model="{mapper_model}"`, and `run_in_background=true` for parallel execution.
+Use Agent tool with `subagent_type="gsd:gsd-codebase-mapper"`, `model="{mapper_model}"`, and `run_in_background=true` for parallel execution.
 
 **CRITICAL:** Use the dedicated `gsd-codebase-mapper` agent, NOT `Explore` or `browser_subagent`. The mapper agent writes documents directly.
 
@@ -148,7 +148,7 @@ Use Agent tool with `subagent_type="gsd-codebase-mapper"`, `model="{mapper_model
 
 ```text
 Agent(
-  subagent_type="gsd-codebase-mapper",
+  subagent_type="gsd:gsd-codebase-mapper",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase tech stack",
@@ -174,7 +174,7 @@ ${AGENT_SKILLS_MAPPER}"
 
 ```text
 Agent(
-  subagent_type="gsd-codebase-mapper",
+  subagent_type="gsd:gsd-codebase-mapper",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase architecture",
@@ -200,7 +200,7 @@ ${AGENT_SKILLS_MAPPER}"
 
 ```text
 Agent(
-  subagent_type="gsd-codebase-mapper",
+  subagent_type="gsd:gsd-codebase-mapper",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase conventions",
@@ -226,7 +226,7 @@ ${AGENT_SKILLS_MAPPER}"
 
 ```
 Agent(
-  subagent_type="gsd-codebase-mapper",
+  subagent_type="gsd:gsd-codebase-mapper",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase concerns",

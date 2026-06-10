@@ -7,7 +7,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-- gsd-code-reviewer: Reviews source files for bugs and quality issues
+- gsd:gsd-code-reviewer: Reviews source files for bugs and quality issues
 </available_agent_types>
 
 <process>
@@ -441,7 +441,7 @@ fi
 Spawn the gsd-code-reviewer agent:
 
 ```
-Agent(subagent_type="gsd-code-reviewer", prompt="
+Agent(subagent_type="gsd:gsd-code-reviewer", prompt="
 <files_to_read>
 ${FILES_TO_READ}
 </files_to_read>

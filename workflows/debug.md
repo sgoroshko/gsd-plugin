@@ -7,8 +7,8 @@ Orchestrates symptom gathering, session creation, and delegation to `gsd-debug-s
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-debug-session-manager — manages debug checkpoint/continuation loop in isolated context
-- gsd-debugger — investigates bugs using scientific method
+- gsd:gsd-debug-session-manager — manages debug checkpoint/continuation loop in isolated context
+- gsd:gsd-debugger — investigates bugs using scientific method
 </available_agent_types>
 
 <process>
@@ -128,7 +128,7 @@ goal: find_and_fix
 specialist_dispatch_enabled: true
 </session_params>
 """,
-  subagent_type="gsd-debug-session-manager",
+  subagent_type="gsd:gsd-debug-session-manager",
   model="{debugger_model}",
   description="Continue debug session {SLUG}"
 )
@@ -206,7 +206,7 @@ goal: {if diagnose_only: "find_root_cause_only", else: "find_and_fix"}
 specialist_dispatch_enabled: true
 </session_params>
 """,
-  subagent_type="gsd-debug-session-manager",
+  subagent_type="gsd:gsd-debug-session-manager",
   model="{debugger_model}",
   description="Debug session {slug}"
 )
