@@ -6335,6 +6335,20 @@ function resolveRuntimeTier(config, tier) {
   }
   return merged;
 }
+var FABLE_SUNSET_DATE = "2026-06-22";
+function fableAvailable(now) {
+  let ref = now instanceof Date ? now : null;
+  if (!ref) {
+    const envNow = process.env.GSD_FABLE_SUNSET_NOW;
+    ref = envNow ? new Date(envNow) : /* @__PURE__ */ new Date();
+  }
+  if (Number.isNaN(ref.getTime()))
+    return true;
+  return ref.getTime() <= (/* @__PURE__ */ new Date(`${FABLE_SUNSET_DATE}T23:59:59.999Z`)).getTime();
+}
+function applyFableSunset(tier) {
+  return tier === "fable" && !fableAvailable() ? "opus" : tier;
+}
 var resolveModel = async (args, projectDir, workstream) => {
   const agentType = args[0];
   if (!agentType) {
@@ -6364,10 +6378,10 @@ var resolveModel = async (args, projectDir, workstream) => {
   if (profile === "inherit") {
     return { data: { model: "inherit", profile } };
   }
-  const alias = agentModels[profile] || agentModels["balanced"] || "sonnet";
+  const alias = applyFableSunset(agentModels[profile] || agentModels["balanced"] || "sonnet");
   const phaseType = AGENT_TO_PHASE_TYPE[agentType];
   const phaseTier = phaseType && typeof config.models === "object" ? config.models[phaseType] : void 0;
-  const tier = typeof phaseTier === "string" ? phaseTier : alias;
+  const tier = applyFableSunset(typeof phaseTier === "string" ? phaseTier : alias);
   const runtimeTier = resolveRuntimeTier(config, tier);
   if (runtimeTier?.model) {
     const result = { model: runtimeTier.model, profile };
@@ -8337,6 +8351,7 @@ var VALID_CONFIG_KEYS = /* @__PURE__ */ new Set([
   "statusline.context_position",
   "workflow.ui_review",
   "workflow.max_discuss_passes",
+  "workflow.ultracode",
   "features.thinking_partner",
   "context",
   "features.global_learnings",

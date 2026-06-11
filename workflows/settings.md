@@ -54,6 +54,7 @@ Parse current values (default to `true` if not present):
 - `model_profile` — which model each agent uses (default: `balanced`)
 - `git.branching_strategy` — branching approach (default: `"none"`)
 - `workflow.use_worktrees` — whether parallel executor agents run in worktree isolation (default: `true`)
+- `workflow.ultracode` — orchestration signal: the good-fit heavy commands (`/gsd:map-codebase`, `/gsd:code-review`, `/gsd:review`) run at maximum multi-agent depth (full fan-out + adversarial verification). **Auto-on through 2026-06-22** (the deeper runs are included during that window), **off afterward** (extra-paid). Set `true`/`false` to override the window in either direction; leave unset for the automatic behavior. Claude Code only. See `references/ultracode-mode.md`.
 </step>
 
 <step name="present_settings">

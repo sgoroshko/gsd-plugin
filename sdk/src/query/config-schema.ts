@@ -66,6 +66,7 @@ export const VALID_CONFIG_KEYS: ReadonlySet<string> = new Set([
   'statusline.context_position',
   'workflow.ui_review',
   'workflow.max_discuss_passes',
+  'workflow.ultracode',
   'features.thinking_partner',
   'context',
   'features.global_learnings',

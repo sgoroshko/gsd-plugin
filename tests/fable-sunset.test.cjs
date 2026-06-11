@@ -10,6 +10,8 @@
 // runtime) sees one consistent effective tier.
 
 const assert = require('node:assert');
+const fs = require('node:fs');
+const path = require('node:path');
 const core = require('../bin/lib/core.cjs');
 
 const { applyFableSunset, fableAvailable, FABLE_SUNSET_DATE } = core;
@@ -32,6 +34,19 @@ const wayAfter = new Date('2027-01-01T00:00:00Z');
 
 check('sunset date constant is 2026-06-22', () => {
   assert.strictEqual(FABLE_SUNSET_DATE, '2026-06-22');
+});
+
+// Parity guard: the live spawn path for `gsd-sdk query init.*` is the SDK
+// resolver (sdk/src/query/config-query.ts -> sdk/dist), NOT this CJS module.
+// A sunset that exists only in CJS is a no-op on the real path. Lock both in
+// step: the SDK source must apply the same fable sunset with the same date.
+check('SDK resolver (sdk/src) applies the fable sunset (CJS/SDK parity)', () => {
+  const sdkResolver = fs.readFileSync(
+    path.join(__dirname, '..', 'sdk', 'src', 'query', 'config-query.ts'),
+    'utf8',
+  );
+  assert.ok(sdkResolver.includes('applyFableSunset'), 'SDK resolver missing applyFableSunset');
+  assert.ok(sdkResolver.includes("'2026-06-22'"), 'SDK resolver missing the 2026-06-22 cutoff');
 });
 
 check('fable is available before the sunset', () => {

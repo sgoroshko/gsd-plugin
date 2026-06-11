@@ -13,6 +13,19 @@ Read all files referenced by the invoking prompt's execution_context before star
 @$HOME/.claude/get-shit-done/references/agent-contracts.md
 </required_reading>
 
+<ultracode_gate>
+Resolve whether **ultracode mode** is active for this run:
+```bash
+ULTRA=$(gsd-sdk query config-get workflow.ultracode --default auto 2>/dev/null || echo auto)
+TODAY=$(date +%F)
+# Active when: ULTRA = "true" (explicit opt-in), OR
+#              ULTRA != "false" AND TODAY <= 2026-06-22 (the window during which
+#              these deeper runs are included; after 2026-06-22 ultracode becomes
+#              extra-paid, so it is OFF then unless workflow.ultracode is explicitly true).
+```
+When **active**, run in ultracode mode: add a second, independent reviewer panel and an extra convergence pass, and keep a finding only when both panels agree on it. When **inactive**, run normally. See `references/ultracode-mode.md`.
+</ultracode_gate>
+
 <process>
 
 ## 1. Parse and Normalize Arguments

@@ -147,6 +147,31 @@ function resolveRuntimeTier(config, tier) {
  * @returns QueryResult with { model, profile } or { model, profile, unknown_agent: true }
  * @throws GSDError with Validation classification if agent type not provided
  */
+/**
+ * Claude Fable 5 sunset — SDK mirror of bin/lib/core.cjs applyFableSunset.
+ *
+ * Fable is offered only through 2026-06-22. The `fable` tier is the quality
+ * profile's pick for the heaviest agents; past the sunset it falls back to
+ * `opus` so those agents keep resolving to a real model. This is the live
+ * resolution path for `gsd-sdk query init.*` (the workflow spawn path), so the
+ * sunset MUST exist here as well as in the CJS resolver. `GSD_FABLE_SUNSET_NOW`
+ * (ISO date) pins "now" for tests; an unparseable value stays available so a bad
+ * env var never forces the fallback early. The final day is inclusive.
+ */
+const FABLE_SUNSET_DATE = '2026-06-22';
+function fableAvailable(now) {
+    let ref = now instanceof Date ? now : null;
+    if (!ref) {
+        const envNow = process.env.GSD_FABLE_SUNSET_NOW;
+        ref = envNow ? new Date(envNow) : new Date();
+    }
+    if (Number.isNaN(ref.getTime()))
+        return true;
+    return ref.getTime() <= new Date(`${FABLE_SUNSET_DATE}T23:59:59.999Z`).getTime();
+}
+function applyFableSunset(tier) {
+    return tier === 'fable' && !fableAvailable() ? 'opus' : tier;
+}
 export const resolveModel = async (args, projectDir, workstream) => {
     const agentType = args[0];
     if (!agentType) {
@@ -186,12 +211,14 @@ export const resolveModel = async (args, projectDir, workstream) => {
     if (profile === 'inherit') {
         return { data: { model: 'inherit', profile } };
     }
-    const alias = agentModels[profile] || agentModels['balanced'] || 'sonnet';
+    // Fable sunset: downgrade the `fable` tier to `opus` past 2026-06-22, before
+    // the runtime / resolve_model_ids / alias exit points below (mirrors CJS).
+    const alias = applyFableSunset(agentModels[profile] || agentModels['balanced'] || 'sonnet');
     const phaseType = AGENT_TO_PHASE_TYPE[agentType];
     const phaseTier = phaseType && typeof config.models === 'object'
         ? config.models[phaseType]
         : undefined;
-    const tier = typeof phaseTier === 'string' ? phaseTier : alias;
+    const tier = applyFableSunset(typeof phaseTier === 'string' ? phaseTier : alias);
     const runtimeTier = resolveRuntimeTier(config, tier);
     if (runtimeTier?.model) {
         const result = { model: runtimeTier.model, profile };
