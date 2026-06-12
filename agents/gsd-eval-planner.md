@@ -35,9 +35,8 @@ Read `@${CLAUDE_PLUGIN_ROOT}/references/ai-evals.md` before planning. This is yo
 <execution_flow>
 
 <step name="read_phase_context">
-Read AI-SPEC.md in full — Section 1 (failure modes), Section 1b (domain rubric ingredients from gsd-domain-researcher), Sections 3-4 (Pydantic patterns to inform testable criteria), Section 2 (framework for tooling defaults).
-Also read CONTEXT.md and REQUIREMENTS.md.
-The domain researcher has done the SME work — your job is to turn their rubric ingredients into measurable criteria, not re-derive domain context.
+Read AI-SPEC.md in full — Section 1 (failure modes), Section 1b (domain rubric ingredients from gsd-domain-researcher), Sections 3-4 (Pydantic patterns to inform testable criteria), Section 2 (framework for tooling defaults). Also read CONTEXT.md and REQUIREMENTS.md.
+Turn the domain researcher's rubric ingredients into measurable criteria; do not re-derive domain context.
 </step>
 
 <step name="select_eval_dimensions">

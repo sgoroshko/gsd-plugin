@@ -6,7 +6,7 @@ Rules and patterns for scaffolding iOS applications. Apply when any plan involve
 
 ## Critical Rule: Never Use Package.swift as the Primary Build System for iOS Apps
 
-**NEVER use `Package.swift` with `.executableTarget` (or `.target`) to scaffold an iOS app.** Swift Package Manager executable targets compile as macOS command-line tools — they do not produce `.app` bundles, cannot be signed for iOS devices, and cannot be submitted to the App Store.
+**NEVER use `Package.swift` with `.executableTarget` (or `.target`) to scaffold an iOS app.** SPM executable targets compile as macOS CLI binaries: no `.app` bundle, no iOS signing, no App Store submission, and they won't build for any iOS simulator or device.
 
 **Prohibited pattern:**
 ```swift
@@ -15,8 +15,6 @@ Rules and patterns for scaffolding iOS applications. Apply when any plan involve
 // or
 .target(name: "MyApp", dependencies: [])
 ```
-
-Using this pattern produces a macOS CLI binary, not an iOS app. The app will not build for any iOS simulator or device.
 
 ---
 
@@ -32,7 +30,7 @@ brew install xcodegen
 
 ### Step 2 — Create `project.yml`
 
-`project.yml` is the XcodeGen spec that describes the project structure. Minimum viable spec:
+The XcodeGen spec describing project structure. Minimum viable spec:
 
 ```yaml
 name: MyApp
@@ -108,13 +106,13 @@ Always verify SwiftUI API availability against the project's `IPHONEOS_DEPLOYMEN
 1. Raise the deployment target in `project.yml` (and document the decision), or
 2. Wrap the call in `if #available(iOS NN, *) { ... }` with a fallback implementation.
 
-Do NOT silently use an API that requires a higher iOS version than the declared deployment target — the app will crash at runtime on older devices.
+Do NOT silently use an API requiring a higher iOS version than the declared deployment target — the app crashes at runtime on older devices.
 
 ---
 
 ## Verification
 
-After running `xcodegen generate`, verify the project builds:
+After `xcodegen generate`, verify the project builds:
 
 ```bash
 xcodebuild -project MyApp.xcodeproj -scheme MyApp -destination 'platform=iOS Simulator,name=iPhone 16' build

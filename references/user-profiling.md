@@ -1,15 +1,15 @@
 # User Profiling: Detection Heuristics Reference
 
-This reference document defines detection heuristics for behavioral profiling across 8 dimensions. The gsd-user-profiler agent applies these rules when analyzing extracted session messages. Do not invent dimensions or scoring rules beyond what is defined here.
+Detection heuristics for behavioral profiling across 8 dimensions. The gsd-user-profiler agent applies these rules when analyzing extracted session messages. Do not invent dimensions or scoring rules beyond what is defined here.
 
 ## How to Use This Document
 
-1. The gsd-user-profiler agent reads this document before analyzing any messages
-2. For each dimension, the agent scans messages for the signal patterns defined below
-3. The agent applies the detection heuristics to classify the developer's pattern
-4. Confidence is scored using the thresholds defined per dimension
-5. Evidence quotes are curated using the rules in the Evidence Curation section
-6. Output must conform to the JSON schema in the Output Schema section
+1. Read this document before analyzing any messages
+2. For each dimension, scan messages for the signal patterns defined below
+3. Apply the detection heuristics to classify the developer's pattern
+4. Score confidence using the per-dimension thresholds
+5. Curate evidence quotes per the Evidence Curation section
+6. Output must conform to the Output Schema
 
 ---
 
@@ -484,13 +484,7 @@ These message types are genuine but carry less behavioral signal. Deprioritize t
 
 ## Recency Weighting
 
-### Guideline
-
-Recent sessions (last 30 days) should be weighted approximately 3x compared to older sessions when analyzing patterns.
-
-### Rationale
-
-Developer styles evolve. A developer who was terse six months ago may now provide detailed structured context. Recent behavior is a more accurate reflection of current working style.
+Recent sessions (last 30 days) should be weighted approximately 3x compared to older sessions when analyzing patterns. Developer styles evolve: recent behavior is a more accurate reflection of current working style.
 
 ### Application
 
@@ -653,8 +647,6 @@ The profiler agent must return JSON matching this exact schema, wrapped in `<ana
 ---
 
 ## Cross-Project Consistency
-
-### Assessment
 
 For each dimension, assess whether the observed pattern is consistent across the projects analyzed:
 

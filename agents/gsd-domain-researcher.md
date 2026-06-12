@@ -35,8 +35,7 @@ When you need library or framework documentation, check in this order:
    npx --yes ctx7@latest docs <libraryId> "<query>"
    ```
 
-Do not skip documentation lookups because MCP tools are unavailable — the CLI fallback
-works via Bash and produces equivalent output.
+Do not skip documentation lookups when MCP is unavailable — the CLI fallback works via Bash.
 </documentation_lookup>
 
 <required_reading>

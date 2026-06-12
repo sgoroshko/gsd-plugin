@@ -29,18 +29,16 @@ fi
 ```
 
 If `CONTEXT_MODE` is set, jump to the `context_check` step and skip the
-integrity validation steps. The two modes are orthogonal — context utilization
-has nothing to do with `.planning/` directory health.
+integrity validation steps. The two modes are independent.
 </step>
 
 <step name="context_check">
 **Run only when `--context` is set.**
 
-The model running this workflow self-reports the current session's
-approximate `tokensUsed` and the active model's `contextWindow`. Use the values
-visible in your runtime (Claude Code's `/context` slash command output, or the
-model's own session telemetry). If the runtime exposes neither, prompt the user
-once via AskUserQuestion for both numbers.
+Self-report the current session's approximate `tokensUsed` and the active
+model's `contextWindow` from your runtime (Claude Code's `/context` output, or
+session telemetry). If the runtime exposes neither, prompt the user once via
+AskUserQuestion for both numbers.
 
 **TEXT_MODE fallback:** when `text_mode` is true (config or `--text` flag) the
 runtime is non-Claude (Codex, Gemini, etc.) and `AskUserQuestion` is not
@@ -57,7 +55,7 @@ gsd-sdk query validate.context \
 The query prints a one-line status (`Context utilization: NN% (state)`) plus
 a recommendation line for the warning and critical states. Print the SDK
 output verbatim and end the workflow — do **not** mix in `.planning/`
-health output, the two modes are independent diagnostics.
+health output.
 </step>
 
 <step name="run_health_check">
@@ -80,9 +78,7 @@ Parse JSON output:
 **Format and display results:**
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD Health Check
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > HEALTH CHECK
 
 Status: HEALTHY | DEGRADED | BROKEN
 Errors: N | Warnings: N | Info: N

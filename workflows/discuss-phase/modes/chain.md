@@ -6,12 +6,9 @@
 
 ## Effect
 
-- Discussion is **fully interactive** — questions, gray-area selection, and
-  follow-ups behave exactly the same as default mode.
+- Discussion is **fully interactive** (same as default mode).
 - After discussion completes, **auto-advance to plan-phase → execute-phase**
   (same downstream behavior as `--auto`).
-- This is the middle ground: the user controls the discuss decisions, then
-  plan and execute run autonomously.
 
 ## auto_advance step (executed by the parent file)
 
@@ -46,30 +43,23 @@
 
    Banner:
    ```
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    GSD ► AUTO-ADVANCING TO PLAN
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GSD ► AUTO-ADVANCING TO PLAN
 
    Context captured. Launching plan-phase...
    ```
 
    Launch plan-phase using the Skill tool to avoid nested Task sessions
-   (which cause runtime freezes due to deep agent nesting — see #686):
+   (deep agent nesting causes runtime freezes — see #686). This keeps the
+   chain flat (discuss, plan, execute at the same nesting level):
    ```
    Skill(skill="gsd-plan-phase", args="${PHASE} --auto ${GSD_WS}")
    ```
-
-   This keeps the auto-advance chain flat — discuss, plan, and execute all
-   run at the same nesting level rather than spawning increasingly deep
-   Task agents.
 
 6. **Handle plan-phase return:**
 
    - **PHASE COMPLETE** → Full chain succeeded. Display:
      ```
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      GSD ► PHASE ${PHASE} COMPLETE
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     GSD ► PHASE ${PHASE} COMPLETE
 
      Auto-advance pipeline finished: discuss → plan → execute
 

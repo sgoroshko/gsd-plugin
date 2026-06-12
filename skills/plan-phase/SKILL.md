@@ -27,10 +27,6 @@ Create executable phase prompts (PLAN.md files) for a roadmap phase with integra
 @${CLAUDE_PLUGIN_ROOT}/references/ui-brand.md
 </execution_context>
 
-<runtime_note>
-**Copilot (VS Code):** Use `vscode_askquestions` wherever this workflow calls `AskUserQuestion`. They are equivalent — `vscode_askquestions` is the VS Code Copilot implementation of the same interactive question API. Do not skip questioning steps because `AskUserQuestion` appears unavailable; use `vscode_askquestions` instead.
-</runtime_note>
-
 <context>
 Phase number: $ARGUMENTS (optional — auto-detects next unplanned phase if omitted)
 
@@ -60,5 +56,5 @@ When planning concludes (PLAN.md files written, plan-checker passed, STATE.md up
 - Include a parenthetical: *(`/clear` is safe — `/gsd:resume-work` restores position from `HANDOFF.json` if you change your mind)*
 - Add an "Also available:" section: review the plan files, run `/gsd:list-phase-assumptions N`, etc.
 
-Plan-to-execute is a clean boundary — the discuss/research/plan conversation rarely informs execution. Suggesting `/clear` here keeps execution starting with a tight, plan-focused context.
+Plan-to-execute is a clean boundary; `/clear` keeps execution starting with a tight, plan-focused context.
 </output_format>

@@ -35,9 +35,14 @@ check('skills/version/SKILL.md exists with name gsd:version + Bash tool', () => 
 check('workflows/version.md resolves the installed version from plugin.json', () => {
   const w = read('workflows/version.md');
   assert.ok(w.includes('.claude-plugin/plugin.json'), 'does not read plugin.json version');
+  // Robust resolution: prefer CLAUDE_PLUGIN_ROOT, else glob the newest versioned
+  // cache dir (the real layout: .../cache/gsd-plugin/gsd/<version>/). The 'current'
+  // symlink does not exist on recent Claude Code, so a bare fallback to it reports
+  // "unknown" when CLAUDE_PLUGIN_ROOT is unset (the Bash-tool env).
+  assert.ok(w.includes('CLAUDE_PLUGIN_ROOT'), 'does not prefer CLAUDE_PLUGIN_ROOT');
   assert.ok(
-    w.includes('${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}'),
-    'does not use the plugin-root resolver with fallback',
+    w.includes('cache/gsd-plugin/gsd/') && w.includes('sort -V'),
+    'does not fall back to the newest versioned cache dir',
   );
 });
 

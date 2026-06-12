@@ -92,25 +92,9 @@ Proceeding without research subagents — roadmap will be generated inline.
 ```
 Skip Steps 6–7 (parallel research and synthesis) and proceed directly to roadmap creation in Step 8.
 
-**Detect runtime and set instruction file name:**
-
-Derive `RUNTIME` from the invoking prompt's `execution_context` path:
-- Path contains `/.codex/` → `RUNTIME=codex`
-- Path contains `/.gemini/` → `RUNTIME=gemini`
-- Path contains `/.config/opencode/` or `/.opencode/` → `RUNTIME=opencode`
-- Otherwise → `RUNTIME=claude`
-
-If `execution_context` path is not available, fall back to env vars:
+**Set the instruction file variable:**
 ```bash
-if [ -n "$CODEX_HOME" ]; then RUNTIME="codex"
-elif [ -n "$GEMINI_CONFIG_DIR" ]; then RUNTIME="gemini"
-elif [ -n "$OPENCODE_CONFIG_DIR" ] || [ -n "$OPENCODE_CONFIG" ]; then RUNTIME="opencode"
-else RUNTIME="claude"; fi
-```
-
-Set the instruction file variable:
-```bash
-if [ "$RUNTIME" = "codex" ]; then INSTRUCTION_FILE="AGENTS.md"; else INSTRUCTION_FILE="CLAUDE.md"; fi
+INSTRUCTION_FILE="CLAUDE.md"
 ```
 
 All subsequent references to the project instruction file use `$INSTRUCTION_FILE`.
@@ -317,13 +301,7 @@ If spike/sketch findings skills exist, read their SKILL.md files to inform the q
 
 **If auto mode:** Skip (already handled in Step 2a). Extract project context from provided document instead and proceed to Step 4.
 
-**Display stage banner:**
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUESTIONING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+**Display stage banner:** `GSD ► QUESTIONING`
 
 **Open the conversation:**
 
@@ -539,7 +517,7 @@ AskUserQuestion([
 
 **If "Use as-is":** use the defaults values for config.json and skip directly to **Commit config.json** below.
 
-**If "Modify some settings":** present a selection of every setting with its current saved value.
+**If "Modify some settings":** present a selection of every setting with its current saved value, using a two-block split to stay within the 4-option runtime cap.
 
 **If TEXT_MODE is active** (non-Claude runtimes): display a numbered list and ask the user to type the numbers of settings they want to change (comma-separated). Parse the response and proceed.
 
@@ -555,9 +533,6 @@ Which settings do you want to change? (enter numbers, comma-separated)
   7. Plan Check — Currently: [Yes|No]
   8. Verifier — Currently: [Yes|No]
 ```
-
-**Otherwise** (Claude runtime with AskUserQuestion): use a two-block split
-to stay within the 4-option runtime cap.
 
 ```text
 AskUserQuestion([
@@ -814,15 +789,7 @@ Use AskUserQuestion:
 
 **If "Research first":**
 
-Display stage banner:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCHING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Researching [domain] ecosystem...
-```
+Display stage banner: `GSD ► RESEARCHING` then `Researching [domain] ecosystem...`
 
 Create research directory:
 
@@ -1043,9 +1010,7 @@ Commit after writing.
 Display research complete banner and key findings:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCH COMPLETE ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► RESEARCH COMPLETE ✓
 
 ## Key Findings
 
@@ -1060,13 +1025,7 @@ Files: `.planning/research/`
 
 ## 7. Define Requirements
 
-Display stage banner:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DEFINING REQUIREMENTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Display stage banner: `GSD ► DEFINING REQUIREMENTS`
 
 **Load context:**
 
@@ -1229,15 +1188,7 @@ When `TEXT_MODE=true` (per the workflow's existing TEXT_MODE handling for non-Cl
 
 ## 8. Create Roadmap
 
-Display stage banner:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► CREATING ROADMAP
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-◆ Spawning roadmapper...
-```
+Display stage banner: `GSD ► CREATING ROADMAP` then `◆ Spawning roadmapper...`
 
 **ROADMAP.md template — mode-aware emit.** When generating the initial ROADMAP.md:
 
@@ -1430,9 +1381,7 @@ gsd-sdk query commit "docs: create roadmap ([N] phases)" --files .planning/ROADM
 Present completion summary:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PROJECT INITIALIZED ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► PROJECT INITIALIZED ✓
 
 **[Project Name]**
 
@@ -1451,9 +1400,7 @@ Present completion summary:
 **If auto mode:**
 
 ```
-╔══════════════════════════════════════════╗
-║  AUTO-ADVANCING → DISCUSS PHASE 1        ║
-╚══════════════════════════════════════════╝
+AUTO-ADVANCING → DISCUSS PHASE 1
 ```
 
 Exit skill and invoke SlashCommand("/gsd:discuss-phase 1 --auto")
@@ -1525,7 +1472,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 - `.planning/REQUIREMENTS.md`
 - `.planning/ROADMAP.md`
 - `.planning/STATE.md`
-- `$INSTRUCTION_FILE` (`AGENTS.md` for Codex, `CLAUDE.md` for all other runtimes)
+- `$INSTRUCTION_FILE` (`CLAUDE.md`)
 
 </output>
 
@@ -1547,7 +1494,7 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 - [ ] ROADMAP.md created with phases, requirement mappings, success criteria
 - [ ] STATE.md initialized
 - [ ] REQUIREMENTS.md traceability updated
-- [ ] `$INSTRUCTION_FILE` generated with GSD workflow guidance (AGENTS.md for Codex, CLAUDE.md otherwise)
+- [ ] `$INSTRUCTION_FILE` generated with GSD workflow guidance (CLAUDE.md)
 - [ ] User knows next step is `/gsd:discuss-phase 1`
 
 **Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist.

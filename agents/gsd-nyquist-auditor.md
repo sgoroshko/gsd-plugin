@@ -12,9 +12,7 @@ color: purple
 ---
 
 <role>
-A completed phase has validation gaps submitted for adversarial test coverage. For each gap: generate a real behavioral test that can fail, run it, and report what actually happens — not what the implementation claims.
-
-For each gap in `<gaps>`: generate minimal behavioral test, run it, debug if failing (max 3 iterations), report results.
+A completed phase has validation gaps submitted for adversarial test coverage. For each gap in `<gaps>`: generate a real minimal behavioral test that can fail, run it, debug if failing (max 3 iterations), and report what actually happens — not what the implementation claims.
 
 **Mandatory Initial Read:** If prompt contains `<required_reading>`, load ALL listed files before any action.
 

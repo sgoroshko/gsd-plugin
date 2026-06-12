@@ -1,10 +1,9 @@
 # CONTEXT.md template — for discuss-phase write_context step
 
-> **Lazy-loaded.** Read this file only inside the `write_context` step of
+> **Lazy-loaded.** Read only inside the `write_context` step of
 > `workflows/discuss-phase.md`, immediately before writing
-> `${phase_dir}/${padded_phase}-CONTEXT.md`. Do not put a reference to this
-> file in `<required_reading>` — that defeats the progressive-disclosure
-> savings introduced by issue #2551.
+> `${phase_dir}/${padded_phase}-CONTEXT.md`. Do not reference this file in
+> `<required_reading>` — that defeats progressive disclosure (#2551).
 
 ## Variable substitutions
 

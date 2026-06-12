@@ -1,5 +1,5 @@
 <purpose>
-Remove an unstarted future phase from the project roadmap, delete its directory, renumber all subsequent phases to maintain a clean linear sequence, and commit the change. The git commit serves as the historical record of removal.
+Remove an unstarted future phase from the roadmap, delete its directory, renumber subsequent phases, and commit. The git commit is the historical record of removal.
 </purpose>
 
 <required_reading>
@@ -77,7 +77,7 @@ Wait for confirmation.
 </step>
 
 <step name="execute_removal">
-**Delegate the entire removal operation to `gsd-sdk query phase.remove`:**
+Delegate the entire removal to `gsd-sdk query phase.remove`:
 
 ```bash
 RESULT=$(gsd-sdk query phase.remove "${target}")
@@ -105,8 +105,6 @@ Stage and commit the removal:
 ```bash
 gsd-sdk query commit "chore: remove phase {target} ({original-phase-name})" --files .planning/
 ```
-
-The commit message preserves the historical record of what was removed.
 </step>
 
 <step name="completion">

@@ -1,5 +1,5 @@
 <purpose>
-Verify milestone achieved its definition of done by aggregating phase verifications, checking cross-phase integration, and assessing requirements coverage. Reads existing VERIFICATION.md files (phases already verified during execute-phase), aggregates tech debt and deferred gaps, then spawns integration checker for cross-phase wiring.
+Verify milestone achieved its definition of done: aggregate existing phase VERIFICATION.md files, assess requirements coverage, aggregate tech debt and deferred gaps, then spawn the integration checker for cross-phase wiring.
 </purpose>
 
 <required_reading>
@@ -31,7 +31,7 @@ integration_checker_model=$(gsd-sdk query resolve-model gsd-integration-checker 
 ## 1. Determine Milestone Scope
 
 ```bash
-# Get phases in milestone (sorted numerically, handles decimals)
+# Phases in milestone (sorted numerically, handles decimals)
 gsd-sdk query phases.list
 ```
 

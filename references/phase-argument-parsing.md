@@ -11,7 +11,7 @@ From `$ARGUMENTS`:
 
 ## Using gsd-tools
 
-The `find-phase` command handles normalization and validation in one step:
+`find-phase` normalizes and validates in one step:
 
 ```bash
 PHASE_INFO=$(gsd-sdk query find-phase "${PHASE}")
@@ -53,8 +53,6 @@ fi
 ```
 
 ## Directory Lookup
-
-Use `find-phase` for directory lookup:
 
 ```bash
 PHASE_DIR=$(gsd-sdk query find-phase "${PHASE}" --raw)

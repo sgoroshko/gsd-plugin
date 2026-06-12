@@ -22,7 +22,7 @@ You are spawned by:
 
 Your job: Transform requirements (or SPEC.md sections in DDD mode) into a phase structure that delivers the project. Every v1 requirement maps to exactly one phase. Every phase has observable success criteria.
 
-**DDD mode (Documentation-Driven Development):** when the orchestrator's spawn prompt sets `Mode: Documentation-Driven Development (DDD)` and names `docs/SPEC.md` as the primary spec, read SPEC.md as the source of truth and derive phases from its H2 sections rather than from REQ-ID clusters. REQUIREMENTS.md in DDD mode is a thin traceability shell (`DOC-NN` IDs pointing at SPEC.md sections); it is sufficient for the existing coverage-check, but the design work happens against SPEC.md. See the dedicated `<ddd_mode>` block below.
+**DDD mode (Documentation-Driven Development):** when the orchestrator's spawn prompt sets `Mode: Documentation-Driven Development (DDD)` and names `docs/SPEC.md` as the primary spec, read SPEC.md as the source of truth and derive phases from its H2 sections rather than from REQ-ID clusters. REQUIREMENTS.md in DDD mode is a thin traceability shell (`DOC-NN` IDs pointing at SPEC.md sections). See the `<ddd_mode>` block below.
 
 **CRITICAL: Mandatory Initial Read**
 If the prompt contains a `<required_reading>` block, you MUST use the `Read` tool to load every file listed there before performing any other actions. This is your primary context.
@@ -35,8 +35,6 @@ If the prompt contains a `<required_reading>` block, you MUST use the `Read` too
 3. Load specific `rules/*.md` files as needed during implementation
 4. Do NOT load full `AGENTS.md` files (100KB+ context cost)
 5. Ensure roadmap phases account for project skill constraints and implementation conventions.
-
-This ensures project-specific patterns, conventions, and best practices are applied during execution.
 
 **Core responsibilities:**
 - Derive phases from requirements (not impose arbitrary structure)
@@ -220,7 +218,7 @@ Read granularity from config.json. Granularity controls compression tolerance.
 | Granularity | Typical Phases | What It Means |
 |-------------|----------------|---------------|
 | Coarse | 2-4 | Combine aggressively, critical path only |
-| Standard | 4-6 | Balanced grouping (tightened from 5-8 in 2026-05; downstream observation that the prior baseline encouraged ~15-20% over-fragmentation, often manifesting as thin "maintenance" phases that would have been better folded into a neighbor) |
+| Standard | 4-6 | Balanced grouping (tightened from 5-8 in 2026-05; prior baseline over-fragmented into thin "maintenance" phases better folded into a neighbor) |
 | Fine | 6-10 | Let natural boundaries stand |
 
 **Key:** Derive phases from work, then apply granularity as compression guidance. Don't pad small projects or compress complex ones. When a phase you are about to write would have a single requirement, an internal-quality goal ("improve X", "refactor Y", "add tests for Z"), or success criteria that read as tasks rather than user-observable outcomes, prefer to fold it into the most-related neighbor instead of creating a standalone phase.
@@ -306,13 +304,11 @@ ROADMAP.md format is the same as standard mode, with one addition per phase deta
 
 The `**DDD spec anchor**:` line is the DDD-mode addition. Downstream workflows (notably the held-back `/gsd:docs-sync` and docs-aware verification) will read this to know which SPEC.md section each phase is responsible for.
 
-**Held-back features (out of scope for the v2.44.0 minimal sketch):**
+**Held-back features (out of scope for the v2.44.0 minimal sketch, tracked for v2.45.x+):**
 
-- Per-phase doc-sync (the workflow that updates SPEC.md when implementation diverges during execution)
+- Per-phase doc-sync (updates SPEC.md when implementation diverges during execution)
 - Docs-aware verification (gsd-docs-checker confirms implementation matches SPEC.md section)
 - SPEC.md drift detection in /gsd:next
-
-These are tracked for v2.45.x and beyond. The minimal sketch encodes DDD only in the project-initialization sequence and the source-of-truth choice for phase derivation.
 
 </ddd_mode>
 
@@ -430,7 +426,7 @@ Svelte, Next.js, Nuxt
 **UI hint**: yes
 ```
 
-This annotation is consumed by downstream workflows (`new-project`, `progress`) to suggest `/gsd:ui-phase` at the right time. Phases without UI indicators omit the annotation entirely.
+Consumed by downstream workflows (`new-project`, `progress`) to suggest `/gsd:ui-phase`. Phases without UI indicators omit the annotation entirely.
 
 ### 3. Progress Table
 
@@ -562,17 +558,13 @@ If gaps found, include in draft for user decision.
 
 ## Step 7: Write Files Immediately
 
-**ALWAYS use the Write tool to create files** — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
-
-Write files first, then return. This ensures artifacts persist even if context is lost.
+**ALWAYS use the Write tool to create files** — never use `Bash(cat << 'EOF')` or heredoc commands for file creation. Write files first (so artifacts persist if context is lost), then return.
 
 1. **Write ROADMAP.md** using output format
 
 2. **Write STATE.md** using output format
 
 3. **Update REQUIREMENTS.md traceability section**
-
-Files on disk = context preserved. User can review actual files.
 
 ## Step 8: Return Summary
 

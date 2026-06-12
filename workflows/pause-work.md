@@ -11,19 +11,12 @@ Read all files referenced by the invoking prompt's execution_context before star
 <step name="detect">
 ## Context Detection
 
-Determine what kind of work is being paused and set the handoff destination accordingly:
+Set the handoff destination based on what kind of work is being paused:
 
 ```bash
-# Check for active phase
 phase=$(( ls -lt .planning/phases/*/PLAN.md 2>/dev/null || true ) | head -1 | grep -oP 'phases/\K[^/]+' || true)
-
-# Check for active spike
 spike=$(( ls -lt .planning/spikes/*/SPIKE.md .planning/spikes/*/DESIGN.md .planning/spikes/*/README.md 2>/dev/null || true ) | head -1 | grep -oP 'spikes/\K[^/]+' || true)
-
-# Check for active sketch
 sketch=$(( ls -lt .planning/sketches/*/README.md .planning/sketches/*/index.html 2>/dev/null || true ) | head -1 | grep -oP 'sketches/\K[^/]+' || true)
-
-# Check for active deliberation
 deliberation=$(ls .planning/deliberations/*.md 2>/dev/null | head -1 || true)
 ```
 
@@ -48,7 +41,7 @@ If phase is detected, proceed with phase handoff path. Otherwise use the first m
 6. **Human actions pending**: Things that need manual intervention (MCP setup, API keys, approvals, manual testing)
 7. **Background processes**: Any running servers/watchers that were part of the workflow
 8. **Files modified**: What's changed but not committed
-9. **Blocking constraints**: Anti-patterns or methodological failures encountered during this session that a resuming agent MUST be aware of before proceeding. Only include items discovered through actual failure — not warnings or predictions. Assign each constraint a `severity`:
+9. **Blocking constraints**: Anti-patterns or methodological failures encountered this session that a resuming agent MUST know before proceeding. Only include items discovered through actual failure, not warnings or predictions. Assign each constraint a `severity`:
    - `blocking` — The resuming agent MUST demonstrate understanding before proceeding. The discuss-phase and execute-phase workflows will enforce a mandatory understanding check.
    - `advisory` — Important context but does not gate resumption.
 
@@ -56,7 +49,6 @@ Ask user for clarifications if needed via conversational questions.
 
 **Also inspect SUMMARY.md files for false completions:**
 ```bash
-# Check for placeholder content in existing summaries
 grep -l "To be filled\|placeholder\|TBD" .planning/phases/*/*.md 2>/dev/null || true
 ```
 Report any summaries with placeholder content as incomplete items.
@@ -199,7 +191,7 @@ Start with: [specific first action when resuming]
 
 Be specific enough for a fresh Claude to understand immediately.
 
-Use `current-timestamp` for last_updated field. You can use init todos (which provides timestamps) or call directly:
+Use `current-timestamp` for the last_updated field:
 ```bash
 timestamp=$(gsd-sdk query current-timestamp full --raw)
 ```

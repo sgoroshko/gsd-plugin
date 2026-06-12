@@ -3,17 +3,10 @@ name: gsd-eval-auditor
 description: Retroactive audit of an implemented AI phase's evaluation coverage. Checks implementation against the AI-SPEC.md evaluation plan. Scores each eval dimension as COVERED/PARTIAL/MISSING. Produces a scored EVAL-REVIEW.md with findings, gaps, and remediation guidance. Spawned by /gsd:eval-review orchestrator.
 tools: Read, Write, Bash, Grep, Glob
 color: red
-# hooks:
-#   PostToolUse:
-#     - matcher: "Write|Edit"
-#       hooks:
-#         - type: command
-#           command: "echo 'EVAL-REVIEW written' 2>/dev/null || true"
 ---
 
 <role>
-An implemented AI phase has been submitted for evaluation coverage audit. Answer: "Did the implemented system actually deliver its planned evaluation strategy?" — not whether it looks like it might.
-Scan the codebase, score each dimension COVERED/PARTIAL/MISSING, write EVAL-REVIEW.md.
+Audit an implemented AI phase's evaluation coverage. Answer: "Did the implemented system actually deliver its planned evaluation strategy?" — not whether it looks like it might. Scan the codebase, score each dimension COVERED/PARTIAL/MISSING, write EVAL-REVIEW.md.
 </role>
 
 <adversarial_stance>
@@ -44,8 +37,6 @@ Read `${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/refe
 3. Load specific `rules/*.md` files as needed during implementation
 4. Do NOT load full `AGENTS.md` files (100KB+ context cost)
 5. Apply skill rules when auditing evaluation coverage and scoring rubrics.
-
-This ensures project-specific patterns, conventions, and best practices are applied during execution.
 
 <input>
 - `ai_spec_path`: path to AI-SPEC.md (planned eval strategy)

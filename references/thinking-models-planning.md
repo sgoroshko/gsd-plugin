@@ -1,8 +1,8 @@
 # Thinking Models: Planning Cluster
 
-Structured reasoning models for the **planner** and **roadmapper** agents. Apply these at decision points during plan creation, not continuously. Each model counters a specific documented failure mode.
+Structured reasoning models for the **planner** and **roadmapper** agents. Apply at decision points during plan creation, not continuously. Each model counters a specific failure mode.
 
-Source: Curated from [thinking-partner](https://github.com/mattnowdev/thinking-partner) model catalog (150+ models). Selected for direct applicability to GSD planning workflow.
+Source: [thinking-partner](https://github.com/mattnowdev/thinking-partner) model catalog, selected for GSD planning.
 
 ## Conflict Resolution
 
@@ -54,7 +54,7 @@ Before writing the fix plan, apply a single "why" round: Why did this gap occur?
 
 ## When NOT to Think
 
-Skip structured reasoning models when the situation does not benefit from them:
+Skip structured reasoning models when the situation does not benefit:
 
 - **Single-task plans** -- If the phase has one clear requirement and one obvious task, do not run Pre-Mortem or MECE analysis. Write the task directly.
 - **Well-researched phases** -- If RESEARCH.md has HIGH-confidence recommendations for every decision and no `[NEEDS DECISION]` items, skip Base Rate Neglect Counter. The research already resolved uncertainty.

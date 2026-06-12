@@ -85,7 +85,7 @@ Exit workflow.
 
 Default is true — only skip on explicit false. This check runs AFTER phase validation so invalid phase errors are shown first.
 
-Note: This reuses the `workflow.code_review` config key rather than introducing a separate `workflow.code_review_fix` key. Rationale: fixes are meaningless without review, so a single toggle makes sense. If independent control is needed later, a separate key can be added in v2.
+Note: Reuses the `workflow.code_review` config key (no separate `workflow.code_review_fix` key) since fixes are meaningless without review.
 </step>
 
 <step name="check_review_exists">
@@ -244,9 +244,7 @@ if [ "$AUTO_MODE" = "true" ]; then
     ITERATION=$((ITERATION + 1))
     
     echo ""
-    echo "═══════════════════════════════════════════════════════"
-    echo "  --auto: Starting iteration ${ITERATION}/${MAX_ITERATIONS}"
-    echo "═══════════════════════════════════════════════════════"
+    echo "--auto: Starting iteration ${ITERATION}/${MAX_ITERATIONS}"
     echo ""
     
     # Re-review using same depth and file scope as original review
@@ -339,11 +337,10 @@ Read REVIEW.md findings, apply fixes, commit each atomically, write REVIEW-FIX.m
 fi
 ```
 
-Key design decisions for --auto (addresses ALL review HIGH concerns):
-1. **Re-review scope**: Uses REVIEW_FILES_ARRAY from original REVIEW.md frontmatter, falling back to full phase scope. Scope is NOT lost between iterations. Uses portable while-read loop (bash 3.2+ compatible, handles spaces in paths).
-2. **Artifact semantics**: REVIEW.md is overwritten by each re-review (latest review state). REVIEW-FIX.md is overwritten by each fixer iteration (latest fix state with iteration count). There is ONE final version of each artifact, not per-iteration copies.
-   Backup files (.iterN.md) preserve history for post-mortem analysis if iterations degrade.
-3. **Commit timing**: Fix commits happen per-finding inside the agent. REVIEW-FIX.md is NOT committed until step 7 (after ALL iterations complete). Only ONE docs commit for REVIEW-FIX.md, not one per iteration.
+Key design decisions for --auto:
+1. **Re-review scope**: Uses REVIEW_FILES_ARRAY from original REVIEW.md frontmatter, falling back to full phase scope. Scope is NOT lost between iterations.
+2. **Artifact semantics**: REVIEW.md and REVIEW-FIX.md are each overwritten per iteration (latest state). ONE final version of each, not per-iteration copies. Backup files (.iterN.md) preserve history.
+3. **Commit timing**: Fix commits happen per-finding inside the agent. REVIEW-FIX.md is NOT committed until step 7 (after ALL iterations complete). Only ONE docs commit for REVIEW-FIX.md.
 </step>
 
 <step name="commit_fix_report">
@@ -389,18 +386,13 @@ First check if fix report exists:
 ```bash
 if [ ! -f "${FIX_REPORT_PATH}" ]; then
   echo ""
-  echo "═══════════════════════════════════════════════════════════════"
-  echo ""
-  echo "  ⚠ No fix report generated"
-  echo ""
-  echo "───────────────────────────────────────────────────────────────"
+  echo "⚠ No fix report generated"
   echo ""
   echo "The fixer agent may have failed before completing."
   echo "Check git log for any fix(${PADDED_PHASE}) commits."
   echo ""
   echo "Retry: /gsd:code-review ${PHASE_ARG} --fix"
   echo ""
-  echo "═══════════════════════════════════════════════════════════════"
   exit 1
 fi
 ```
@@ -428,11 +420,7 @@ Display formatted inline summary:
 
 ```bash
 echo ""
-echo "═══════════════════════════════════════════════════════════════"
-echo ""
-echo "  Code Review Fix Complete: Phase ${PHASE_NUMBER} (${PHASE_NAME})"
-echo ""
-echo "───────────────────────────────────────────────────────────────"
+echo "Code Review Fix Complete: Phase ${PHASE_NUMBER} (${PHASE_NAME})"
 echo ""
 echo "  Fix Scope:       ${FIX_SCOPE}"
 echo "  Findings:        ${FINDINGS_IN_SCOPE}"
@@ -442,8 +430,6 @@ if [ "$AUTO_MODE" = "true" ]; then
   echo "  Iterations:      ${ITERATION_COUNT}"
 fi
 echo "  Status:          ${FIX_STATUS}"
-echo ""
-echo "───────────────────────────────────────────────────────────────"
 echo ""
 ```
 
@@ -473,10 +459,6 @@ if [ "$FIX_STATUS" = "partial" ] || [ "$FIX_STATUS" = "none_fixed" ]; then
   echo "  /gsd:verify-work                           — Verify phase completion"
   echo ""
 fi
-```
-
-```bash
-echo "═══════════════════════════════════════════════════════════════"
 ```
 </step>
 

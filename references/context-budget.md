@@ -40,21 +40,17 @@ Monitor context usage and adjust behavior accordingly:
 
 ## Context Degradation Warning Signs
 
-Quality degrades gradually before panic thresholds fire. Watch for these early signals:
+Quality degrades gradually before panic thresholds fire. Early signals:
 
-- **Silent partial completion** -- agent claims task is done but implementation is incomplete. Self-check catches file existence but not semantic completeness. Always verify agent output meets the plan's must_haves, not just that files exist.
-- **Increasing vagueness** -- agent starts using phrases like "appropriate handling" or "standard patterns" instead of specific code. This indicates context pressure even before budget warnings fire.
-- **Skipped steps** -- agent omits protocol steps it would normally follow. If an agent's success criteria has 8 items but it only reports 5, suspect context pressure.
+- **Silent partial completion** -- agent claims done but implementation is incomplete. Self-check catches file existence but not semantic completeness. Verify agent output meets the plan's must_haves, not just that files exist.
+- **Increasing vagueness** -- agent uses phrases like "appropriate handling" or "standard patterns" instead of specific code. Indicates context pressure before budget warnings fire.
+- **Skipped steps** -- agent omits protocol steps it would normally follow. If success criteria has 8 items but it reports 5, suspect context pressure.
 
-When delegating to agents, the orchestrator cannot verify semantic correctness of agent output -- only structural completeness. This is a fundamental limitation. Mitigate with must_haves.truths and spot-check verification.
+The orchestrator cannot verify semantic correctness of agent output -- only structural completeness. Mitigate with must_haves.truths and spot-check verification.
 
 ## MCP Tool Schema Cost (Harness Concern)
 
-Every enabled MCP server injects its tool schema into **every turn**, regardless of whether you call any of its tools. Heavyweight servers can cost 20k+ tokens per turn each — often dwarfing whatever GSD itself can save through `model_profile` tuning. This is a Claude Code harness concern, not a GSD concern: GSD does **not** manage MCP enablement. The toggle lives in `.claude/settings.json` under `enabledMcpjsonServers` and `disabledMcpjsonServers`.
-
-### Why this is the biggest cost lever you don't own
-
-Tool schemas count against the same context budget as model context, prompts, and conversation history. If a project has 5 unused MCP servers averaging 5k tokens of schema each, every turn pays a 25k-token tax before the assistant reads a single project file. Trimming MCPs has a **multiplier effect** that compounds with whichever `model_profile` you've chosen — every-turn overhead drops regardless of which model is in use.
+Every enabled MCP server injects its tool schema into **every turn**, whether or not you call its tools. Heavyweight servers can cost 20k+ tokens per turn each — often dwarfing what `model_profile` tuning saves. GSD does **not** manage MCP enablement; the toggle lives in `.claude/settings.json` under `enabledMcpjsonServers` and `disabledMcpjsonServers`. Tool schemas count against the same context budget as prompts and history, so 5 unused servers at 5k each is a 25k-token per-turn tax before any project file is read. Trimming MCPs compounds with whichever `model_profile` you've chosen.
 
 ### Pre-Phase MCP Audit
 
@@ -78,8 +74,8 @@ The keys live in `.claude/settings.json` (project) or `~/.claude/settings.json` 
 }
 ```
 
-Either list works — `enabledMcpjsonServers` is an explicit allow-list, `disabledMcpjsonServers` is a block-list against the default. See the [Claude Code MCP documentation](https://docs.anthropic.com/en/docs/claude-code/mcp) for the canonical reference; this section just flags it as a context-budget lever GSD users routinely overlook.
+Either list works — `enabledMcpjsonServers` is an explicit allow-list, `disabledMcpjsonServers` is a block-list against the default. See the [Claude Code MCP documentation](https://docs.anthropic.com/en/docs/claude-code/mcp) for reference.
 
 ### Composition with model_profile
 
-Trimming MCPs and tuning `model_profile` are independent levers that **compound**. Disabling a 25k-token MCP saves 25k per turn whether you're running `quality` (opus everywhere) or `budget` (sonnet/haiku); the savings are additive, not in lieu of model tuning. Don't pick one — do both, and audit MCPs first because the per-turn savings show up immediately and stack across every subagent the orchestrator spawns.
+Trimming MCPs and tuning `model_profile` are independent levers that **compound**. Disabling a 25k-token MCP saves 25k per turn whether you run `quality` (opus everywhere) or `budget` (sonnet/haiku); the savings are additive. Do both, and audit MCPs first — the per-turn savings show up immediately and stack across every subagent the orchestrator spawns.

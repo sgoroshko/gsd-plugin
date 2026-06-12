@@ -16,7 +16,7 @@ On the first sketch, create `.planning/sketches/themes/` with a default theme:
 
 ## Theme File Structure
 
-Each theme defines CSS custom properties only — no component styles, no layout rules. Just the visual vocabulary:
+Each theme defines CSS custom properties only — no component styles, no layout rules:
 
 ```css
 :root {
@@ -65,7 +65,7 @@ Each theme defines CSS custom properties only — no component styles, no layout
 }
 ```
 
-Adapt the default theme to match the mood/direction established during intake. The values above are a starting point — change colors, fonts, spacing, and shapes to match the agreed aesthetic.
+Adapt the default theme to the mood/direction established during intake — the values above are a starting point; change colors, fonts, spacing, and shapes to match the agreed aesthetic.
 
 ## Linking
 

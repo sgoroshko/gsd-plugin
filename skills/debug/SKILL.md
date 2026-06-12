@@ -14,7 +14,7 @@ Debug issues using scientific method with subagent isolation.
 
 **Orchestrator role:** Gather symptoms, spawn gsd-debugger agent, handle checkpoints, spawn continuations.
 
-**Why subagent:** Investigation burns context fast (reading files, forming hypotheses, testing). Fresh 200k context per investigation. Main context stays lean for user interaction.
+**Why subagent:** Investigation burns context fast. Fresh 200k context per investigation keeps main context lean for user interaction.
 
 **Flags:**
 - `--diagnose` — Diagnose only. Find root cause without applying a fix. Returns a structured Root Cause Report. Use when you want to validate the diagnosis before committing to a fix.
@@ -78,16 +78,10 @@ For each file found, parse frontmatter fields (`status`, `trigger`, `updated`) a
 
 ```
 Active Debug Sessions
-─────────────────────────────────────────────
   #  Slug                    Status         Updated
   1  auth-token-null         investigating  2026-04-12
      hypothesis: JWT decode fails when token contains nested claims
      next: Add logging at jwt.verify() call site
-
-  2  form-submit-500         fixing         2026-04-11
-     hypothesis: Missing null check on req.body.user
-     next: Verify fix passes regression test
-─────────────────────────────────────────────
 Run `/gsd:debug continue <slug>` to resume a session.
 No sessions? `/gsd:debug <description>` to start.
 ```

@@ -140,10 +140,6 @@ Pattern B only (verify-only checkpoints). Skip for A/C.
    Then commit (no narrative between Write and commit).
 
    **Known Claude Code bug (classifyHandoffIfNeeded):** If any segment agent reports "failed" with `classifyHandoffIfNeeded is not defined`, this is a Claude Code runtime bug — not a real failure. Run spot-checks; if they pass, treat as successful.
-
-
-
-
 </step>
 
 <step name="load_prompt">
@@ -187,9 +183,6 @@ Deviations are normal — handle via rules below.
 </step>
 
 <authentication_gates>
-
-## Authentication Gates
-
 Auth errors during execution are NOT failures — they're expected interaction points.
 
 **Indicators:** "Not authenticated", "Unauthorized", 401/403, "Please run {tool} login", "Set {ENV_VAR}"
@@ -210,9 +203,6 @@ Auth errors during execution are NOT failures — they're expected interaction p
 </authentication_gates>
 
 <deviation_rules>
-
-## Deviation Rules
-
 Apply deviation rules from the gsd-executor agent definition (single source of truth):
 - **Rules 1-3** (bugs, missing critical, blockers): auto-fix, test, verify, track as deviations
 - **Rule 4** (architectural changes): STOP, present decision to user, await approval
@@ -223,9 +213,6 @@ Apply deviation rules from the gsd-executor agent definition (single source of t
 </deviation_rules>
 
 <deviation_documentation>
-
-## Documenting Deviations
-
 Summary MUST include deviations section. None? → `## Deviations from Plan\n\nNone - plan executed exactly as written.`
 
 Per deviation: **[Rule N - Category] Title** — Found during: Task X | Issue | Fix | Files modified | Verification | Commit hash
@@ -235,8 +222,6 @@ End with: **Total deviations:** N auto-fixed (breakdown). **Impact:** assessment
 </deviation_documentation>
 
 <tdd_plan_execution>
-## TDD Execution
-
 For `type: tdd` plans — RED-GREEN-REFACTOR:
 
 1. **Infrastructure** (first TDD plan only): detect project, install framework, config, verify empty suite
@@ -250,9 +235,7 @@ See `@${CLAUDE_PLUGIN_ROOT}/references/tdd.md` for structure.
 </tdd_plan_execution>
 
 <precommit_failure_handling>
-## Pre-commit Hook Failure Handling
-
-Your commits may trigger pre-commit hooks. Auto-fix hooks handle themselves transparently — files get fixed and re-staged automatically.
+Commits may trigger pre-commit hooks. Auto-fix hooks handle themselves transparently — files get fixed and re-staged automatically.
 
 **If running as a parallel executor agent (spawned by execute-phase):**
 Run commits normally — let pre-commit hooks run. Do NOT use `--no-verify` by default
@@ -274,9 +257,7 @@ If a commit is BLOCKED by a hook:
 </precommit_failure_handling>
 
 <task_commit>
-## Task Commit Protocol
-
-Canonical per-task commit rules live in **`agents/gsd-executor.md`** (`<task_commit_protocol>`). Follow that section for staging, `{type}({phase}-{plan})` messages, `commit-to-subrepo` when `sub_repos` is set, post-commit checks, and untracked-file handling — do not duplicate or paraphrase the full protocol here (single source of truth).
+Per-task commit rules live in **`agents/gsd-executor.md`** (`<task_commit_protocol>`). Follow that section for staging, `{type}({phase}-{plan})` messages, `commit-to-subrepo` when `sub_repos` is set, post-commit checks, and untracked-file handling — do not duplicate or paraphrase the full protocol here (single source of truth).
 
 **Orchestrator note:** After each task, the spawned executor reports commit hashes; this workflow does not re-specify commit semantics beyond pointing at the executor.
 

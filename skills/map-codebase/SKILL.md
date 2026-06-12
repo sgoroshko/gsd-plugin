@@ -12,9 +12,7 @@ allowed-tools:
 ---
 
 <objective>
-Analyze existing codebase using parallel gsd-codebase-mapper agents to produce structured codebase documents.
-
-Each mapper agent explores a focus area and **writes documents directly** to `.planning/codebase/`. The orchestrator only receives confirmations, keeping context usage minimal.
+Analyze existing codebase using parallel gsd-codebase-mapper agents. Each mapper explores a focus area and **writes documents directly** to `.planning/codebase/`; the orchestrator only receives confirmations, keeping context usage minimal.
 
 Output: .planning/codebase/ folder with 7 structured documents about the codebase state.
 </objective>

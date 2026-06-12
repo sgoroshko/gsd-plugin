@@ -1,9 +1,6 @@
 # Step: codebase_drift_gate
 
-Post-execution structural drift detection (#2003). Runs after the last wave
-commits, before verification. **Non-blocking by contract:** any internal
-error here MUST fall through and continue to `verify_phase_goal`. The phase
-is never failed by this gate.
+Post-execution structural drift detection (#2003). Runs after the last wave commits, before verification. **Non-blocking by contract:** any internal error MUST fall through to `verify_phase_goal`. The phase is never failed by this gate.
 
 ```bash
 DRIFT=$(gsd-sdk query verify.codebase-drift 2>/dev/null || echo '{"skipped":true,"reason":"sdk-failed"}')
@@ -20,24 +17,7 @@ Log one line — `Codebase drift check skipped: {reason}` — and continue to
 **If `action_required` is false:** Continue silently to `verify_phase_goal`.
 
 **If `action_required` is true AND `directive` is `warn`:**
-Print the `message` field verbatim. The format is:
-
-```text
-Codebase drift detected: {N} structural element(s) since last mapping.
-
-New directories:
-  - {path}
-New barrel exports:
-  - {path}
-New migrations:
-  - {path}
-New route modules:
-  - {path}
-
-Run /gsd:map-codebase --paths {affected_paths} to refresh planning context.
-```
-
-Then continue to `verify_phase_goal`. Do NOT block. Do NOT spawn anything.
+Print the `message` field verbatim, then continue to `verify_phase_goal`. Do NOT block. Do NOT spawn anything.
 
 **If `action_required` is true AND `directive` is `auto-remap`:**
 
@@ -76,6 +56,3 @@ If the remap succeeds: log `Codebase drift auto-remap completed for paths:
 The two relevant config keys (continue on error / failure if either is invalid):
 - `workflow.drift_threshold` (integer, default 3) — minimum drift elements before action
 - `workflow.drift_action` — `warn` (default) or `auto-remap`
-
-This step is fully non-blocking — it never fails the phase, and any
-exception path returns control to `verify_phase_goal`.

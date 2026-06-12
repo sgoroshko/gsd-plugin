@@ -1,12 +1,12 @@
 # Revision Loop Pattern
 
-Standard pattern for iterative agent revision with feedback. Used when a checker/validator finds issues and the producing agent needs to revise its output.
+Iterative agent revision with feedback: a checker/validator finds issues and the producing agent revises its output.
 
 ---
 
 ## Pattern: Check-Revise-Escalate (max 3 iterations)
 
-This pattern applies whenever:
+Applies whenever:
 1. An agent produces output (plans, imports, gap-closure plans)
 2. A checker/validator evaluates that output
 3. Issues are found that need revision
@@ -36,14 +36,14 @@ LOOP:
 
 ### Issue Count Tracking
 
-Track the number of BLOCKER + WARNING issues returned by the checker on each iteration. If the count does not decrease between consecutive iterations, the producing agent is stuck and further iterations will not help. Break early and escalate to the user.
+Track BLOCKER + WARNING issues returned by the checker each iteration. If the count does not decrease between consecutive iterations, the producing agent is stuck; break early and escalate to the user.
 
 Display iteration progress before each revision spawn:
 `Revision iteration {N}/3 -- {blocker_count} blockers, {warning_count} warnings`
 
 ### Re-spawn Prompt Structure
 
-When re-spawning the producing agent for revision, pass the checker's YAML-formatted issues. The checker's output contains a `## Issues` heading followed by a YAML block. Parse this block and pass it verbatim to the revision agent.
+When re-spawning for revision, pass the checker's YAML-formatted issues. The checker's output contains a `## Issues` heading followed by a YAML block. Parse this block and pass it verbatim to the revision agent.
 
 ```
 <checker_issues>

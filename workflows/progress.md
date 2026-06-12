@@ -1,5 +1,5 @@
 <purpose>
-Check project progress, summarize recent work and what's ahead, then intelligently route to the next action — either executing an existing plan or creating the next one. Provides situational awareness before continuing work.
+Check project progress, summarize recent work and what's ahead, then route to the next action — executing an existing plan or creating the next one.
 </purpose>
 
 <required_reading>
@@ -42,30 +42,24 @@ If missing both ROADMAP.md and PROJECT.md: suggest `/gsd:new-project`.
 </step>
 
 <step name="load">
-**Use structured extraction from `gsd-sdk query` (or legacy gsd-tools.cjs):**
-
-Instead of reading full files, use targeted tools to get only the data needed for the report:
+**Use targeted extraction (not full file reads) to minimize context:**
 - `ROADMAP=$(gsd-sdk query roadmap.analyze)`
 - `STATE=$(gsd-sdk query state-snapshot)`
-
-This minimizes orchestrator context usage.
 </step>
 
 <step name="analyze_roadmap">
-**Get comprehensive roadmap analysis (replaces manual parsing):**
+**Get roadmap analysis (use instead of manually reading/parsing ROADMAP.md):**
 
 ```bash
 ROADMAP=$(gsd-sdk query roadmap.analyze)
 ```
 
-This returns structured JSON with:
+Returns structured JSON with:
 - All phases with disk status (complete/partial/planned/empty/no_directory)
 - Goal and dependencies per phase
 - Plan and summary counts per phase
 - Aggregated stats: total plans, summaries, progress percent
 - Current and next phase identification
-
-Use this instead of manually reading/parsing ROADMAP.md.
 </step>
 
 <step name="recent">
@@ -170,7 +164,7 @@ When `MVP_MODE=false` (mode is null, absent, or the phase has no `**Mode:**` lin
 
 **Step 0: Resume-incomplete-phase invariant (Route 0)**
 
-Before any current-phase-scoped counting, scan ALL phases for incomplete execution. This catches the case where STATE.md's `current_phase` was advanced past the phase that actually has unfinished work (common after a mid-execution session death from hang, token exhaustion, or API disruption). Without this guard, the current-phase-scoped count in Step 1 would inspect the wrong phase and the routing would skip the unfinished work.
+Before any current-phase-scoped counting, scan ALL phases for incomplete execution. This catches a stale STATE.md `current_phase` advanced past the phase with unfinished work (e.g. after mid-execution session death). It is independent of `current_phase`, unlike Step 1 which only counts files in the current-phase dir.
 
 **Skip if `--no-resume` or `--force` is present in `$ARGUMENTS`.**
 
@@ -189,7 +183,7 @@ for PHASE_NUM in $(echo "$ROADMAP" | jq -r '.phases[] | (.number // .phase_numbe
 done
 ```
 
-**If `INCOMPLETE_PHASE` is non-empty:** emit a one-line resume notice in the routing output and route to `/gsd:execute-phase ${INCOMPLETE_PHASE}` instead of running Step 1's current-phase routing. The progress report (already displayed by the `report` step above) gives the user full project status before this routing decision is shown.
+**If `INCOMPLETE_PHASE` is non-empty:** emit a one-line resume notice in the routing output and route to `/gsd:execute-phase ${INCOMPLETE_PHASE}` instead of running Step 1's current-phase routing.
 
 ```
 ---
@@ -208,8 +202,6 @@ done
 Then exit the route step. Do NOT run Steps 1 through Routes A-F.
 
 **If `INCOMPLETE_PHASE` is empty:** continue to Step 1.
-
-**Why this is Route 0 and not part of Step 1:** Step 1 only counts files in `[current-phase-dir]`, which means the count operates on `current_phase` from STATE.md. When that pointer is stale, Step 1's routing is wrong. Route 0 is independent of `current_phase` so it catches stale-pointer failure modes regardless of why STATE.md got out of sync.
 
 **Step 1: Count plans, summaries, and issues in current phase**
 
@@ -262,7 +254,7 @@ Review: `/gsd:audit-uat ${GSD_WS}` — full cross-phase audit
 Resume testing: `/gsd:verify-work {phase} ${GSD_WS}` — retest specific phase
 ```
 
-This is a WARNING, not a blocker — routing proceeds normally. The debt is visible so the user can make an informed choice.
+This is a WARNING, not a blocker — routing proceeds normally so the user can make an informed choice.
 
 **Step 2: Route based on counts**
 
@@ -570,9 +562,9 @@ Ready to plan the next milestone.
 <step name="forensic_audit">
 **Forensic Integrity Audit** — only runs when `--forensic` is present in ARGUMENTS.
 
-If `--forensic` is NOT present in ARGUMENTS: skip this step entirely. Default progress behavior (standard report + routing) is unchanged.
+If `--forensic` is NOT present: skip this step entirely (default report + routing unchanged).
 
-If `--forensic` IS present: after the standard report and routing suggestion have been displayed, append the following audit section.
+If `--forensic` IS present: after the standard report and routing suggestion are displayed, append the following audit section.
 
 ---
 

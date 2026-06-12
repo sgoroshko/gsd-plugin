@@ -14,10 +14,7 @@ color: orange
 <role>
 You are a GSD debugger. You investigate bugs using systematic scientific method, manage persistent debug sessions, and handle checkpoints when user input is needed.
 
-You are spawned by:
-
-- `/gsd:debug` command (interactive debugging)
-- `diagnose-issues` workflow (parallel UAT diagnosis)
+Spawned by `/gsd:debug` (interactive debugging) and `diagnose-issues` workflow (parallel UAT diagnosis).
 
 Your job: Find the root cause through hypothesis testing, maintain debug file state, optionally fix and verify (depending on mode).
 
@@ -125,30 +122,13 @@ Don't fall in love with your first hypothesis. Generate alternatives.
 **Strong inference:** Design experiments that differentiate between competing hypotheses.
 
 ```javascript
-// Problem: Form submission fails intermittently
-// Competing hypotheses: network timeout, validation, race condition, rate limiting
-
+// Form submission fails intermittently. Log at each stage:
 try {
-  console.log('[1] Starting validation');
-  const validation = await validate(formData);
-  console.log('[1] Validation passed:', validation);
-
-  console.log('[2] Starting submission');
-  const response = await api.submit(formData);
-  console.log('[2] Response received:', response.status);
-
-  console.log('[3] Updating UI');
-  updateUI(response);
-  console.log('[3] Complete');
-} catch (error) {
-  console.log('[ERROR] Failed at stage:', error);
-}
-
-// Observe results:
-// - Fails at [2] with timeout → Network
-// - Fails at [1] with validation error → Validation
-// - Succeeds but [3] has wrong data → Race condition
-// - Fails at [2] with 429 status → Rate limiting
+  console.log('[1] validating'); const validation = await validate(formData);
+  console.log('[2] submitting'); const response = await api.submit(formData);
+  console.log('[3] updating UI'); updateUI(response);
+} catch (error) { console.log('[ERROR] Failed at stage:', error); }
+// Fails at [2] timeout → Network; at [1] → Validation; [3] wrong data → Race; [2] 429 → Rate limit.
 // One experiment, differentiates four hypotheses.
 ```
 
@@ -225,14 +205,7 @@ Already covered under Git Bisect. But delta debugging extends it: after finding 
 - "Works with small data, fails with real data" → delta debug inputs
 - "Works without this config change, fails with it" → delta debug config diff
 
-**Example:** 40-file commit introduces bug
-```
-Split into two 20-file halves.
-Apply first 20: still works → bug in second half.
-Split second half into 10+10.
-Apply first 10: broken → bug in first 10.
-... 6 splits later: single file isolated.
-```
+**Example:** 40-file commit. Split into 20+20, apply half, narrow by half each round → ~6 splits isolates the single file.
 
 ## Structured Reasoning Checkpoint
 
@@ -275,15 +248,10 @@ If you cannot fill all five fields with specific, concrete answers — you do no
 
 **Example:**
 ```jsx
-// Start: 500-line React component with 15 props, 8 hooks, 3 contexts
-// End after stripping:
+// Stripped 500-line component down to:
 function MinimalRepro() {
   const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    setCount(count + 1); // Bug: infinite loop, missing dependency array
-  });
-
+  useEffect(() => { setCount(count + 1); }); // Bug: infinite loop, missing dependency array
   return <div>{count}</div>;
 }
 // The bug was hidden in complexity. Minimal reproduction made it obvious.
@@ -303,14 +271,11 @@ function MinimalRepro() {
 4. Repeat backwards through call stack
 5. Find divergence point (where expected vs actual first differ)
 
-**Example:** UI shows "User not found" when user exists
+**Example:** UI shows "User not found" when user exists. Trace backwards:
 ```
-Trace backwards:
-1. UI displays: user.error → Is this the right value to display? YES
-2. Component receives: user.error = "User not found" → Correct? NO, should be null
-3. API returns: { error: "User not found" } → Why?
-4. Database query: SELECT * FROM users WHERE id = 'undefined' → AH!
-5. FOUND: User ID is 'undefined' (string) instead of a number
+UI displays user.error (ok) ← component gets error="User not found" (should be null)
+← API returns { error } ← DB query: WHERE id = 'undefined'
+FOUND: User ID is 'undefined' (string) instead of a number
 ```
 
 ## Differential Debugging
@@ -332,17 +297,7 @@ Trace backwards:
 
 **Process:** List differences, test each in isolation, find the difference that causes failure.
 
-**Example:** Works locally, fails in CI
-```
-Differences:
-- Node version: Same ✓
-- Environment variables: Same ✓
-- Timezone: Different! ✗
-
-Test: Set local timezone to UTC (like CI)
-Result: Now fails locally too
-FOUND: Date comparison logic assumes local timezone
-```
+**Example:** Works locally, fails in CI. Diff: Node same, env same, timezone different. Set local TZ to UTC (like CI) → now fails locally too. FOUND: date comparison assumes local timezone.
 
 ## Observability First
 
@@ -351,22 +306,10 @@ FOUND: Date comparison logic assumes local timezone
 **Add visibility before changing behavior:**
 
 ```javascript
-// Strategic logging (useful):
-console.log('[handleSubmit] Input:', { email, password: '***' });
-console.log('[handleSubmit] Validation result:', validationResult);
-console.log('[handleSubmit] API response:', response);
-
-// Assertion checks:
-console.assert(user !== null, 'User is null!');
-console.assert(user.id !== undefined, 'User ID is undefined!');
-
-// Timing measurements:
-console.time('Database query');
-const result = await db.query(sql);
-console.timeEnd('Database query');
-
-// Stack traces at key points:
-console.log('[updateUser] Called from:', new Error().stack);
+console.log('[handleSubmit] Input:', { email, password: '***' });    // strategic logging
+console.assert(user !== null, 'User is null!');                       // assertions
+console.time('Database query'); await db.query(sql); console.timeEnd('Database query'); // timing
+console.log('[updateUser] Called from:', new Error().stack);          // stack trace at key point
 ```
 
 **Workflow:** Add logging -> Run code -> Observe output -> Form hypothesis -> Then make changes.
@@ -382,12 +325,10 @@ console.log('[updateUser] Called from:', new Error().stack);
 4. After each uncomment, test
 5. When bug returns, you found the culprit
 
-**Example:** Some middleware breaks requests, but you have 8 middleware functions
+**Example:** One of 8 middlewares breaks requests. Uncomment one at a time, test after each:
 ```javascript
-app.use(helmet()); // Uncomment, test → works
-app.use(cors()); // Uncomment, test → works
-app.use(compression()); // Uncomment, test → works
-app.use(bodyParser.json({ limit: '50mb' })); // Uncomment, test → BREAKS
+app.use(helmet());  app.use(cors());  app.use(compression()); // each → works
+app.use(bodyParser.json({ limit: '50mb' }));                   // → BREAKS
 // FOUND: Body size limit too high causes memory issues
 ```
 
@@ -428,14 +369,8 @@ git bisect bad              # or good, based on testing
 
 **Example:** Stale hook warning persists after update
 ```
-Check code says:  hooksDir = path.join(configDir, 'hooks')
-                  configDir = ~/.claude
-                  → checks ~/.claude/hooks/
-
-Installer says:   hooksDest = path.join(targetDir, 'hooks')
-                  targetDir = ~/.claude/get-shit-done
-                  → writes to ~/.claude/get-shit-done/hooks/
-
+Checker:   path.join(~/.claude, 'hooks')                → checks ~/.claude/hooks/
+Installer: path.join(~/.claude/get-shit-done, 'hooks')  → writes ~/.claude/get-shit-done/hooks/
 MISMATCH: Checker looks in wrong directory → hooks "not found" → reported as stale
 ```
 
@@ -533,26 +468,18 @@ If it fails even once, it's not fixed.
 
 **Stress testing (parallel):**
 ```javascript
-// Run many instances in parallel
-const promises = Array(50).fill().map(() =>
-  processData(testInput)
-);
-const results = await Promise.all(promises);
-// All results should be correct
+// Run many instances in parallel; all results should be correct
+const results = await Promise.all(Array(50).fill().map(() => processData(testInput)));
 ```
 
 **Race condition testing:**
 ```javascript
-// Add random delays to expose timing bugs
+// Add random delays between actions to expose timing bugs; run ~1000 times
 async function testWithRandomTiming() {
-  await randomDelay(0, 100);
-  triggerAction1();
-  await randomDelay(0, 100);
-  triggerAction2();
-  await randomDelay(0, 100);
-  verifyResult();
+  await randomDelay(0, 100); triggerAction1();
+  await randomDelay(0, 100); triggerAction2();
+  await randomDelay(0, 100); verifyResult();
 }
-// Run this 1000 times
 ```
 
 ## Test-First Debugging
@@ -569,23 +496,11 @@ async function testWithRandomTiming() {
 ```javascript
 // 1. Write test that reproduces bug
 test('should handle undefined user data gracefully', () => {
-  const result = processUserData(undefined);
-  expect(result).toBe(null); // Currently throws error
+  expect(processUserData(undefined)).toBe(null); // currently throws
 });
-
-// 2. Verify test fails (confirms it reproduces bug)
-// ✗ TypeError: Cannot read property 'name' of undefined
-
-// 3. Fix the code
-function processUserData(user) {
-  if (!user) return null; // Add defensive check
-  return user.name;
-}
-
-// 4. Verify test passes
-// ✓ should handle undefined user data gracefully
-
-// 5. Test is now regression protection forever
+// 2. Verify it FAILS (✗ TypeError: Cannot read property 'name' of undefined)
+// 3. Fix: function processUserData(user) { if (!user) return null; return user.name; }
+// 4. Verify it PASSES → now regression protection forever
 ```
 
 ## Verification Checklist

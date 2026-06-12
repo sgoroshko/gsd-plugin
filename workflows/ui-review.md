@@ -27,12 +27,7 @@ Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, 
 UI_AUDITOR_MODEL=$(gsd-sdk query resolve-model gsd-ui-auditor --raw)
 ```
 
-Display banner:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► UI AUDIT — PHASE {N}: {name}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Display heading: `GSD ► UI AUDIT — PHASE {N}: {name}`
 
 ## 1. Detect Input State
 
@@ -61,8 +56,6 @@ Path: ${UI_REVIEW_FILE}
 **If `UI_REVIEW_FILE` non-empty AND `--refresh`:** continue (re-spawn ui-auditor for a fresh audit).
 
 **If `UI_REVIEW_FILE` empty:** continue (first audit run).
-
-(Prior behavior was a two-way AskUserQuestion prompt with Re-audit/View options when the file existed. Removed in favor of the auto-use-existing default plus explicit escape hatches.)
 
 ## 2. Gather Context Paths
 
@@ -124,9 +117,7 @@ Agent(
 Display score summary:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► UI AUDIT COMPLETE ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► UI AUDIT COMPLETE ✓
 
 **Phase {N}: {Name}** — Overall: {score}/24
 
@@ -155,9 +146,6 @@ Full review: {path to UI-REVIEW.md}
 - `/gsd:verify-work {N}` — UAT testing
 - `/gsd:plan-phase {N+1}` — plan next phase
 
-- `/gsd:verify-work {N}` — UAT testing
-- `/gsd:plan-phase {N+1}` — plan next phase
-
 ───────────────────────────────────────────────────────────────
 ```
 
@@ -173,13 +161,10 @@ If `mcp__playwright__*` tools are accessible in this session:
 4. Report any dimension, color, or layout discrepancies automatically as
    additional findings within the relevant pillar section of UI-REVIEW.md.
 5. Flag items that require human judgment (brand feel, content tone) as
-   `needs_human_review: true` in the findings — these are surfaced to the user
-   separately after the automated pass completes.
+   `needs_human_review: true` in the findings — surfaced to the user separately
+   after the automated pass completes.
 
-If Playwright-MCP is not available in this session, this section is skipped
-entirely. The audit falls back to the standard code-only review described above.
-No configuration change is required — the availability of `mcp__playwright__*`
-tools is detected at runtime.
+If Playwright-MCP is not available, skip this section and fall back to the standard code-only review above. Availability of `mcp__playwright__*` is detected at runtime; no configuration change required.
 
 ## 5. Commit (if configured)
 

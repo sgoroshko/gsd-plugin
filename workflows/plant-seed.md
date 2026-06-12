@@ -1,17 +1,10 @@
 <purpose>
 Capture a forward-looking idea as a structured seed file with trigger conditions.
-Seeds auto-surface during /gsd:new-milestone when trigger conditions match the
-new milestone's scope.
+Seeds auto-surface during /gsd:new-milestone when trigger conditions match the new milestone's scope.
 
-Seeds beat deferred items because they:
-- Preserve WHY the idea matters (not just WHAT)
-- Define WHEN to surface (trigger conditions, not manual scanning)
-- Track breadcrumbs (code references, related decisions)
-- Auto-present at the right time via new-milestone scan
+Seeds beat deferred items: they preserve WHY (not just WHAT), define WHEN to surface (trigger conditions), track breadcrumbs (code refs, decisions), and auto-present via the new-milestone scan.
 
-**One-shot capture**: the seed file is written immediately from the idea text alone.
-Trigger / Why / Scope are optional enrichment — they can be provided now or added
-later. The file is never gated behind questions.
+**One-shot capture**: the seed file is written immediately from the idea text alone. Trigger / Why / Scope are optional enrichment, provided now or added later. The file is never gated behind questions.
 </purpose>
 
 <process>
@@ -64,9 +57,8 @@ Generate slug from idea summary.
 <step name="write-seed">
 Write `.planning/seeds/SEED-{PADDED}-{slug}.md` immediately with sensible defaults:
 
-- `trigger_when`: default is `"when relevant"` — the seed will surface during any
-  new-milestone scan; the user can narrow it later via `--enrich`
-- `scope`: default is `"unknown"` — the user can update it via `--enrich`
+- `trigger_when`: default `"when relevant"` (surfaces during any new-milestone scan; narrow later via `--enrich`)
+- `scope`: default `"unknown"` (update via `--enrich`)
 
 ```markdown
 ---
@@ -159,7 +151,6 @@ This seed will surface automatically when you run /gsd:new-milestone.
 If `--enrich` flag is in `$ARGUMENTS`:
 - `$ENRICH_TARGET` and `$SEED_FILE` are already set by `parse-idea`. Derive `$SEED_ID` from `$ENRICH_TARGET` (e.g. `SEED_ID="$ENRICH_TARGET"`). If `$SEED_FILE` is empty, fall back to the most-recently modified file in `.planning/seeds/` and set `$SEED_ID` from its filename.
 - Ask focused questions to build a complete seed:
-
 
 **Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is not available.
 

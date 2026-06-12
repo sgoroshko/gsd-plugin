@@ -8,7 +8,7 @@
 ## Core Concepts
 
 ### Why Evals Exist
-AI systems are non-deterministic. Input X does not reliably produce output Y across runs, users, or edge cases. Evals are the continuous process of assessing whether your system's behavior meets expectations under real-world conditions — unit tests and integration tests alone are insufficient.
+AI systems are non-deterministic: input X does not reliably produce output Y across runs, users, or edge cases. Evals continuously assess whether system behavior meets expectations under real-world conditions; unit/integration tests alone are insufficient.
 
 ### Model vs. Product Evaluation
 - **Model evals** (MMLU, HumanEval, GSM8K) — measure general capability in standardized conditions. Use as initial filter only.
@@ -21,10 +21,10 @@ AI systems are non-deterministic. Input X does not reliably produce output Y acr
 
 ### Three Measurement Approaches
 1. **Code-based metrics** — deterministic checks: JSON validation, required disclaimers, performance thresholds, classification flags. Fast, cheap, reliable. Use first.
-2. **LLM judges** — one model evaluates another against a rubric. Powerful for subjective qualities (tone, reasoning, escalation). Requires calibration against human judgment before trusting.
-3. **Human evaluation** — gold standard for nuanced judgment. Doesn't scale. Use for calibration, edge cases, periodic sampling, and high-stakes decisions.
+2. **LLM judges** — one model evaluates another against a rubric. Powerful for subjective qualities (tone, reasoning, escalation). Calibrate against human judgment before trusting.
+3. **Human evaluation** — gold standard for nuanced judgment; doesn't scale. Use for calibration, edge cases, periodic sampling, high-stakes decisions.
 
-Most effective systems combine all three.
+Combine all three.
 
 ---
 

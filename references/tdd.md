@@ -1,9 +1,9 @@
 <overview>
-TDD is about design quality, not coverage metrics. The red-green-refactor cycle forces you to think about behavior before implementation, producing cleaner interfaces and more testable code.
+TDD is about design quality, not coverage metrics. The red-green-refactor cycle forces thinking about behavior before implementation.
 
 **Principle:** If you can describe the behavior as `expect(fn(input)).toBe(output)` before writing `fn`, TDD improves the result.
 
-**Key insight:** TDD work is fundamentally heavier than standard tasks—it requires 2-3 execution cycles (RED → GREEN → REFACTOR), each with file reads, test runs, and potential debugging. TDD features get dedicated plans to ensure full context is available throughout the cycle.
+TDD work is heavier than standard tasks: 2-3 execution cycles (RED → GREEN → REFACTOR), each with file reads, test runs, and potential debugging. TDD features get dedicated plans so full context is available throughout the cycle.
 </overview>
 
 <when_to_use_tdd>
@@ -289,9 +289,7 @@ When `workflow.tdd_mode` is enabled, the execute-phase orchestrator inserts a co
 ### Review Checkpoint Format
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- TDD REVIEW — Phase {X}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TDD REVIEW — Phase {X}
 
 TDD Plans: {count} | Gate violations: {count}
 
@@ -324,7 +322,5 @@ Why lower:
 - GREEN phase: implement, run test, potentially iterate on failures
 - REFACTOR phase: modify code, run tests, verify no regressions
 
-Each phase involves reading files, running commands, analyzing output. The back-and-forth is inherently heavier than linear task execution.
-
-Single feature focus ensures full quality throughout the cycle.
+Each phase reads files, runs commands, analyzes output — heavier than linear task execution. Single-feature focus ensures full quality throughout the cycle.
 </context_budget>

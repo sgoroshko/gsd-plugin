@@ -1,11 +1,5 @@
 <purpose>
-Cross-AI peer review — invoke external AI CLIs to independently review phase plans.
-Each CLI gets the same prompt (PROJECT.md context, phase plans, requirements) and
-produces structured feedback. Results are combined into REVIEWS.md for the planner
-to incorporate via --reviews flag.
-
-This implements adversarial review: different AI models catch different blind spots.
-A plan that survives review from 2-3 independent AI systems is more robust.
+Cross-AI peer review — invoke external AI CLIs to independently review phase plans. Each CLI gets the same prompt (PROJECT.md context, phase plans, requirements) and produces structured feedback, combined into REVIEWS.md for the planner to incorporate via --reviews. Adversarial review: different models catch different blind spots.
 </purpose>
 
 <process>
@@ -124,7 +118,7 @@ Then read:
 </step>
 
 <step name="build_prompt">
-Build a structured review prompt:
+Build the review prompt:
 
 ```markdown
 # Cross-AI Plan Review Request
@@ -324,9 +318,7 @@ If a CLI or local server fails, log the error and continue with remaining review
 
 Display progress:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► CROSS-AI REVIEW — Phase {N}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > CROSS-AI REVIEW — Phase {N}
 
 ◆ Reviewing with {CLI}... done ✓
 ◆ Reviewing with {CLI}... done ✓
@@ -430,9 +422,7 @@ gsd-sdk query commit "docs: cross-AI review for phase {N}" --files {phase_dir}/{
 Display summary:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► REVIEW COMPLETE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > REVIEW COMPLETE
 
 Phase {N} reviewed by {count} AI systems.
 

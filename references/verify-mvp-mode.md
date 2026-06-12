@@ -9,7 +9,7 @@
 - **Standard verify-work:** "The API endpoint at /users/register returns 201 with the new user's ID." → user confirms.
 - **MVP verify-work:** "Open the registration page. Fill in 'name', 'email', 'password'. Click Submit. You should see your dashboard with your name in the header." → user confirms.
 
-The user-flow form mirrors what a real user does: open, fill, click, see. No HTTP verbs, no JSON shapes, no error codes.
+The user-flow form mirrors what a real user does (open, fill, click, see): no HTTP verbs, no JSON shapes, no error codes.
 
 ## When this framing applies
 
@@ -45,7 +45,7 @@ After the user flow passes, run the technical checks that would normally run in 
 - Edge cases (empty data, large data, concurrent requests if applicable)
 - Cross-browser / cross-runtime checks (if applicable)
 
-These are the same checks `verify-work` would run without MVP mode — just deferred until the user flow proves the slice actually works for a user.
+Same checks as non-MVP mode, just deferred until the user flow proves the slice works for a user.
 
 ### 3. Coverage check (always last, always required)
 
@@ -63,7 +63,7 @@ Coverage is a goal-backward check: "did this phase deliver what its user story p
 
 ## Compatibility with existing verify-work philosophy
 
-The "show expected, ask if reality matches" model is preserved. The user still types `yes` / `next` / empty to advance. The UAT.md state file format is unchanged. Only the WHAT changes — under MVP mode, the "expected" is a user-visible outcome rather than a technical assertion.
+The "show expected, ask if reality matches" model is preserved: user still types `yes` / `next` / empty to advance, UAT.md state file format is unchanged. Only the WHAT changes — under MVP mode the "expected" is a user-visible outcome rather than a technical assertion.
 
 ## Output: VERIFICATION.md changes under MVP mode
 

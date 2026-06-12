@@ -2,9 +2,7 @@
 
 > **Lazy-loaded and gated.** The parent `workflows/discuss-phase.md` Reads
 > this file ONLY when `ADVISOR_MODE` is true (i.e., when
-> `${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/USER-PROFILE.md` exists). Skip the Read
-> entirely when no profile is present — that's the inverse of the
-> `--advisor` flag from #2174 (don't pay the cost when unused).
+> `${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/USER-PROFILE.md` exists); skip the Read when no profile is present. (#2174)
 
 ## Activation
 

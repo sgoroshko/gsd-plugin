@@ -30,7 +30,7 @@ CONTEXT   | D-04    | 15min access / 7day refresh  | 02    | COVERED   |
 Do not flag these as MISSING:
 - Items in `## Deferred Ideas` in CONTEXT.md — developer chose to defer these
 - Items scoped to a different phase via `phase_req_ids` — not assigned to this phase
-- Items in RESEARCH.md explicitly marked "out of scope" or "future work" by the researcher
+- Items in RESEARCH.md explicitly marked "out of scope" or "future work" (see source type 3)
 
 ### Handling MISSING Items
 

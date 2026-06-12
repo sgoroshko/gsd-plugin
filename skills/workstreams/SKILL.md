@@ -48,9 +48,7 @@ Display detailed phase breakdown and state information.
 
 ### switch
 Run: `gsd-sdk query workstream.set <name> --raw --cwd "$CWD"`
-Also set `GSD_WORKSTREAM` for the current session when the runtime supports it.
-If the runtime exposes a session identifier, GSD also stores the active workstream
-session-locally so concurrent sessions do not overwrite each other.
+Also set `GSD_WORKSTREAM` for the current session when the runtime supports it. If the runtime exposes a session identifier, GSD stores the active workstream session-locally so concurrent sessions do not overwrite each other.
 
 ### progress
 Run: `gsd-sdk query workstream.progress --raw --cwd "$CWD"`

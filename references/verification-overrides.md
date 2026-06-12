@@ -40,9 +40,7 @@ overrides:
 
 ## When to Use
 
-Overrides apply when a phase intentionally deviated from the original plan during execution — for example, a requirement was descoped, an alternative approach was chosen, or a dependency changed.
-
-Without overrides, the verifier reports these as FAIL even though the deviation was intentional. Overrides let the developer mark specific items as `PASSED (override)` with a documented reason.
+Overrides apply when a phase intentionally deviated from plan during execution (descoped requirement, alternative approach, changed dependency). Without them the verifier reports FAIL even though the deviation was intentional; overrides mark items as `PASSED (override)` with a documented reason.
 
 Overrides are appropriate when:
 - A requirement changed after planning but ROADMAP.md hasn't been updated yet
@@ -62,7 +60,7 @@ Overrides are NOT appropriate when:
 
 ## Matching Rules
 
-Override matching uses **fuzzy matching**, not exact string comparison. This accommodates minor wording differences between how must-haves are phrased in ROADMAP.md, PLAN.md frontmatter, and the override entry.
+Override matching uses **fuzzy matching**, not exact string comparison, to accommodate wording differences between ROADMAP.md, PLAN.md frontmatter, and the override entry.
 
 ### Matching Algorithm
 
@@ -138,7 +136,7 @@ overrides_applied: 2
 
 ### Interactive Override Suggestion
 
-When the verifier marks a must-have as FAIL and the failure looks intentional (e.g., alternative implementation exists, or the code explicitly handles the case differently), the verifier should suggest creating an override:
+When the verifier marks a must-have as FAIL and the failure looks intentional (alternative implementation exists, or the code handles the case differently), the verifier should suggest creating an override:
 
 ```markdown
 ### F-002: OAuth2 PKCE flow
@@ -197,7 +195,7 @@ This gives the team visibility into all accepted deviations before closing the m
 
 ### Cleanup
 
-Stale overrides (where the must-have was later implemented or removed from ROADMAP.md) can be cleaned up during milestone completion. They are informational — leaving them causes no harm.
+Stale overrides (must-have later implemented or removed from ROADMAP.md) can be cleaned up during milestone completion. They are informational; leaving them causes no harm.
 
 </override_lifecycle>
 

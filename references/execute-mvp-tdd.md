@@ -40,9 +40,7 @@ The executor MUST:
 2. Emit a structured halt report:
 
    ```
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    MVP+TDD GATE TRIPPED — Plan {plan_id}, Task {task_id}
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MVP+TDD GATE TRIPPED — Plan {plan_id}, Task {task_id}
 
    Reason: {missing_red_commit | red_commit_not_failing | feat_before_test}
 
@@ -67,7 +65,7 @@ Under MVP+TDD, escalate this to **blocking**:
 - The user is shown the same review table, but the verdict line reads:
   > "Phase blocked: {N} TDD plan(s) violate the RED→GREEN gate sequence under MVP+TDD. Resolve and re-run /gsd execute-phase, or override with `/gsd execute-phase {phase} --force-mvp-gate` to ship anyway."
 
-The `--force-mvp-gate` flag is documented but not introduced by this plan — it is the escape hatch the spec mentions; if the user later builds it, the workflow already references the contract.
+The `--force-mvp-gate` flag is the documented escape hatch but is not introduced by this plan; the workflow already references the contract if the user later builds it.
 
 ## What this gate does NOT do
 

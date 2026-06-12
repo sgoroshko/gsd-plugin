@@ -35,8 +35,7 @@ When you need library or framework documentation, check in this order:
    npx --yes ctx7@latest docs <libraryId> "<query>"
    ```
 
-Do not skip documentation lookups because MCP tools are unavailable — the CLI fallback
-works via Bash and produces equivalent output.
+Do not skip documentation lookups when MCP is unavailable — the CLI fallback works via Bash.
 </documentation_lookup>
 
 <required_reading>
@@ -55,7 +54,7 @@ Read `@${CLAUDE_PLUGIN_ROOT}/references/ai-frameworks.md` for framework profiles
 </input>
 
 <documentation_sources>
-Use context7 MCP first (fastest). Fall back to WebFetch.
+Per `<documentation_lookup>` order; fall back to WebFetch on these URLs.
 
 | Framework | Official Docs URL |
 |-----------|------------------|

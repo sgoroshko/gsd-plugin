@@ -61,26 +61,18 @@ Configuration options for `.planning/` directory behavior.
 # Commit with automatic commit_docs + gitignore checks:
 gsd-sdk query commit "docs: update state" --files .planning/STATE.md
 
-# Load config via state load (returns JSON):
+# Load config via state load (commit_docs in JSON output):
 INIT=$(gsd-sdk query state.load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-# commit_docs is available in the JSON output
 
 # Or use init commands which include commit_docs:
 INIT=$(gsd-sdk query init.execute-phase "1")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-# commit_docs is included in all init command outputs
 ```
 
 **Auto-detection:** If `.planning/` is gitignored, `commit_docs` is automatically `false` regardless of config.json. This prevents git errors when users have `.planning/` in `.gitignore`.
 
-**Commit via CLI (handles checks automatically):**
-
-```bash
-gsd-sdk query commit "docs: update state" --files .planning/STATE.md
-```
-
-The CLI checks `commit_docs` config and gitignore status internally — no manual conditionals needed.
+The `gsd-sdk query commit` CLI (above) checks `commit_docs` config and gitignore status internally — no manual conditionals needed.
 
 </commit_docs_behavior>
 
@@ -163,18 +155,10 @@ To use uncommitted mode:
 
 **Checking the config:**
 
-Use `init execute-phase` which returns all config as JSON:
+Use `init execute-phase` (or `state load`); JSON output includes `branching_strategy`, `phase_branch_template`, `milestone_branch_template`:
 ```bash
 INIT=$(gsd-sdk query init.execute-phase "1")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-# JSON output includes: branching_strategy, phase_branch_template, milestone_branch_template
-```
-
-Or use `state load` for the config values:
-```bash
-INIT=$(gsd-sdk query state.load)
-if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-# Parse branching_strategy, phase_branch_template, milestone_branch_template from JSON
 ```
 
 **Branch creation:**

@@ -11,13 +11,7 @@ Scan a repo for mixed planning documents (ADR, PRD, SPEC, DOC), synthesize them 
 
 <step name="banner">
 
-Display the stage banner:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► INGEST DOCS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Display the stage banner: `GSD > INGEST DOCS`
 
 </step>
 
@@ -52,7 +46,7 @@ If `PATH_NOT_FOUND` or `MANIFEST_NOT_FOUND`: display error and exit.
 Run the init query:
 
 ```bash
-INIT=$(node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs" init ingest-docs)
+INIT=$(node "${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}/bin/gsd-tools.cjs" init ingest-docs)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -73,14 +67,6 @@ Git initialisation (Bug #3491 — never create a nested `.git` inside an existin
 ```bash
 git init
 ```
-
-**Detect runtime** using the same pattern as `new-project.md`:
-- execution_context path `/.codex/` → `RUNTIME=codex`
-- `/.gemini/` → `RUNTIME=gemini`
-- `/.opencode/` or `/.config/opencode/` → `RUNTIME=opencode`
-- else → `RUNTIME=claude`
-
-Fall back to env vars (`CODEX_HOME`, `GEMINI_CONFIG_DIR`, `OPENCODE_CONFIG_DIR`) if execution_context is unavailable.
 
 </step>
 
@@ -165,7 +151,7 @@ Create staging directory:
 mkdir -p .planning/intel/classifications/
 ```
 
-For each discovered doc, spawn `gsd-doc-classifier` in parallel. In Claude Code, issue all Task calls in a single message with multiple tool uses so the harness runs them concurrently. For Copilot / sequential runtimes, fall back to sequential dispatch.
+For each discovered doc, spawn `gsd-doc-classifier` in parallel: issue all Task calls in a single message with multiple tool uses so the harness runs them concurrently.
 
 Per-spawn prompt fields:
 - `FILEPATH` — absolute path to the doc
@@ -295,7 +281,7 @@ Preview the merge diff to the user and gate via approve-revise-abort before writ
 Commit the ingest results:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs" commit \
+node "${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}/bin/gsd-tools.cjs" commit \
   "docs: ingest {N} docs from {SCAN_PATH} (#2387)" --files \
   .planning/PROJECT.md \
   .planning/REQUIREMENTS.md \
@@ -307,13 +293,7 @@ node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/
 
 (For merge mode, substitute the actual set of modified files.)
 
-Display completion:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► INGEST DOCS COMPLETE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Display completion: `GSD > INGEST DOCS COMPLETE`
 
 Show:
 - Mode ran (new or merge)

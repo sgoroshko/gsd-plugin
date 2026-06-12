@@ -5,8 +5,8 @@
 > `--batch`, or `--analyze` is also present, layer the corresponding overlay
 > file from this directory on top of the rules below.
 
-This document defines `discuss_areas` for the default flow. The shared steps
-that come before (`initialize`, `check_blocking_antipatterns`, `check_spec`,
+Defines `discuss_areas` for the default flow. The shared steps that come
+before (`initialize`, `check_blocking_antipatterns`, `check_spec`,
 `check_existing`, `load_prior_context`, `cross_reference_todos`,
 `scout_codebase`, `analyze_phase`, `present_gray_areas`) live in the parent
 file and run for every mode.
@@ -25,14 +25,13 @@ Example with research enabled:
 Let's talk about [Authentication Strategy].
 
 📊 Best practices research:
-• OAuth 2.0 + PKCE is the current standard for SPAs (replaces implicit flow)
-• Session tokens with httpOnly cookies preferred over localStorage for XSS protection
-• Consider passkey/WebAuthn support — adoption is accelerating in 2025-2026
+• OAuth 2.0 + PKCE is the current standard for SPAs
+• httpOnly cookies preferred over localStorage for XSS protection
 
 With that context: How should users authenticate?
 ```
 
-When disabled (default), skip the research and present questions directly as before.
+When disabled (default), skip the research and present questions directly.
 
 **Philosophy:** stay adaptive. Default flow is 4 single-question turns, then
 check whether to continue. Each answer should reveal the next question.
@@ -81,13 +80,13 @@ check whether to continue. Each answer should reveal the next question.
      - Loop: discuss new areas, then prompt again
    - If "I'm ready for context": Proceed to write_context
 
-**Canonical ref accumulation during discussion:**
+**Ref accumulation during discussion:**
 When the user references a doc, spec, or ADR during any answer — e.g., "read adr-014", "check the MCP spec", "per browse-spec.md" — immediately:
 1. Read the referenced doc (or confirm it exists)
-2. Add it to the canonical refs accumulator with full relative path
+2. Add it to the refs accumulator with full relative path
 3. Use what you learned from the doc to inform subsequent questions
 
-These user-referenced docs are often MORE important than ROADMAP.md refs because they represent docs the user specifically wants downstream agents to follow. Never drop them.
+These user-referenced docs are often MORE important than ROADMAP.md refs — they represent docs the user specifically wants downstream agents to follow. Never drop them.
 
 **Question design:**
 - Options should be concrete, not abstract ("Cards" not "Option A")
@@ -120,12 +119,12 @@ Track deferred ideas internally.
 
 **Incremental checkpoint — save after each area completes:**
 
-After each area is resolved (user says "Next area"), immediately write a checkpoint file with all decisions captured so far. This prevents data loss if the session is interrupted mid-discussion.
+After each area is resolved (user says "Next area"), immediately write a checkpoint file with all decisions captured so far. Prevents data loss if the session is interrupted mid-discussion.
 
 **Checkpoint file:** `${phase_dir}/${padded_phase}-DISCUSS-CHECKPOINT.json`
 
 Schema: read `workflows/discuss-phase/templates/checkpoint.json` for the
-canonical structure — copy it and substitute the live values.
+structure — copy it and substitute the live values.
 
 **On session resume:** Handled in the parent's `check_existing` step. After
 `write_context` completes successfully, the parent's `git_commit` step

@@ -1,6 +1,6 @@
 # Revision Mode — Planner Reference
 
-Triggered when orchestrator provides `<revision_context>` with checker issues. NOT starting fresh — making targeted updates to existing plans.
+Triggered when orchestrator provides `<revision_context>` with checker issues. Make targeted updates to existing plans.
 
 **Mindset:** Surgeon, not architect. Minimal changes for specific issues.
 

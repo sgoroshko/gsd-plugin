@@ -59,64 +59,43 @@ Display banner based on active flags:
 
 If `$FULL_MODE` (all phases enabled — `--full` or all granular flags):
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (FULL)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD > QUICK TASK (FULL)
 ◆ Discussion + research + plan checking + verification enabled
 ```
 
 If `$DISCUSS_MODE` and `$VALIDATE_MODE` (no research):
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (DISCUSS + VALIDATE)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD > QUICK TASK (DISCUSS + VALIDATE)
 ◆ Discussion + plan checking + verification enabled
 ```
 
 If `$DISCUSS_MODE` and `$RESEARCH_MODE` (no validate):
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (DISCUSS + RESEARCH)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD > QUICK TASK (DISCUSS + RESEARCH)
 ◆ Discussion + research enabled
 ```
 
 If `$RESEARCH_MODE` and `$VALIDATE_MODE` (no discuss):
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (RESEARCH + VALIDATE)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD > QUICK TASK (RESEARCH + VALIDATE)
 ◆ Research + plan checking + verification enabled
 ```
 
 If `$DISCUSS_MODE` only:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (DISCUSS)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD > QUICK TASK (DISCUSS)
 ◆ Discussion phase enabled — surfacing gray areas before planning
 ```
 
 If `$RESEARCH_MODE` only:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (RESEARCH)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD > QUICK TASK (RESEARCH)
 ◆ Research phase enabled — investigating approaches before planning
 ```
 
 If `$VALIDATE_MODE` only:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (VALIDATE)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD > QUICK TASK (VALIDATE)
 ◆ Plan checking + verification enabled
 ```
 
@@ -152,15 +131,10 @@ Parse JSON for: `planner_model`, `executor_model`, `checker_model`, `verifier_mo
 USE_WORKTREES=$(gsd-sdk query config-get workflow.use_worktrees 2>/dev/null || echo "true")
 ```
 
-If the project uses git submodules, worktree isolation is unsafe **only when the quick task touches a submodule path**. The previous behavior unconditionally disabled worktree isolation whenever `.gitmodules` existed, which penalised every quick task in a submodule project even when the task was nowhere near a submodule. Parse submodule paths from `.gitmodules` so the executor can act on actual submodule paths rather than the mere file's existence:
+Worktree isolation is unsafe only when the quick task touches a submodule path. Parse submodule paths from `.gitmodules` so the guard keys on actual paths, not the file's mere existence:
 
 ```bash
-# Parse submodule paths from .gitmodules once (empty if no .gitmodules).
-# SUBMODULE_PATHS is a newline-separated list of repo-relative paths used as
-# a fail-loud commit-time guard inside the quick-task executor — if the
-# executor stages any path that falls inside SUBMODULE_PATHS, it must abort
-# the commit and surface the conflict rather than silently corrupting the
-# submodule state.
+# SUBMODULE_PATHS: newline-separated repo-relative paths; fail-loud commit-time guard in the executor.
 if [ -f .gitmodules ]; then
   SUBMODULE_PATHS=$(git config --file .gitmodules --get-regexp '^submodule\..*\.path$' 2>/dev/null | awk '{print $2}')
 else
@@ -195,10 +169,7 @@ if git show-ref --verify --quiet "refs/heads/$branch_name"; then
   git switch "$branch_name" \
     || { echo "ERROR: Could not switch to existing quick-task branch '$branch_name'." >&2; exit 1; }
 else
-  # Fetch the default branch so origin/$DEFAULT_BRANCH is current. If the fetch
-  # fails (offline, no remote, auth failure) AND we have no local copy of
-  # origin/$DEFAULT_BRANCH to fall back on, abort — creating the branch off
-  # arbitrary HEAD is exactly the bug #2916 fixed.
+  # Fetch default branch; abort if fetch fails AND no local origin copy exists (#2916).
   if ! git fetch --quiet origin "$DEFAULT_BRANCH"; then
     if ! git show-ref --verify --quiet "refs/remotes/origin/$DEFAULT_BRANCH"; then
       echo "ERROR: Could not fetch origin/$DEFAULT_BRANCH and no local copy exists. Refusing to create '$branch_name' off the current HEAD (#2916). Resolve the remote/network issue and retry." >&2
@@ -210,19 +181,13 @@ else
   if [ -n "$(git status --porcelain)" ]; then
     echo "WARNING: Uncommitted changes present. Carrying them onto the new quick-task branch — they will be branched off origin/$DEFAULT_BRANCH (not the previous-task HEAD)."
   else
-    # Best-effort: fast-forward the local default branch so subsequent local
-    # work sees the latest tip. Failure here is non-fatal because we always
-    # create the new branch directly from origin/$DEFAULT_BRANCH below.
+    # Best-effort fast-forward of local default branch; non-fatal (we branch off origin below).
     git switch --quiet "$DEFAULT_BRANCH" 2>/dev/null \
       && git merge --ff-only --quiet "origin/$DEFAULT_BRANCH" 2>/dev/null \
       || true
   fi
 
-  # Pin the new branch to origin/$DEFAULT_BRANCH so the start point is
-  # deterministic regardless of which branch we are currently on (#2916).
-  # On success HEAD is exactly at origin/$DEFAULT_BRANCH, so a post-creation
-  # merge-base / "ahead-of" guard would be unreachable — the explicit base
-  # argument here is the single source of correctness for #2916.
+  # Pin the new branch to origin/$DEFAULT_BRANCH for a deterministic start point (#2916).
   git checkout -b "$branch_name" "origin/$DEFAULT_BRANCH" \
     || { echo "ERROR: Could not create '$branch_name' from origin/$DEFAULT_BRANCH (#2916)." >&2; exit 1; }
 fi
@@ -241,8 +206,6 @@ mkdir -p "${task_dir}"
 ---
 
 **Step 4: Create quick task directory**
-
-Create the directory for this quick task:
 
 ```bash
 QUICK_DIR=".planning/quick/${quick_id}-${slug}"
@@ -265,10 +228,7 @@ Skip this step entirely if NOT `$DISCUSS_MODE`.
 
 Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DISCUSSING QUICK TASK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD > DISCUSSING QUICK TASK
 ◆ Surfacing gray areas for: ${DESCRIPTION}
 ```
 
@@ -392,10 +352,7 @@ Skip this step entirely if NOT `$RESEARCH_MODE`.
 
 Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCHING QUICK TASK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD > RESEARCHING QUICK TASK
 ◆ Investigating approaches for: ${DESCRIPTION}
 ```
 
@@ -518,10 +475,7 @@ Skip this step entirely if NOT `$VALIDATE_MODE`.
 
 Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► CHECKING PLAN
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD > CHECKING PLAN
 ◆ Spawning plan checker...
 ```
 
@@ -787,25 +741,14 @@ After executor returns:
    else
      echo "WARN: gsd-sdk unavailable; using manifest-scoped shell fallback (#3384)." >&2
 
-   # Find worktrees recorded by the executor manifest only.
-   # Inclusion-based filter (#2774): match ONLY agent-spawned worktrees under
-   # `.claude/worktrees/agent-` (the namespace Claude Code's `isolation="worktree"`
-   # uses). The previous exclusion filter (`grep -v "$(pwd)$"`) destroyed the parent
-   # workspace's `.git` whenever the workspace itself was a worktree (multi-workspace
-   # setups, and the cross-drive Windows case where `git worktree list` reports the
-   # registry path on a different drive than `$(pwd)`).
-   # Read line-by-line so worktree paths containing whitespace are preserved (#2774).
+   # Inclusion-based filter on manifest worktrees only; read line-by-line to preserve whitespace paths (#2774).
    WT_PATHS_FILE=$(mktemp "${TMPDIR:-/tmp}/gsd:worktree-paths-XXXXXX")
    node -e 'const fs=require("fs");const p=process.env.QUICK_WORKTREE_MANIFEST||process.env.WAVE_WORKTREE_MANIFEST;try{if(!p)throw new Error("QUICK_WORKTREE_MANIFEST is unset");if(!fs.existsSync(p))throw new Error("manifest does not exist");const s=fs.readFileSync(p,"utf8");if(!s.trim())throw new Error("manifest is empty");const j=JSON.parse(s);for(const w of j.worktrees||[])if(w.worktree_path)console.log(w.worktree_path)}catch(e){console.error(`ERROR: cannot read worktree manifest ${p||"(unset)"}: ${e.message}`);process.exit(1)}' > "$WT_PATHS_FILE" || { echo "BLOCKED: cannot read QUICK_WORKTREE_MANIFEST; refusing cleanup (#3384)." >&2; exit 1; }
    while IFS= read -r WT; do
      [ -z "$WT" ] && continue
-     # Pin CWD to project root before any bare git command (#3521).
-     # An LLM orchestrator may leak CWD into a worktree across tool calls; without
-     # this pin the merge command resolves against the worktree branch itself and
-     # silently no-ops the main-branch merge.
+     # Pin CWD to project root before any bare git command, else merge no-ops against the worktree branch (#3521).
      PROJECT_ROOT=$(git -C "$WT" rev-parse --git-common-dir 2>/dev/null)
-     # git rev-parse --git-common-dir returns the .git dir, not the working tree root.
-     # Strip the trailing /.git (or bare .git) to get the working tree root.
+     # Strip trailing /.git to get the working tree root.
      PROJECT_ROOT=$(echo "$PROJECT_ROOT" | sed 's|/\.git$||; s|/\.git/.*||')
      if [ -z "$PROJECT_ROOT" ] || [ ! -d "$PROJECT_ROOT" ]; then
        echo "WARN: cannot resolve project root from worktree $WT — skipping cleanup for this entry (#3521)" >&2
@@ -843,15 +786,10 @@ After executor returns:
        if [ -s "$ROADMAP_BACKUP" ]; then cp "$ROADMAP_BACKUP" .planning/ROADMAP.md; fi
        rm -f "$STATE_BACKUP" "$ROADMAP_BACKUP"
 
-       # Detect files deleted on main but re-added by worktree merge
-       # (e.g., archived phase directories that were intentionally removed)
-       # A "resurrected" file must have a deletion event in main's ancestry —
-       # brand-new files (e.g. SUMMARY.md just created by the agent) have no
-       # such history and must NOT be removed (#2501, #3195).
+       # Re-delete files resurrected by the merge that had a real deletion event on main; spare brand-new files (#2501, #3195).
        DELETED_FILES=$(git diff --diff-filter=A --name-only HEAD~1 -- .planning/ 2>/dev/null || true)
        for RESURRECTED in $DELETED_FILES; do
-         # Only delete if this file was previously tracked on main and then
-         # deliberately removed (has a deletion event in git history).
+         # Only delete if previously tracked on main and then deliberately removed.
          WAS_DELETED=$(git log --follow --diff-filter=D --name-only --format="" HEAD~1 -- "$RESURRECTED" 2>/dev/null | grep -c . || true)
          if [ "${WAS_DELETED:-0}" -gt 0 ]; then
            git rm -f "$RESURRECTED" 2>/dev/null || true
@@ -867,11 +805,7 @@ After executor returns:
          fi
        fi
 
-       # Safety net: rescue uncommitted SUMMARY.md before worktree removal (#2296, mirrors #2070, #2838).
-       # Filesystem-level (find + cp) bypasses git's --exclude-standard filter, which silently
-       # drops .planning/SUMMARY.md when projects gitignore .planning/ — the rescue's prior
-       # `git ls-files --exclude-standard` form returned empty in that case and the SUMMARY
-       # was lost on `git worktree remove --force`.
+       # Rescue uncommitted SUMMARY.md before worktree removal; filesystem find+cp bypasses git's --exclude-standard filter (#2296, #2070, #2838).
        while IFS= read -r SUMMARY; do
          [ -z "$SUMMARY" ] && continue
          REL_PATH="${SUMMARY#$WT/}"
@@ -981,10 +915,7 @@ Skip this step entirely if NOT `$VALIDATE_MODE`.
 
 Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► VERIFYING RESULTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD > VERIFYING RESULTS
 ◆ Spawning verifier...
 ```
 
@@ -1106,9 +1037,7 @@ Build file list:
 - If `${QUICK_DIR}/${quick_id}-deferred-items.md` exists: `${QUICK_DIR}/${quick_id}-deferred-items.md`
 
 ```bash
-# Explicitly stage all artifacts before commit — PLAN.md may be untracked
-# if the executor ran without worktree isolation and committed docs early
-# Filter .planning/ files from staging if commit_docs is disabled (#1783)
+# Stage artifacts; filter .planning/ from staging when commit_docs is disabled (#1783).
 COMMIT_DOCS=$(gsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
 if [ "$COMMIT_DOCS" = "false" ]; then
   file_list_filtered=$(echo "${file_list}" | tr ' ' '\n' | grep -v '^\.planning/' | tr '\n' ' ')
@@ -1117,18 +1046,11 @@ else
   git add ${file_list} 2>/dev/null
 fi
 
-# v2.45.7: amend docs into the preceding work commit when safe, instead of
-# emitting a separate `docs(quick-NN): ...` commit. Reduces the
-# "feat: X" + "docs(quick-NN): X" doubling that historically polluted git log
-# (27 docs(quick-NN) commits in 30 days at v2.45.6 measurement). Safety:
-#   1. Executor produced at least one new commit this run
-#      (HEAD differs from EXPECTED_BASE captured before Step 6 spawn)
-#   2. HEAD is NOT a merge commit (--no-ff merges in worktree mode produce
-#      a merge commit we should NOT amend onto; falls back below)
-#   3. commit_docs is true (the empty-staging case is a no-op either path)
-#   4. There are docs actually staged to fold in
-# When any safety condition fails, fall back to the original new-commit
-# behavior so existing worktree-merge flows keep their separate docs commit.
+# Amend docs into the preceding work commit when safe; else emit a separate docs commit (v2.45.7). Safety conditions:
+#   1. Executor produced a new commit this run (HEAD != EXPECTED_BASE)
+#   2. HEAD is NOT a merge commit (don't amend onto worktree --no-ff merges)
+#   3. commit_docs is true
+#   4. Docs are actually staged
 HEAD_AFTER_EXECUTOR=$(git rev-parse HEAD 2>/dev/null || echo "")
 HEAD_PARENT_COUNT=$(git rev-list --parents -n 1 HEAD 2>/dev/null | awk '{print NF-1}')
 

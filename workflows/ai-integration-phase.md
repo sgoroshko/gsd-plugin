@@ -93,15 +93,11 @@ Path: ${AI_SPEC_FILE}
 
 **If does not exist:** continue to step 5.
 
-(Prior behavior was a three-way AskUserQuestion prompt with Update/View/Skip options when the file existed. The interactive confirmation was friction with no value the explicit-flag escape hatches do not already cover; the default "use existing, exit cleanly" path is what callers nearly always want when the spec is present.)
-
 ## 5. Spawn gsd-framework-selector
 
 Display:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AI DESIGN CONTRACT — PHASE {N}: {name}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► AI DESIGN CONTRACT — PHASE {N}: {name}
 
 ◆ Step 1/4 — Framework Selection...
 ```
@@ -145,7 +141,7 @@ Fill in header fields:
 
 ## 7. Spawn gsd-ai-researcher
 
-> **Ordering note (prevents tool-level last-writer-wins race):** Steps 7 and 8 write disjoint sections of AI-SPEC.md but MUST run sequentially — wait for Step 7 to complete before spawning Step 8. Both agents use the `Edit` tool exclusively (never `Write`) when modifying AI-SPEC.md. A `Write` on a shared file replaces the entire file, silently overwriting the other agent's work; `Edit` targets only the relevant lines. See #3096 for a confirmed 40%-incidence race on parallel dispatch.
+> **Ordering note (prevents last-writer-wins race):** Steps 7 and 8 MUST run sequentially — wait for Step 7 to complete before spawning Step 8. Both agents use `Edit` exclusively (never `Write`) on AI-SPEC.md; `Write` replaces the whole file and overwrites the sibling's work. See #3096 (confirmed 40%-incidence race on parallel dispatch).
 
 Display:
 ```
@@ -270,9 +266,7 @@ git commit -m "docs({phase_slug}): generate AI-SPEC.md — {primary_framework} +
 ## 12. Display Completion
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AI-SPEC COMPLETE — PHASE {N}: {name}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► AI-SPEC COMPLETE — PHASE {N}: {name}
 
 ◆ Framework: {primary_framework}
 ◆ System Type: {system_type}

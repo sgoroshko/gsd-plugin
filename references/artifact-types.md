@@ -1,8 +1,6 @@
 # GSD Artifact Types
 
-This reference documents all artifact types in the GSD planning taxonomy. Each type has a defined
-shape, lifecycle, location, and consumption mechanism. A well-formatted artifact that no workflow
-reads is inert — the consumption mechanism is what gives an artifact meaning.
+All artifact types in the GSD planning taxonomy. Each has a defined shape, lifecycle, location, and consumption mechanism. A well-formatted artifact that no workflow reads is inert.
 
 ---
 
@@ -111,21 +109,16 @@ reads is inert — the consumption mechanism is what gives an artifact meaning.
   - `pause-work` — includes METHODOLOGY.md in the Required Reading section of `.continue-here.md`
     so resuming agents inherit the project's analytical orientation
 
-**Why consumption matters:** A METHODOLOGY.md that no workflow reads is inert. The lenses only
-take effect when an agent loads them into its reasoning context before analysis. This is why
-both the discuss-phase-assumptions and pause-work workflows explicitly reference this file.
+**Why consumption matters:** Lenses only take effect when an agent loads them into its reasoning context before analysis — which is why discuss-phase-assumptions and pause-work explicitly reference this file.
 
 **Example lens entry:**
 
 ```markdown
 ## Bayesian Updating
 
-**Diagnoses:** Decisions made with stale priors — assumptions formed early that evidence has since
-contradicted, but which remain embedded in the plan.
+**Diagnoses:** Decisions made with stale priors — assumptions evidence has since contradicted but which remain in the plan.
 
-**Recommends:** Before confirming an assumption, ask: "What evidence would make me change this?"
-If no evidence could change it, it's a belief, not an assumption. Flag for user review.
+**Recommends:** Before confirming an assumption, ask: "What evidence would make me change this?" If none could, it's a belief, not an assumption. Flag for user review.
 
-**Apply when:** Any assumption carries Confident label but was formed before recent architectural
-changes, library upgrades, or scope corrections.
+**Apply when:** An assumption carries the Confident label but was formed before recent architectural changes, library upgrades, or scope corrections.
 ```

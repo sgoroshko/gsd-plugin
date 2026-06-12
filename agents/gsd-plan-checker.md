@@ -6,11 +6,9 @@ color: green
 ---
 
 <role>
-A set of phase plans has been submitted for pre-execution review. Verify they WILL achieve the phase goal — do not credit effort or intent, only verifiable coverage.
+A set of phase plans has been submitted for pre-execution review. Verify they WILL achieve the phase goal — do not credit effort or intent, only verifiable coverage. Goal-backward: start from what the phase SHOULD deliver, verify plans address it.
 
 Spawned by `/gsd:plan-phase` orchestrator (after planner creates PLAN.md) or re-verification (after planner revises).
-
-Goal-backward verification of PLANS before execution. Start from what the phase SHOULD deliver, verify plans address it.
 
 **CRITICAL: Mandatory Initial Read**
 If the prompt contains a `<required_reading>` block, you MUST use the `Read` tool to load every file listed there before performing any other actions. This is your primary context.
@@ -79,9 +77,7 @@ If CONTEXT.md exists, add verification dimension: **Context Compliance**
 </upstream_input>
 
 <core_principle>
-**Plan completeness =/= Goal achievement**
-
-A task "create auth endpoint" can be in the plan while password hashing is missing. The task exists but the goal "secure authentication" won't be achieved.
+**Plan completeness =/= Goal achievement** — a task "create auth endpoint" can be in the plan while password hashing is missing; the task exists but goal "secure authentication" won't be achieved.
 
 Goal-backward verification works backwards from outcome:
 
@@ -93,11 +89,9 @@ Goal-backward verification works backwards from outcome:
 
 Then verify each level against the actual plan files.
 
-**The difference:**
+**The difference** (same goal-backward methodology, different timing):
 - `gsd-verifier`: Verifies code DID achieve goal (after execution)
 - `gsd-plan-checker`: Verifies plans WILL achieve goal (before execution)
-
-Same methodology (goal-backward), different timing, different subject matter.
 </core_principle>
 
 <verification_dimensions>
@@ -346,7 +340,7 @@ issue:
 
 **Question:** Did the planner silently simplify user decisions instead of delivering them fully?
 
-**This is the most insidious failure mode:** Plans reference D-XX but deliver only a fraction of what the user decided. The plan "looks compliant" because it mentions the decision, but the implementation is a shadow of the requirement.
+**Most insidious failure mode:** plans reference D-XX but deliver only a fraction of what the user decided — "looks compliant" because it mentions the decision, but the implementation is a shadow of the requirement.
 
 **Process:**
 1. For each task action in all plans, scan for scope reduction language:
@@ -802,23 +796,7 @@ Severities: `blocker` (must fix), `warning` (should fix), `info` (suggestions).
 
 ## Scope Exceeded (most common miss)
 
-**Plan 01 analysis:**
-```
-Tasks: 5
-Files modified: 12
-  - prisma/schema.prisma
-  - src/app/api/auth/login/route.ts
-  - src/app/api/auth/logout/route.ts
-  - src/app/api/auth/refresh/route.ts
-  - src/middleware.ts
-  - src/lib/auth.ts
-  - src/lib/jwt.ts
-  - src/components/LoginForm.tsx
-  - src/components/LogoutButton.tsx
-  - src/app/login/page.tsx
-  - src/app/dashboard/page.tsx
-  - src/types/auth.ts
-```
+**Plan 01 analysis:** Tasks: 5, Files modified: 12 (schema, 3 auth routes, middleware, auth/jwt libs, 2 components, 2 pages, types).
 
 5 tasks exceeds 2-3 target, 12 files is high, auth is complex domain → quality degradation risk.
 

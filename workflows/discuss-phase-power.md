@@ -1,7 +1,7 @@
 <purpose>
-Power user mode for discuss-phase. Generates ALL questions upfront into a JSON state file and an HTML companion UI, then waits for the user to answer at their own pace. When the user signals readiness, processes all answers in one pass and generates CONTEXT.md.
+Power user mode for discuss-phase. Generates ALL questions upfront into a JSON state file and an HTML companion UI, then waits for the user to answer at their own pace. On readiness, processes all answers in one pass and generates CONTEXT.md.
 
-**When to use:** Large phases with many gray areas, or when users prefer to answer questions offline / asynchronously rather than interactively in the chat session.
+**When to use:** Large phases with many gray areas, or when users prefer to answer asynchronously rather than interactively in chat.
 </purpose>
 
 <trigger>
@@ -95,33 +95,13 @@ Write all questions to:
 </step>
 
 <step name="generate_html">
-Write a self-contained HTML companion file to:
+Write a single self-contained HTML companion file (inline CSS + JavaScript, no external dependencies) to:
 
 ```
 {phase_dir}/{padded_phase}-QUESTIONS.html
 ```
 
-The file must be a single self-contained HTML file with inline CSS and JavaScript. No external dependencies.
-
-**Layout:**
-
-```
-┌─────────────────────────────────────────────────────┐
-│  Phase {N}: {phase_name} — Discussion Questions      │
-│  ┌──────────────────────────────────────────────┐   │
-│  │  12 total  |  3 answered  |  9 remaining     │   │
-│  └──────────────────────────────────────────────┘   │
-├─────────────────────────────────────────────────────┤
-│  ▼ Visual Style (3 questions)                        │
-│   ┌──────────┐ ┌──────────┐ ┌──────────┐            │
-│   │ Q-01     │ │ Q-02     │ │ Q-03     │            │
-│   │ Layout   │ │ Density  │ │ Colors   │            │
-│   │ ...      │ │ ...      │ │ ...      │            │
-│   └──────────┘ └──────────┘ └──────────┘            │
-│  ▼ Data Model (2 questions)                          │
-│   ...                                                │
-└─────────────────────────────────────────────────────┘
-```
+Layout: a header "Phase {N}: {phase_name} — Discussion Questions" with a stats bar, then collapsible sections each holding a 3-column grid of question cards.
 
 **Stats bar:**
 - Total questions, answered count, remaining count
@@ -188,7 +168,7 @@ When ready, tell me:
 </step>
 
 <step name="wait_loop">
-Enter wait mode. Claude listens for user commands and handles each:
+Enter wait mode. Listen for user commands and handle each:
 
 ---
 

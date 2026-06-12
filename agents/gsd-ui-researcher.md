@@ -46,8 +46,7 @@ When you need library or framework documentation, check in this order:
    npx --yes ctx7@latest docs <libraryId> "<query>"
    ```
 
-Do not skip documentation lookups because MCP tools are unavailable — the CLI fallback
-works via Bash and produces equivalent output.
+Do not skip documentation lookups when MCP tools are unavailable; the CLI fallback works.
 </documentation_lookup>
 
 <project_context>
@@ -134,6 +133,8 @@ find src -name "*.tsx" -path "*/components/*" 2>/dev/null | head -20
 test -f components.json && npx shadcn info 2>/dev/null
 ```
 
+See Step 2 for the full scout sequence.
+
 </tool_strategy>
 
 <shadcn_gate>
@@ -196,7 +197,7 @@ Ask ONLY what REQUIREMENTS.md, CONTEXT.md, and RESEARCH.md did not already answe
 For each declared third-party block:
 
 ```bash
-# View source code of third-party block before it enters the contract
+# View third-party block source before it enters the contract
 npx shadcn view {block} --registry {registry_url} 2>/dev/null
 ```
 
@@ -239,7 +240,7 @@ Set frontmatter `status: draft` (checker will upgrade to `approved`).
 
 **ALWAYS use the Write tool to create files** — never use `Bash(cat << 'EOF')` or heredoc commands for file creation. Mandatory regardless of `commit_docs` setting.
 
-⚠️ `commit_docs` controls git only, NOT file writing. Always write first.
+⚠️ `commit_docs` controls git only, NOT file writing.
 
 </output_format>
 

@@ -37,16 +37,13 @@ These are empty strings by default. Set via: `gsd-sdk query config-set manager.f
 Display startup banner:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  GSD ► MANAGER
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  {milestone_version} — {milestone_name}
  {phase_count} phases · {completed_count} complete
 
  ✓ Discuss → inline    ◆ Plan/Execute → background
  Dashboard auto-refreshes when background work is active.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 Proceed to dashboard step.
@@ -64,9 +61,7 @@ INIT=$(gsd-sdk query init.manager)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Parse the full JSON. Build the dashboard display.
-
-Build dashboard from JSON. Symbols: `✓` done, `◆` active, `○` pending, `·` queued. Progress bar: 20-char `█░`.
+Parse the full JSON. Symbols: `✓` done, `◆` active, `○` pending, `·` queued. Progress bar: 20-char `█░`.
 
 **Status mapping** (disk_status → D P E Status):
 
@@ -88,9 +83,7 @@ Use `deps_display` from init JSON for the Deps column — shows which phases thi
 Example output:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  GSD ► DASHBOARD
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  ████████████░░░░░░░░ 60%  (3/5 phases)
  ◆ Background: Planning Phase 4
  | # | Phase                | Deps | D | P | E | Status              |
@@ -130,15 +123,12 @@ Queued phases are NOT eligible for the Continue action menu — they live in a f
 If `all_complete` is true:
 
 ```
-╔══════════════════════════════════════════════════════════════╗
-║  MILESTONE COMPLETE                                          ║
-╚══════════════════════════════════════════════════════════════╝
+ MILESTONE COMPLETE
 
 All {phase_count} phases done. Ready for final steps:
   → /gsd:verify-work — run acceptance testing
   → /gsd:complete-milestone — archive and wrap up
 ```
-
 
 **Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is not available.
 Ask user via AskUserQuestion:
@@ -241,7 +231,7 @@ After discuss completes, loop back to dashboard step.
 
 ### Plan Phase N
 
-Planning runs autonomously. Spawn a background agent that delegates to the Skill pipeline with any configured flags:
+Spawn a background agent that delegates to the Skill pipeline with any configured flags:
 
 ```
 Agent(
@@ -275,7 +265,7 @@ Loop back to dashboard step.
 
 ### Execute Phase N
 
-Execution runs autonomously. Spawn a background agent that delegates to the Skill pipeline with any configured flags:
+Spawn a background agent that delegates to the Skill pipeline with any configured flags:
 
 ```
 Agent(
@@ -356,15 +346,12 @@ Classify the error:
 Display final status with progress bar:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  GSD ► SESSION END
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  {milestone_version} — {milestone_name}
  {PROGRESS_BAR} {progress_pct}%  ({completed_count}/{phase_count} phases)
 
  Resume anytime: /gsd:manager
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Note:** Any background agents still running will continue to completion. Their results will be visible on next `/gsd:manager` or `/gsd:progress` invocation.

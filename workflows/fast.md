@@ -1,6 +1,6 @@
 <purpose>
-Execute a trivial task inline without subagent overhead. No PLAN.md, no Task spawning,
-no research, no plan checking. Just: understand → do → commit → log.
+Execute a trivial task inline without subagent overhead: understand → do → commit → log.
+No PLAN.md, no Task spawning, no research, no plan checking.
 
 For tasks like: fix a typo, update a config value, add a missing import, rename a
 variable, commit uncommitted work, add a .gitignore entry, bump a version number.
@@ -48,7 +48,7 @@ Do the work directly:
 2. Make the change(s)
 3. Verify the change works (run existing tests if applicable, or do a quick sanity check)
 
-**No PLAN.md.** Just do it.
+**No PLAN.md.**
 </step>
 
 <step name="commit">
@@ -93,7 +93,7 @@ Report completion:
    Files: {list of changed files}
 ```
 
-No next-step suggestions. No workflow routing. Just done.
+No next-step suggestions or workflow routing.
 </step>
 
 </process>

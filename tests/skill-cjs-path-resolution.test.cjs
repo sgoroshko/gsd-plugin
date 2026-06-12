@@ -20,7 +20,11 @@ const ROOT = path.join(__dirname, '..');
 const SKILLS_DIR = path.join(ROOT, 'skills');
 
 const LEGACY = 'get-shit-done/bin/gsd-tools.cjs';
-const RESOLVER = '${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs';
+// gsd-tools.cjs must be reached through a CLAUDE_PLUGIN_ROOT-rooted path. Two
+// accepted fallback forms: the legacy 'current' symlink default, or the
+// versioned-dir glob default (v3.4.10, robust when CLAUDE_PLUGIN_ROOT is unset
+// and there is no 'current' symlink). Either satisfies #13.
+const RESOLVER_RE = /\$\{CLAUDE_PLUGIN_ROOT:-[^}]*\}\/bin\/gsd-tools\.cjs/;
 
 let failures = 0;
 function check(name, cond) {
@@ -59,7 +63,7 @@ for (const rel of ['intel/SKILL.md', 'graphify/SKILL.md', 'from-gsd2/SKILL.md'])
   const full = path.join(SKILLS_DIR, rel);
   const body = fs.readFileSync(full, 'utf8');
   if (!body.includes('gsd-tools.cjs')) continue; // nothing to assert
-  check(`${rel} uses CLAUDE_PLUGIN_ROOT resolver`, body.includes(RESOLVER));
+  check(`${rel} uses CLAUDE_PLUGIN_ROOT resolver`, RESOLVER_RE.test(body));
 }
 
 if (failures) {

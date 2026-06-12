@@ -106,9 +106,7 @@ AskUserQuestion(
 Before writing any files, present a summary of what was gathered and ask for confirmation.
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► MILESTONE SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► MILESTONE SUMMARY
 
 **Milestone v[X.Y]: [Name]**
 
@@ -173,12 +171,7 @@ This document evolves at phase transitions and milestone boundaries.
 
 ## 5. Update STATE.md
 
-Reset STATE.md frontmatter AND body atomically via the SDK. This writes the new
-milestone version/name into the YAML frontmatter, resets `status` to
-`planning`, zeroes `progress.*` counters, and rewrites the `## Current Position`
-section to the new-milestone template. Accumulated Context (decisions,
-blockers, todos) is preserved across the switch — symmetric with
-`milestone.complete`.
+Reset STATE.md frontmatter AND body atomically via the SDK: writes new milestone version/name into frontmatter, resets `status` to `planning`, zeroes `progress.*` counters, rewrites `## Current Position` to the new-milestone template. Accumulated Context (decisions, blockers, todos) is preserved.
 
 ```bash
 gsd-sdk query state.milestone-switch --milestone "v[X.Y]" --name "[Name]"
@@ -195,11 +188,7 @@ Status: Defining requirements
 Last activity: [today] — Milestone v[X.Y] started
 ```
 
-Bug #2630: a prior version of this workflow rewrote the Current Position body
-manually but left the frontmatter pointing at the previous milestone, so every
-downstream reader (`state.json`, `getMilestoneInfo`, progress bars) reported the
-stale milestone until the first phase advance forced a resync. Always use the
-SDK handler above — do not hand-edit STATE.md here.
+Bug #2630: manually rewriting the body but leaving frontmatter on the previous milestone made downstream readers (`state.json`, `getMilestoneInfo`, progress bars) report the stale milestone until the first phase advance. Always use the SDK handler above — do not hand-edit STATE.md here.
 
 ## 6. Cleanup and Commit
 
@@ -282,9 +271,7 @@ AskUserQuestion: "Research the domain ecosystem for new features before defining
 **If user chose "Research first":**
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCHING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► RESEARCHING
 
 ◆ Spawning 4 researchers in parallel...
   → Stack, Features, Architecture, Pitfalls
@@ -363,9 +350,7 @@ Commit after writing.
 
 Display key findings from SUMMARY.md:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCH COMPLETE ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► RESEARCH COMPLETE ✓
 
 **Stack additions:** [from SUMMARY.md]
 **Feature table stakes:** [from SUMMARY.md]
@@ -377,9 +362,7 @@ Display key findings from SUMMARY.md:
 ## 9. Define Requirements
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DEFINING REQUIREMENTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► DEFINING REQUIREMENTS
 ```
 
 Read PROJECT.md: core value, current milestone goals, validated requirements (what exists).
@@ -450,9 +433,7 @@ gsd-sdk query commit "docs: define milestone v[X.Y] requirements" --files .plann
 ## 10. Create Roadmap
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► CREATING ROADMAP
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► CREATING ROADMAP
 
 ◆ Spawning roadmapper...
 ```
@@ -586,9 +567,7 @@ Print a summary:
 ## 11. Done
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► MILESTONE INITIALIZED ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► MILESTONE INITIALIZED ✓
 
 **Milestone v[X.Y]: [Name]**
 

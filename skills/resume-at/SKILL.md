@@ -9,13 +9,9 @@ allowed-tools:
 ---
 
 <objective>
-Schedule a future Claude Code session that automatically resumes the current GSD project at the requested time. Useful when:
+Schedule a future Claude Code session that automatically resumes the current GSD project at the requested time. Useful for: coming back after a usage/token cap, kicking off work overnight so HANDOFF restores the morning session, or queuing a future GSD command (e.g. `/gsd:execute-phase 9` at 04:00) for off-peak quota use.
 
-- Hitting a usage / token cap and wanting to **come back later** without manually restarting
-- Pausing for the day and wanting work to **kick off overnight** so HANDOFF restores the morning session
-- Queuing a future GSD command (e.g. `/gsd:execute-phase 9` at 04:00) for off-peak quota use
-
-> **No-token fallback.** If you've hit your usage cap and the skill itself won't run (it needs tokens to parse args and call CronCreate — the very moment you don't have any), `/exit` the rate-limited session and invoke the shell wrapper from a plain terminal:
+> **No-token fallback.** If you've hit your usage cap and the skill itself won't run (it needs tokens to parse args and call CronCreate), `/exit` the rate-limited session and invoke the shell wrapper from a plain terminal:
 >
 > ```bash
 > /exit                                 # leave the rate-limited Claude session first
@@ -28,11 +24,9 @@ Schedule a future Claude Code session that automatically resumes the current GSD
 > ~/.claude/plugins/cache/gsd-plugin/gsd/<version>/bin/gsd-resume-at +3h
 > ```
 >
-> Pure shell — uses `nohup sleep` to schedule an OS-level timer, no Claude tokens consumed. macOS only for v1; the script will tell you if you're on another platform. Does NOT survive a reboot — for durable cross-reboot scheduling, use this skill (`/gsd:resume-at`) when tokens are available.
->
-> The plugin's `Stop` hook will surface this same hint automatically when it detects a rate-limit message in the session transcript.
+> Pure shell — uses `nohup sleep` for an OS-level timer, no Claude tokens consumed. macOS only for v1; the script reports if you're on another platform. Does NOT survive a reboot — for durable cross-reboot scheduling, use this skill (`/gsd:resume-at`) when tokens are available. The plugin's `Stop` hook surfaces this hint automatically when it detects a rate-limit message in the transcript.
 
-This skill is a thin wrapper. The plugin already covers the *resume itself* (HANDOFF.json + `/gsd:resume-work`). What was missing was a way to ask Claude to come back at time T. This skill provides the scheduling on-ramp; Claude Code's built-in `/schedule` (or CronCreate primitive) does the durable cron storage.
+Thin wrapper: the plugin already covers the resume itself (HANDOFF.json + `/gsd:resume-work`); this skill provides the scheduling on-ramp, and Claude Code's `/schedule` (or CronCreate primitive) does the durable cron storage.
 </objective>
 
 <process>
@@ -89,7 +83,7 @@ If a `/clear` boundary makes sense (long session, scheduling at the end of an ac
 </rules>
 
 <notes>
-- Why a wrapper, not a reimplementation: Claude Code's `/schedule` and `CronCreate` already handle persistence-across-restarts, timezone math, and authorization correctly. Building our own would duplicate complex code and drift over time. Resume-at exists purely to translate GSD-flavored input (`+2h`, default `/gsd:resume-work`) into the form `/schedule` expects.
-- Why default `/gsd:resume-work` and not `/gsd:next`: `resume-work` prints status and routes — useful when you might forget where you were. `next` jumps straight to action. Default is the safer first-impression choice; users with a clear destination override via `--cmd`.
-- The complement skill is `/gsd:resume-work` (deletes HANDOFF after restoring) and `/gsd:pause-work` (writes HANDOFF on demand). `resume-at` schedules; resume-work restores; pause-work captures.
+- Wrapper, not reimplementation: `/schedule` and `CronCreate` already handle persistence-across-restarts, timezone math, and authorization. Resume-at only translates GSD-flavored input (`+2h`, default `/gsd:resume-work`) into the form `/schedule` expects.
+- Default `/gsd:resume-work` (prints status and routes) over `/gsd:next` (jumps straight to action): the safer choice when you might forget where you were. Override via `--cmd`.
+- Complement skills: `/gsd:resume-work` restores (deletes HANDOFF after), `/gsd:pause-work` captures (writes HANDOFF on demand). resume-at schedules.
 </notes>

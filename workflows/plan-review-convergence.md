@@ -75,7 +75,7 @@ Then re-run: /gsd:plan-review-convergence {PHASE}
 ## 2. Initialize
 
 ```bash
-INIT=$(node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs" init plan-phase "$PHASE")
+INIT=$(node "${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}/bin/gsd-tools.cjs" init plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -88,7 +88,7 @@ Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from in
 ## 3. Validate Phase + Pre-flight Gate
 
 ```bash
-PHASE_INFO=$(node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs" roadmap get-phase "${PHASE}")
+PHASE_INFO=$(node "${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}/bin/gsd-tools.cjs" roadmap get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases. Exit.
@@ -96,10 +96,7 @@ PHASE_INFO=$(node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/
 Display startup banner:
 
 ```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PLAN CONVERGENCE — Phase {phase_number}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD ► PLAN CONVERGENCE — Phase {phase_number}
  Reviewers: {REVIEWER_FLAGS}
  Max cycles: {MAX_CYCLES}
 ```
@@ -116,7 +113,7 @@ Display: `◆ No plans found — running initial planning inline... (plan-phase 
 Skill(skill="gsd-plan-phase", args="{PHASE} {GSD_WS}")
 ```
 
-Run plan-phase **inline** (do NOT wrap it in Agent()). The convergence orchestrator runs at depth 0 with the Agent tool available, so inline plan-phase can spawn gsd-planner and gsd-plan-checker at depth 1, the one level of nesting that works on Claude Code. Wrapping plan-phase in Agent() would push it to depth 1 where the Agent tool is absent, preventing it from spawning any sub-agents (upstream bug #936). Wait until plan-phase completes and PLAN.md files are committed before continuing.
+Run plan-phase **inline** (do NOT wrap it in Agent()): inline at depth 0 lets it spawn gsd-planner/gsd-plan-checker at depth 1; wrapping in Agent() pushes it to depth 1 where the Agent tool is absent (upstream bug #936). Wait until plan-phase completes and PLAN.md files are committed before continuing.
 
 After plan-phase completes, verify plans were created:
 ```bash
@@ -220,15 +217,12 @@ fi
 **If HIGH_COUNT == 0 (converged):**
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs" state planned-phase --phase "${PHASE}" --name "${phase_name}" --plans "${PLAN_COUNT}"
+node "${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}/bin/gsd-tools.cjs" state planned-phase --phase "${PHASE}" --name "${phase_name}" --plans "${PLAN_COUNT}"
 ```
 
 Display:
 ```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► CONVERGENCE COMPLETE ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD ► CONVERGENCE COMPLETE ✓
  Phase {phase_number} converged in {cycle} cycle(s).
  No HIGH concerns remaining.
 
@@ -304,7 +298,7 @@ Display: `◆ Replanning inline with review feedback... (plan-phase runs here in
 Skill(skill="gsd-plan-phase", args="{PHASE} --reviews --skip-research {GSD_WS}")
 ```
 
-Run plan-phase **inline** (do NOT wrap it in Agent()). Same rationale as the initial-planning step: the convergence orchestrator runs at depth 0 with the Agent tool available, so inline plan-phase can spawn gsd-planner and gsd-plan-checker at depth 1. Wrapping in Agent() pushes plan-phase to depth 1 where the Agent tool is absent, so the replan loop can never produce a revised plan when HIGHs are found (this is the root cause of upstream bug #936). Wait until plan-phase completes (outputs '## PLANNING COMPLETE') and updated PLAN.md files are committed before continuing.
+Run plan-phase **inline** (do NOT wrap it in Agent()): same rationale as the initial-planning step (upstream bug #936). Wait until plan-phase completes (outputs '## PLANNING COMPLETE') and updated PLAN.md files are committed before continuing.
 
 After plan-phase completes → go back to **step 5a** (review again).
 

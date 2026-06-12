@@ -51,8 +51,7 @@ When you need library or framework documentation, check in this order:
    npx --yes ctx7@latest docs <libraryId> "<query>"
    ```
 
-Do not skip documentation lookups because MCP tools are unavailable — the CLI fallback
-works via Bash and produces equivalent output.
+Do not skip documentation lookups when MCP is unavailable — the CLI fallback works equivalently.
 </documentation_lookup>
 
 <philosophy>
@@ -78,7 +77,7 @@ Claude's training is 6-18 months stale. Knowledge may be outdated, incomplete, o
 **Bad research:** Start with hypothesis, find supporting evidence
 **Good research:** Gather evidence, form conclusions from evidence
 
-Don't find articles supporting your initial guess — find what the ecosystem actually uses and let evidence drive recommendations.
+Find what the ecosystem actually uses; let evidence drive recommendations, not your initial guess.
 
 </philosophy>
 
@@ -137,7 +136,7 @@ gsd-sdk query websearch "your query" --limit 10
 
 If `brave_search: false` (or not set), use built-in WebSearch tool instead.
 
-Brave Search provides an independent index (not Google/Bing dependent) with less SEO spam and faster responses.
+Brave provides an independent index (not Google/Bing) with less SEO spam and faster responses.
 
 ### Exa Semantic Search (MCP)
 

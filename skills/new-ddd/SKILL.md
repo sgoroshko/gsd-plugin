@@ -14,13 +14,11 @@ allowed-tools:
 </runtime_note>
 
 <context>
-**Documentation-Driven Development (DDD) mode for project initialization.**
+**Documentation-Driven Development (DDD) mode for project initialization.** Differs from `/gsd:new-project`:
 
-Differs from `/gsd:new-project` in three ways:
-
-1. The artifact users validate is `SPEC.md` (user-facing documentation: README, USAGE, CONCEPTS, API surface) rather than `REQUIREMENTS.md` (REQ-IDs and acceptance criteria).
-2. Phases are derived from `SPEC.md` sections / chapters rather than from REQ-ID clusters.
-3. The success criterion for each phase is "implementation matches the corresponding SPEC.md section" rather than "tests pass and UAT satisfied."
+1. Users validate `SPEC.md` (user-facing docs: README, USAGE, CONCEPTS, API surface) rather than `REQUIREMENTS.md` (REQ-IDs + acceptance criteria).
+2. Phases derive from `SPEC.md` sections / chapters rather than REQ-ID clusters.
+3. Each phase's success criterion is "implementation matches the corresponding SPEC.md section" rather than "tests pass and UAT satisfied."
 
 **When to use DDD vs. standard new-project:**
 - CLIs (the help text IS the spec)
@@ -57,7 +55,7 @@ Initialize a new project through Documentation-Driven Development:
 - `.planning/ROADMAP.md`, phase structure derived from SPEC.md sections
 - `.planning/STATE.md`, project memory (with `mode: ddd` marker)
 
-**After this command:** Run `/gsd:plan-phase 1` to start execution. Per-phase work proceeds the same as standard GSD; SPEC.md is the canonical spec that each phase implements against. Manual doc updates during execution are expected; per-phase doc-sync automation is held for a future release.
+**After this command:** Run `/gsd:plan-phase 1` to start execution. Per-phase work proceeds as standard GSD; SPEC.md is the spec each phase implements against. Manual doc updates during execution are expected; per-phase doc-sync automation is held for a future release.
 </objective>
 
 <execution_context>

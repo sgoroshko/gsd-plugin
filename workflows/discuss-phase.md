@@ -11,9 +11,7 @@ You are a thinking partner, not an interviewer. The user is the visionary — yo
 </required_reading>
 
 <progressive_disclosure>
-**Per-mode bodies, templates, and the advisor flow are lazy-loaded** to keep
-this file under the 500-line workflow budget (#2551, mirrors #2361's agent
-budget). Read only the files needed for the current invocation:
+**Per-mode bodies, templates, and the advisor flow are lazy-loaded** to keep this file under the 500-line workflow budget (#2551, mirrors #2361's agent budget). Read only the files needed for the current invocation:
 
 | When | Read |
 |---|---|
@@ -46,9 +44,9 @@ Do not Read mode files unless the corresponding flag/condition is set.
 <philosophy>
 **User = founder/visionary. Claude = builder.**
 
-The user knows: how they imagine it working, what it should look/feel like, what's essential vs nice-to-have, specific behaviors or references they have in mind.
+The user knows: how they imagine it working, look/feel, essential vs nice-to-have, specific behaviors or references in mind.
 
-The user doesn't know (and shouldn't be asked): codebase patterns (researcher reads the code), technical risks (researcher identifies these), implementation approach (planner figures this out), success metrics (inferred from the work).
+Don't ask the user about (Claude/downstream handles): codebase patterns (researcher reads the code), technical risks (researcher), implementation approach (planner), success metrics (inferred from the work).
 
 Ask about vision and implementation choices. Capture decisions for downstream agents.
 </philosophy>
@@ -84,9 +82,7 @@ Gray areas are **implementation decisions the user cares about** — things that
 
 ```
 Phase: "User authentication"     → Session handling, Error responses, Multi-device policy, Recovery flow
-Phase: "Organize photo library"  → Grouping criteria, Duplicate handling, Naming convention, Folder structure
 Phase: "CLI for database backups"→ Output format, Flag design, Progress reporting, Error recovery
-Phase: "API documentation"       → Structure/navigation, Code examples depth, Versioning approach, Interactive elements
 ```
 
 **Claude handles these (don't ask):** technical implementation details, architecture patterns, performance optimization, scope (roadmap defines this).

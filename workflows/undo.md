@@ -10,13 +10,7 @@ Safe git revert workflow. Rolls back GSD phase or plan commits using the phase m
 <process>
 
 <step name="banner" priority="first">
-Display the stage banner:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► UNDO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Display the stage banner: `GSD ► UNDO`
 </step>
 
 <step name="parse_arguments">
@@ -221,18 +215,14 @@ If any revert fails (merge conflict or error):
 1. Display the error message
 2. Run cleanup — handle both first-call and mid-sequence cases:
    ```bash
-   # Try git revert --abort first (works if this is the first failed revert)
+   # Abort current revert, then clear any prior staged --no-commit reverts
    git revert --abort 2>/dev/null
-   # If prior --no-commit reverts already staged cleanly before this failure,
-   # revert --abort may be a no-op. Clean up staged and working tree changes:
    git reset HEAD 2>/dev/null
    git restore . 2>/dev/null
    ```
 3. Display:
    ```
-   ╔══════════════════════════════════════════════════════════════╗
-   ║  ERROR                                                       ║
-   ╚══════════════════════════════════════════════════════════════╝
+   ERROR
 
    Revert failed on commit ${HASH}.
    Likely cause: merge conflict with subsequent changes.
@@ -261,13 +251,7 @@ git commit -m "revert: undo ${N} selected commits — ${REVERT_REASON}"
 </step>
 
 <step name="summary">
-Display the completion banner:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► UNDO COMPLETE ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Display the completion banner: `GSD ► UNDO COMPLETE ✓`
 
 Show summary:
 ```

@@ -1,7 +1,5 @@
 <purpose>
-Generate a UI design contract (UI-SPEC.md) for frontend phases. Orchestrates gsd-ui-researcher and gsd-ui-checker with a revision loop. Inserts between discuss-phase and plan-phase in the lifecycle.
-
-UI-SPEC.md locks spacing, typography, color, copywriting, and design system decisions before the planner creates tasks. This prevents design debt caused by ad-hoc styling decisions during execution.
+Generate a UI design contract (UI-SPEC.md) for frontend phases. Orchestrates gsd-ui-researcher and gsd-ui-checker with a revision loop. Inserts between discuss-phase and plan-phase. UI-SPEC.md locks spacing, typography, color, copywriting, and design system decisions before the planner creates tasks, preventing design debt from ad-hoc styling during execution.
 </purpose>
 
 <required_reading>
@@ -113,16 +111,11 @@ Path: ${UI_SPEC_FILE}
 
 **If does not exist:** continue to step 5 (spawn researcher to generate).
 
-(Prior behavior was a three-way AskUserQuestion prompt with Update/View/Skip options when the file existed. The interactive confirmation was friction with no value the explicit-flag escape hatches do not already cover; the default "use existing, proceed to checker" path is what callers nearly always want when the spec is present.)
-
 ## 5. Spawn gsd-ui-researcher
 
 Display:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► UI DESIGN CONTRACT — PHASE {N}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD ► UI DESIGN CONTRACT — PHASE {N}
 ◆ Spawning UI researcher...
 ```
 
@@ -184,10 +177,7 @@ Display blocker details and options. Exit workflow.
 
 Display:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► VERIFYING UI-SPEC
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+GSD ► VERIFYING UI-SPEC
 ◆ Spawning UI checker...
 ```
 
@@ -273,9 +263,7 @@ Use AskUserQuestion for the choice.
 
 Display:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► UI-SPEC READY ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► UI-SPEC READY ✓
 
 **Phase {N}: {Name}** — UI design contract approved
 

@@ -1,5 +1,5 @@
 <purpose>
-Extract decisions, lessons learned, patterns discovered, and surprises encountered from completed phase artifacts into a structured LEARNINGS.md file. Captures institutional knowledge that would otherwise be lost between phases.
+Extract decisions, lessons, patterns, and surprises from completed phase artifacts into a structured LEARNINGS.md file.
 </purpose>
 
 <required_reading>
@@ -7,7 +7,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <objective>
-Analyze completed phase artifacts (PLAN.md, SUMMARY.md, VERIFICATION.md, UAT.md, STATE.md) and extract structured learnings into 4 categories: decisions, lessons, patterns, and surprises. Each extracted item includes source attribution. The output is a LEARNINGS.md file with YAML frontmatter containing metadata about the extraction.
+Analyze completed phase artifacts (PLAN.md, SUMMARY.md, VERIFICATION.md, UAT.md, STATE.md) and extract structured learnings into 4 categories: decisions, lessons, patterns, surprises. Each item includes source attribution. Output is a LEARNINGS.md file with YAML frontmatter metadata.
 </objective>
 
 <process>
@@ -95,9 +95,9 @@ Each surprise entry must include:
 </step>
 
 <step name="capture_thought_integration">
-**What this step is:** `capture_thought` is an **optional convention**, not a bundled GSD tool. GSD does not ship one and does not require one. The step is a hook for users who run a memory / knowledge-base MCP server (for example ExoCortex-style servers, `claude-mem`, or `mem0`-style servers) that exposes a tool with this exact name. If any MCP server in the current session provides a `capture_thought` tool with the signature below, each extracted learning is routed through it with metadata. If no such tool is present, the step is a silent no-op — `LEARNINGS.md` is always the primary output.
+`capture_thought` is an **optional convention**, not a bundled GSD tool — a hook for users running a memory / knowledge-base MCP server (claude-mem, mem0-style, etc.) that exposes a tool with this exact name. `LEARNINGS.md` is always the primary output.
 
-**Detection:** Check whether a tool named `capture_thought` is available in the current session. Do not assume any specific MCP server is connected.
+**Detection:** Check whether a tool named `capture_thought` is available in the current session.
 
 **If available**, call once per extracted learning:
 
@@ -110,7 +110,7 @@ capture_thought({
 })
 ```
 
-**If not available** (no MCP server in the session exposes this tool, or the runtime does not support it), skip the step silently and continue. The workflow must not fail or warn — this is expected behavior for users who do not run a knowledge-base MCP.
+**If not available**, skip the step silently and continue. The workflow must not fail or warn.
 </step>
 
 <step name="write_learnings">
@@ -195,8 +195,6 @@ gsd-sdk query state.update "Last Activity" "$(date +%Y-%m-%d)"
 
 <step name="report">
 ```
----------------------------------------------------------------
-
 ## Learnings Extracted: Phase {X} — {Name}
 
 Decisions:  {N}
@@ -213,8 +211,6 @@ Next steps:
 - Review extracted learnings for accuracy
 - /gsd:progress — see overall project state
 - /gsd:execute-phase {next} — continue to next phase
-
----------------------------------------------------------------
 ```
 </step>
 

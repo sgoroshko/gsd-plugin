@@ -2,15 +2,11 @@
 
 Invoked by `/gsd:capture --backlog` (`commands/gsd/capture.md`).
 
-Adds an idea to the ROADMAP.md backlog parking lot using 999.x numbering. Backlog items
-are unsequenced ideas that aren't ready for active planning — they live outside the normal
-phase sequence and accumulate context over time.
+Adds an idea to the ROADMAP.md backlog parking lot using 999.x numbering. Backlog items are unsequenced ideas outside the normal phase sequence.
 
 <process>
 
 ## Step 1: Read ROADMAP.md
-
-Check for existing backlog entries:
 
 ```bash
 cat .planning/ROADMAP.md
@@ -27,12 +23,9 @@ is fine (e.g. 999.1, 999.3) — always use `phase.next-decimal`, never guess.
 
 ## Step 3: Write ROADMAP entry
 
-**Write the ROADMAP entry BEFORE creating the directory.** Directory existence is a
-reliable indicator that the phase is already registered, which prevents false duplicate
-detection in any hook that checks for existing 999.x directories (#2280).
+**Write the ROADMAP entry BEFORE creating the directory.** Directory existence indicates the phase is already registered, preventing false duplicate detection in any hook that checks for existing 999.x directories (#2280).
 
-Add under a `## Backlog` section. If the section doesn't exist, create it at the end
-of ROADMAP.md:
+Add under a `## Backlog` section. If the section doesn't exist, create it at the end of ROADMAP.md:
 
 ```markdown
 ## Backlog
@@ -49,7 +42,7 @@ Plans:
 
 ## Step 4: Create the phase directory
 
-Apply the `project_code` prefix (if set in `.planning/config.json`) so the backlog directory name is consistent with all other phase-creation paths:
+Apply the `project_code` prefix (if set in `.planning/config.json`) for consistency with other phase-creation paths:
 
 ```bash
 SLUG=$(gsd-sdk query generate-slug "$ARGUMENTS" --raw)
@@ -85,6 +78,4 @@ Use /gsd:review-backlog to promote items to active milestone.
 - 999.x numbering keeps backlog items out of the active phase sequence
 - Phase directories are created immediately so /gsd:discuss-phase and /gsd:plan-phase work on them
 - No `Depends on:` field — backlog items are unsequenced by definition
-- Sparse numbering is fine (999.1, 999.3) — always uses next-decimal
-- Promote backlog items to the active milestone with /gsd:review-backlog
 </notes>

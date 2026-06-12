@@ -9,9 +9,7 @@ allowed-tools:
 ---
 
 <objective>
-Create, list, close, or resume persistent context threads. Threads are lightweight
-cross-session knowledge stores for work that spans multiple sessions but
-doesn't belong to any specific phase.
+Create, list, close, or resume persistent context threads — lightweight cross-session knowledge stores for work spanning multiple sessions that doesn't belong to any specific phase.
 </objective>
 
 <process>

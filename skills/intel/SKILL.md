@@ -8,17 +8,11 @@ allowed-tools:
   - Task
 ---
 
-**STOP -- DO NOT READ THIS FILE. You are already reading it. This prompt was injected into your context by Claude Code's command system. Using the Read tool on this file wastes tokens. Begin executing Step 0 immediately.**
+**STOP -- DO NOT READ THIS FILE. It is already in your context; using Read on it wastes tokens. Begin executing Step 0 immediately.**
 
 ## Step 0 -- Banner
 
-**Before ANY tool calls**, display this banner:
-
-```
-GSD > INTEL
-```
-
-Then proceed to Step 1.
+**Before ANY tool calls**, display banner `GSD > INTEL`, then proceed to Step 1.
 
 ## Step 1 -- Config Gate
 

@@ -92,7 +92,6 @@ git add src/api/auth.ts src/types/user.ts
 git commit -m "feat(08-02): create user registration endpoint
 
 - POST /auth/register validates email and password
-- Checks for duplicate users
 - Returns JWT token on success
 "
 
@@ -101,8 +100,6 @@ git add src/__tests__/jwt.test.ts
 git commit -m "test(07-02): add failing test for JWT generation
 
 - Tests token contains user ID claim
-- Tests token expires in 1 hour
-- Tests signature verification
 "
 
 # TDD task - GREEN phase
@@ -110,8 +107,6 @@ git add src/utils/jwt.ts
 git commit -m "feat(07-02): implement JWT generation
 
 - Uses jose library for signing
-- Includes user ID and expiry claims
-- Signs with HS256 algorithm
 "
 ```
 
@@ -164,44 +159,13 @@ gsd-sdk query commit "wip: [phase-name] paused at task [X]/[Y]" --files .plannin
 
 <example_log>
 
-**Old approach (per-plan commits):**
+**Per-task commits (one task per commit, metadata commit per plan):**
 ```
-a7f2d1 feat(checkout): Stripe payments with webhook verification
-3e9c4b feat(products): catalog with search, filters, and pagination
-8a1b2c feat(auth): JWT with refresh rotation using jose
-5c3d7e feat(foundation): Next.js 15 + Prisma + Tailwind scaffold
-2f4a8d docs: initialize ecommerce-app (5 phases)
-```
-
-**New approach (per-task commits):**
-```
-# Phase 04 - Checkout
 1a2b3c docs(04-01): complete checkout flow plan
 4d5e6f feat(04-01): add webhook signature verification
 7g8h9i feat(04-01): implement payment session creation
 0j1k2l feat(04-01): create checkout page component
-
-# Phase 03 - Products
-3m4n5o docs(03-02): complete product listing plan
-6p7q8r feat(03-02): add pagination controls
-9s0t1u feat(03-02): implement search and filters
-2v3w4x feat(03-01): create product catalog schema
-
-# Phase 02 - Auth
-5y6z7a docs(02-02): complete token refresh plan
-8b9c0d feat(02-02): implement refresh token rotation
-1e2f3g test(02-02): add failing test for token refresh
-4h5i6j docs(02-01): complete JWT setup plan
-7k8l9m feat(02-01): add JWT generation and validation
-0n1o2p chore(02-01): install jose library
-
-# Phase 01 - Foundation
-3q4r5s docs(01-01): complete scaffold plan
-6t7u8v feat(01-01): configure Tailwind and globals
-9w0x1y feat(01-01): set up Prisma with database
-2z3a4b feat(01-01): create Next.js 15 project
-
-# Initialization
+...
 5c6d7e docs: initialize ecommerce-app (5 phases)
 ```
 
@@ -231,26 +195,10 @@ Each plan produces 2-4 commits (tasks + metadata). Clear, granular, bisectable.
 
 ## Why Per-Task Commits?
 
-**Context engineering for AI:**
-- Git history becomes primary context source for future Claude sessions
-- `git log --grep="{phase}-{plan}"` shows all work for a plan
-- `git diff <hash>^..<hash>` shows exact changes per task
-- Less reliance on parsing SUMMARY.md = more context for actual work
-
-**Failure recovery:**
-- Task 1 committed ✅, Task 2 failed ❌
-- Claude in next session: sees task 1 complete, can retry task 2
-- Can `git reset --hard` to last successful task
-
-**Debugging:**
-- `git bisect` finds exact failing task, not just failing plan
-- `git blame` traces line to specific task context
-- Each commit is independently revertable
-
-**Observability:**
-- Solo developer + Claude workflow benefits from granular attribution
-- Atomic commits are git best practice
-- "Commit noise" irrelevant when consumer is Claude, not humans
+- **Context for AI:** `git log --grep="{phase}-{plan}"` shows all work for a plan; `git diff <hash>^..<hash>` shows exact changes per task.
+- **Failure recovery:** committed tasks survive a later task failing; `git reset --hard` to last successful task.
+- **Debugging:** `git bisect` finds the exact failing task; `git blame` traces lines to task context; each commit is independently revertable.
+- **Observability:** atomic commits give granular attribution; "commit noise" is irrelevant when the consumer is Claude.
 
 </commit_strategy_rationale>
 
@@ -277,10 +225,10 @@ Set `commit_docs: false` so planning docs stay local and are not committed to an
 
 ### How It Works
 
-1. **Auto-detection:** During `/gsd:new-project`, directories with their own `.git` folder are detected and offered for selection as sub-repos. On subsequent runs, `loadConfig` auto-syncs the `sub_repos` list with the filesystem — adding newly created repos and removing deleted ones. This means `config.json` may be rewritten automatically when repos change on disk.
-2. **File grouping:** Code files are grouped by their sub-repo prefix (e.g., `backend/src/api/users.ts` belongs to the `backend/` repo).
-3. **Independent commits:** Each sub-repo receives its own atomic commit via `gsd-tools.cjs commit-to-subrepo`. File paths are made relative to the sub-repo root before staging.
-4. **Planning stays local:** The `.planning/` directory is not committed; it acts as cross-repo coordination.
+1. **Auto-detection:** During `/gsd:new-project`, directories with their own `.git` are offered as sub-repos. On later runs, `loadConfig` auto-syncs `sub_repos` with the filesystem (adds new repos, removes deleted ones), so `config.json` may be rewritten automatically.
+2. **File grouping:** Code files are grouped by sub-repo prefix (e.g., `backend/src/api/users.ts` belongs to `backend/`).
+3. **Independent commits:** Each sub-repo gets its own atomic commit via `gsd-tools.cjs commit-to-subrepo`. Paths are made relative to the sub-repo root before staging.
+4. **Planning stays local:** `.planning/` is not committed; it acts as cross-repo coordination.
 
 ### Commit Routing
 

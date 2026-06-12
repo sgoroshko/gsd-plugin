@@ -1,5 +1,5 @@
 <purpose>
-Edit any field of an existing phase in ROADMAP.md in place. The phase number and position are always preserved. Guarded against in-progress and completed phases unless --force is passed. Validates depends_on references before writing. Shows a diff and requests confirmation before writing.
+Edit any field of an existing phase in ROADMAP.md in place. Phase number and position are always preserved. Guarded against in-progress/completed phases unless --force. Validates depends_on before writing. Shows a diff and requests confirmation before writing.
 </purpose>
 
 <required_reading>
@@ -109,7 +109,7 @@ WARNING: Editing Phase {target} which is {status}. Proceeding due to --force.
 </step>
 
 <step name="present_current_values">
-Display the current phase fields clearly:
+Display the current phase fields:
 
 ```
 Current values for Phase {target}: {phase_name}
@@ -145,7 +145,7 @@ Wait for user input.
 
 **If user chose [1] Edit specific fields:**
 
-Ask which fields to edit. For each field the user wants to change, prompt for the new value. Only fields the user explicitly answers become updates; empty answers preserve the existing value.
+Ask which fields to edit. For each field, prompt for the new value. Only fields with explicit non-empty answers become updates; empty answers preserve the existing value.
 
 ```
 Which fields do you want to update? (comma-separated or "all")

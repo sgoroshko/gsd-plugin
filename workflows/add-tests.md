@@ -1,7 +1,5 @@
 <purpose>
 Generate unit and E2E tests for a completed phase based on its SUMMARY.md, CONTEXT.md, and implementation. Classifies each changed file into TDD (unit), E2E (browser), or Skip categories, presents a test plan for user approval, then generates tests following RED-GREEN conventions.
-
-Users currently hand-craft `/gsd:quick` prompts for test generation after each phase. This workflow standardizes the process with proper classification, quality gates, and gap reporting.
 </purpose>
 
 <required_reading>
@@ -60,9 +58,7 @@ Exit.
 
 Present banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► ADD TESTS — Phase ${phase_number}: ${phase_name}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > ADD TESTS — Phase ${phase_number}: ${phase_name}
 ```
 </step>
 
@@ -144,11 +140,11 @@ If user selects "Cancel": exit gracefully.
 Before generating the test plan, discover the project's existing test structure:
 
 ```bash
-# Find existing test directories
+# test directories
 find . -type d -name "*test*" -o -name "*spec*" -o -name "*__tests__*" 2>/dev/null | head -20
-# Find existing test files for convention matching
+# test files for convention matching
 find . -type f \( -name "*.test.*" -o -name "*.spec.*" -o -name "*Tests.fs" -o -name "*Test.fs" \) 2>/dev/null | head -20
-# Check for test runners
+# test runners
 ls package.json *.sln 2>/dev/null || true
 ```
 
@@ -277,9 +273,7 @@ For each approved E2E test:
 Create a test coverage report and present to user:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► TEST GENERATION COMPLETE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > TEST GENERATION COMPLETE
 
 ## Results
 

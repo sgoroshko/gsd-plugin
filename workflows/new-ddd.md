@@ -1,7 +1,7 @@
 <purpose>
 Documentation-Driven Development (DDD) mode for `/gsd:new-project`. Research, write user-facing docs as the spec, have the user validate the docs, then derive phases from doc sections rather than from REQ-ID clusters.
 
-This is a minimal sketch (v2.44.0). Per-phase doc-sync automation and docs-aware verification are held for a future release. For this release, manual doc updates during execution are expected; the DDD model is encoded primarily in the project-initialization sequence and the roadmapper's source-of-truth choice.
+Minimal sketch (v2.44.0): per-phase doc-sync automation and docs-aware verification are held for a future release. Manual doc updates during execution are expected; the DDD model is encoded in the project-initialization sequence and the roadmapper's source-of-truth choice.
 </purpose>
 
 <required_reading>
@@ -44,7 +44,7 @@ The answer determines SPEC.md's structure in Step 6.
 
 **Do exactly as in `workflows/new-project.md` Step 4 (Config Capture)**, with one change: when writing `.planning/config.json` via `gsd-sdk query config-new-project`, include `"mode": "ddd"` in the top-level config. This marker signals downstream workflows (notably the roadmapper and any future docs-sync workflow) that this project uses DDD mode.
 
-If the SDK schema does not yet accept `"mode": "ddd"`, write it anyway as a known-unknown, downstream consumers should ignore unrecognized mode values rather than error. Track this as a downstream SDK schema-update task to be picked up in the next plugin release.
+If the SDK schema does not yet accept `"mode": "ddd"`, write it anyway; downstream consumers should ignore unrecognized mode values rather than error. Track this as a downstream SDK schema-update task for the next plugin release.
 
 ## 5. Research
 
@@ -97,13 +97,7 @@ Write `docs/SPEC.md` as the canonical user-facing documentation. This document i
 
 **How to write it inline (orchestrator):**
 
-Given the context already in scope (questioning answers, research summary), the orchestrator drafts SPEC.md directly using the `Write` tool. No subagent is needed for the minimal sketch; the context budget is acceptable because:
-
-1. The questioning + research output is already loaded for STATE.md / PROJECT.md generation.
-2. Writing SPEC.md is one focused task with a known structure.
-3. Avoiding a subagent skips a spawn + return-message roundtrip.
-
-If context pressure becomes a problem in practice (e.g. for very large research synthesis), a dedicated `gsd-ddd-docs-writer` agent can be introduced in a follow-up release.
+Using the context already in scope (questioning answers, research summary), the orchestrator drafts SPEC.md directly with the `Write` tool. No subagent for the minimal sketch. A dedicated `gsd-ddd-docs-writer` agent can be introduced later if context pressure becomes a problem on large projects.
 
 **Quality bar for SPEC.md (orchestrator self-check before presenting):**
 
@@ -135,9 +129,7 @@ PROJECT.md and SPEC.md are both initialized for DDD-mode projects, but they serv
 Present SPEC.md to the user for validation before any phase work begins.
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DOCS-DRIVEN DEVELOPMENT ▸ SPEC.md DRAFTED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > DOCS-DRIVEN DEVELOPMENT > SPEC.md DRAFTED
 
 SPEC.md is the spec for this project. Every phase will implement a
 section of this document. Please read it before approving, feedback
@@ -152,7 +144,7 @@ What's next?
 
 **Auto-approve gate (non-critical artifact):**
 
-SPEC.md drafts are classified as non-critical: the artifact lives on disk and can be revised by re-invoking the workflow, no destructive action is taken at this gate, and the user retains full ability to intervene later. By default these prompts auto-approve to avoid blocking AFK users on a yes-answer.
+SPEC.md drafts are non-critical: the artifact lives on disk, can be revised by re-invoking the workflow, no destructive action is taken here, and the user can intervene later. These prompts auto-approve by default to avoid blocking AFK users.
 
 ```bash
 AUTO_APPROVE=$(gsd-sdk query config-get workflow.auto_approve_non_critical --default true)
@@ -183,7 +175,7 @@ Emit: `▶ Auto-approved SPEC.md draft (workflow.auto_approve_non_critical=true)
 
 Then continue to Step 8 (REQUIREMENTS.md generation).
 
-**If `AUTO_APPROVE` is `false`:** Use AskUserQuestion (or text-mode equivalent for non-Claude runtimes):
+**If `AUTO_APPROVE` is `false`:** Use AskUserQuestion:
 
 ```
 AskUserQuestion(
@@ -279,9 +271,7 @@ gsd-sdk query commit "docs(ddd): mark project as DDD mode in STATE.md" --files .
 **Do as in `workflows/new-project.md` final Next Up block**, with one DDD-specific addition: include a callout that SPEC.md is the canonical spec and that the user should update it whenever execution diverges.
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PROJECT INITIALIZED (DDD MODE)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > PROJECT INITIALIZED (DDD MODE)
 
 SPEC.md is the spec. Each phase implements a section.
 When implementation diverges, update SPEC.md and re-validate.

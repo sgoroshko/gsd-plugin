@@ -1,7 +1,6 @@
 # Worktree Path Safety
 
-Guards for executor agents running inside Claude Code worktrees. Three checks
-must run before any staging, Edit, or Write operation in worktree mode.
+Guards for executor agents in Claude Code worktrees. Three checks must run before any staging, Edit, or Write in worktree mode.
 
 ---
 
@@ -38,10 +37,7 @@ Per-commit HEAD assertion: `agents/gsd-executor.md` `<task_commit_protocol>` ste
 
 ## cwd-drift sentinel — step 0a (#3097)
 
-A prior Bash call may have `cd`'d out of the worktree into the main repo. When
-that happens `[ -f .git ]` is false (main repo's `.git` is a directory), silently
-skipping all worktree guards. The sentinel captures the spawn-time toplevel and
-detects drift before every commit.
+A prior Bash call may have `cd`'d out of the worktree into the main repo, making `[ -f .git ]` false (main repo's `.git` is a directory) and silently skipping all worktree guards. The sentinel captures the spawn-time toplevel and detects drift before every commit.
 
 ```bash
 if [ -f .git ]; then  # we are in a worktree
@@ -69,9 +65,7 @@ fi
 ## Absolute-path guard — step 0b (#3099)
 
 Edit/Write calls using absolute paths constructed from the **orchestrator's** `pwd`
-(main repo root) will resolve to the main repo, not the worktree. Writes land in
-the wrong directory; `git commit` from the worktree sees a clean tree and the work
-is silently lost.
+(main repo root) resolve to the main repo, not the worktree. Writes land in the wrong directory; `git commit` from the worktree sees a clean tree and the work is silently lost.
 
 Before any Edit or Write using an absolute path:
 

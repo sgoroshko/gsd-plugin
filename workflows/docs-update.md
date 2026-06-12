@@ -1,5 +1,5 @@
 <purpose>
-Generate, update, and verify all project documentation — both canonical doc types and existing hand-written docs. The orchestrator detects the project's doc structure, assembles a work manifest tracking every item, dispatches parallel doc-writer and doc-verifier agents across waves, reviews existing docs for accuracy, identifies documentation gaps, and fixes inaccuracies via a bounded fix loop. All state is persisted in a work manifest so no work item is lost between steps. Output: Complete, structure-aware documentation verified against the live codebase.
+Generate, update, and verify all project documentation (known doc types and existing hand-written docs). Detects doc structure, assembles a work manifest, dispatches parallel doc-writer/doc-verifier agents across waves, reviews existing docs, identifies gaps, and fixes inaccuracies via a bounded fix loop. Output: structure-aware documentation verified against the live codebase.
 </purpose>
 
 <available_agent_types>
@@ -125,7 +125,7 @@ If none found, omit this section from the queue presentation.
 
 **Documentation gap detection (missing non-canonical docs):**
 
-After assembling the canonical and review queues, analyze the codebase to identify areas that should have documentation but don't. This ensures the command creates complete project documentation, not just the 9 canonical types.
+After assembling the canonical and review queues, analyze the codebase to identify areas that should have documentation but don't (so the command creates complete docs, not just the 9 known types).
 
 1. **Scan the codebase for undocumented areas:**
    - Use Glob/Grep to discover significant source directories (e.g., `src/components/`, `src/pages/`, `src/services/`, `src/api/`, `lib/`, `routes/`)
@@ -159,9 +159,7 @@ AskUserQuestion([{
 
 If no gaps are detected, omit this section entirely.
 
-Present the assembled queue to the user before proceeding:
-
-Present the mode resolution table from resolve_modes (shown above), followed by:
+Present the assembled queue to the user before proceeding: the mode resolution table from resolve_modes, followed by:
 
 ```
 {If non-canonical docs found, show as a table:}
@@ -373,11 +371,7 @@ After all decisions recorded, continue to detect_runtime_capabilities.
 <step name="dispatch_wave_1" condition="Task tool is available">
 **Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — use `canonical_queue` items with `wave: 1` for this step.
 
-Spawn 3 parallel gsd-doc-writer agents for Wave 1 docs: README, ARCHITECTURE, CONFIGURATION.
-
-These are foundational docs with no cross-references needed, making them ideal for parallel generation.
-
-Use `run_in_background=true` for all three to enable parallel execution.
+Spawn 3 parallel gsd-doc-writer agents for Wave 1 docs: README, ARCHITECTURE, CONFIGURATION. Use `run_in_background=true` for all three.
 
 **Agent 1: README**
 
@@ -502,11 +496,7 @@ Continue to dispatch_wave_2.
 <step name="dispatch_wave_2" condition="Task tool is available">
 **Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — use `canonical_queue` items with `wave: 2` for this step.
 
-Spawn agents for all queued Wave 2 docs: GETTING-STARTED, DEVELOPMENT, TESTING, and any conditional docs (API, DEPLOYMENT, CONTRIBUTING) that were queued in build_doc_queue.
-
-Wave 2 agents can reference Wave 1 outputs for cross-referencing — include the `wave_1_outputs` field in each doc_assignment block.
-
-Use `run_in_background=true` for all Wave 2 agents to enable parallel execution within the wave.
+Spawn agents for all queued Wave 2 docs: GETTING-STARTED, DEVELOPMENT, TESTING, and any conditional docs (API, DEPLOYMENT, CONTRIBUTING) queued in build_doc_queue. Wave 2 agents can cross-reference Wave 1 outputs (include the `wave_1_outputs` field in each doc_assignment). Use `run_in_background=true` for all.
 
 **Agent: GETTING-STARTED**
 
@@ -763,7 +753,7 @@ Continue to commit_docs.
 <step name="sequential_generation" condition="Task tool is NOT available (e.g. Antigravity, Gemini CLI, Codex, Copilot)">
 **Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — use `canonical_queue` items for generation order. Update `status` after each doc is generated. Write the updated manifest back to disk after all docs are complete.
 
-When the `Task` tool is unavailable, generate docs sequentially in the current context. This step replaces dispatch_wave_1, collect_wave_1, dispatch_wave_2, and collect_wave_2.
+When the `Task` tool is unavailable, generate docs sequentially in the current context (this step replaces dispatch_wave_1, collect_wave_1, dispatch_wave_2, collect_wave_2).
 
 **IMPORTANT:** Do NOT use `browser_subagent`, `Explore`, or any browser-based tool. Use only file system tools (Read, Bash, Write, Grep, Glob, or equivalent tools available in your runtime).
 

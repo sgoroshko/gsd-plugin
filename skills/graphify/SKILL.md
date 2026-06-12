@@ -14,13 +14,11 @@ allowed-tools:
 
 ## Step 0 -- Banner
 
-**Before ANY tool calls**, display this banner:
+**Before ANY tool calls**, display this banner, then proceed to Step 1:
 
 ```
 GSD > GRAPHIFY
 ```
-
-Then proceed to Step 1.
 
 ## Step 1 -- Config Gate
 
@@ -127,7 +125,7 @@ If no snapshot exists, suggest running `build` twice (first to create, second to
 Run pre-flight check first:
 
 ```
-PREFLIGHT=$(node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs" graphify build)
+PREFLIGHT=$(node "${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}/bin/gsd-tools.cjs" graphify build)
 ```
 
 If pre-flight returns `disabled: true` or `error`, display the message and **STOP**.
@@ -150,13 +148,11 @@ gsd-tools path: ${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/cur
 
 ## Instructions
 
-1. **Invoke graphify:**
-   Run from the project root:
+1. **Invoke graphify:** Run from the project root:
    ```
    graphify . --update
    ```
-   This builds the knowledge graph with SHA256 incremental caching.
-   Timeout: up to 5 minutes (or as configured via graphify.build_timeout).
+   Builds the knowledge graph with SHA256 incremental caching. Timeout: up to 5 minutes (or as configured via graphify.build_timeout).
 
 2. **Validate output:**
    Check that graphify-out/graph.json exists and is valid JSON with nodes[] and edges[] arrays.
@@ -164,25 +160,22 @@ gsd-tools path: ${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/cur
    ## GRAPHIFY BUILD FAILED
    Include the stderr output for debugging. Do NOT delete .planning/graphs/ -- prior valid graph remains available.
 
-3. **Copy artifacts to .planning/graphs/:**
+3. **Copy artifacts to .planning/graphs/:** (build output consumed by query, status, diff)
    ```
    cp graphify-out/graph.json .planning/graphs/graph.json
    cp graphify-out/graph.html .planning/graphs/graph.html
    cp graphify-out/GRAPH_REPORT.md .planning/graphs/GRAPH_REPORT.md
    ```
-   These three files are the build output consumed by query, status, and diff commands.
 
-4. **Write diff snapshot:**
+4. **Write diff snapshot:** (creates .planning/graphs/.last-build-snapshot.json for future diffs)
    ```
    node \"${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs\" graphify build snapshot
    ```
-   This creates .planning/graphs/.last-build-snapshot.json for future diff comparisons.
 
-5. **Report build summary:**
+5. **Report build summary:** Display node, edge, and hyperedge counts from:
    ```
    node \"${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs\" graphify status
    ```
-   Display the node count, edge count, and hyperedge count from the status output.
 
 When complete, output: ## GRAPHIFY BUILD COMPLETE with the summary counts.
 If something fails at any step, output: ## GRAPHIFY BUILD FAILED with details."

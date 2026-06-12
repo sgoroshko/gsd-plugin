@@ -1,9 +1,6 @@
 # Step: post_merge_gate
 
-Post-merge build & test gate. Runs after all worktrees in a wave are merged
-(parallel mode), or after the last plan completes (serial mode). Catches
-cross-plan integration failures that individual worktree self-checks cannot
-detect.
+Post-merge build & test gate. Runs after all worktrees in a wave are merged (parallel mode), or after the last plan completes (serial mode). Catches cross-plan integration failures that individual worktree self-checks miss.
 
 **Step A — Build gate:**
 
@@ -53,9 +50,9 @@ if [ -n "$BUILD_CMD" ]; then
 fi
 ```
 
-**If `BUILD_EXIT` is 0 (pass):** `✓ Build gate passed` → proceed to Test gate.
+**If `BUILD_EXIT` is 0 (pass):** proceed to Test gate.
 
-**If `BUILD_EXIT` is 124 (timeout):** Log warning, treat as non-blocking, continue to Test gate.
+**If `BUILD_EXIT` is 124 (timeout):** non-blocking, continue to Test gate.
 
 **If `BUILD_EXIT` is non-zero (build failure):** Increment `WAVE_FAILURE_COUNT` (same semantics as test failures). Present failure output and offer "Fix now" or "Continue" options (same as step 5.8).
 
@@ -107,10 +104,9 @@ else
 fi
 ```
 
-**If `TEST_EXIT` is 0 (pass):** `✓ Post-merge test gate: {N} tests passed — no cross-plan conflicts` → continue to orchestrator tracking update.
+**If `TEST_EXIT` is 0 (pass):** continue to orchestrator tracking update.
 
-**If `TEST_EXIT` is 124 (timeout):** Log warning, treat as non-blocking, continue. Tests may need a longer budget or manual run.
+**If `TEST_EXIT` is 124 (timeout):** non-blocking, continue. Tests may need a longer budget or manual run.
 
-**If `TEST_EXIT` is non-zero (test failure):** Increment `WAVE_FAILURE_COUNT` to track
-cumulative failures across waves. Subsequent waves should report:
+**If `TEST_EXIT` is non-zero (test failure):** Increment `WAVE_FAILURE_COUNT` to track cumulative failures across waves. Subsequent waves should report:
 `⚠ Note: ${WAVE_FAILURE_COUNT} prior wave(s) had test failures`

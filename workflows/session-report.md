@@ -1,5 +1,5 @@
 <purpose>
-Generate a post-session summary document capturing work performed, outcomes achieved, and estimated resource usage. Writes SESSION_REPORT.md to .planning/reports/ for human review and stakeholder sharing.
+Generate a post-session summary capturing work performed, outcomes, and estimated resource usage. Writes SESSION_REPORT.md to .planning/reports/ for human review.
 </purpose>
 
 <required_reading>
@@ -39,10 +39,7 @@ ls -la .planning/reports/SESSION_REPORT*.md 2>/dev/null || echo "No previous rep
 </step>
 
 <step name="estimate_usage">
-Estimate token usage from observable signals:
-
-- Count of tool calls is not directly available, so estimate from git activity and file operations
-- Note: This is an **estimate** — exact token counts require API-level instrumentation not available to hooks
+Estimate token usage from observable signals (git activity and file operations). This is an **estimate** — exact token counts require API-level instrumentation not available to hooks.
 
 Estimation heuristics:
 - Each commit ≈ 1 plan cycle (research + plan + execute + verify)

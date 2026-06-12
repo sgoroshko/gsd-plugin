@@ -1,5 +1,5 @@
 <purpose>
-Insert a decimal phase for urgent work discovered mid-milestone between existing integer phases. Uses decimal numbering (72.1, 72.2, etc.) to preserve the logical sequence of planned phases while accommodating urgent insertions without renumbering the entire roadmap.
+Insert a decimal phase (72.1, 72.2, ...) for urgent mid-milestone work between integer phases, preserving the planned sequence without renumbering the roadmap.
 </purpose>
 
 <required_reading>
@@ -74,8 +74,7 @@ blocks direct STATE.md writes):
    gsd-sdk query state.patch '{"Current Phase":"{decimal_phase}","Next recommended run":"/gsd:plan-phase {decimal_phase}"}'
    ```
 
-   (Adjust field names to whatever pointers STATE.md exposes — the handler
-   reports which fields it matched.)
+   (Adjust field names to STATE.md's actual pointers — the handler reports which fields it matched.)
 
 2. Append a Roadmap Evolution entry via the dedicated handler. It creates the
    `### Roadmap Evolution` subsection under `## Accumulated Context` if missing

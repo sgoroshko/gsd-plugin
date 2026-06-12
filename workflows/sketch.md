@@ -20,11 +20,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 <process>
 
 <step name="banner">
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SKETCHING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+GSD > SKETCHING
 
 Parse `$ARGUMENTS` for:
 - `--quick` flag → set `QUICK_MODE=true`
@@ -268,9 +264,7 @@ open .planning/sketches/NNN-descriptive-name/index.html
 
 **e.** Present to the user with a checkpoint:
 
-╔══════════════════════════════════════════════════════════════╗
-║  CHECKPOINT: Verification Required                           ║
-╚══════════════════════════════════════════════════════════════╝
+CHECKPOINT: Verification Required
 
 **Sketch {NNN}: {name}**
 
@@ -311,9 +305,7 @@ gsd-sdk query commit "docs(sketch-NNN): [winning direction] — [key visual insi
 After all sketches complete:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SKETCH COMPLETE ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > SKETCH COMPLETE ✓
 
 ## Design Direction
 {what we landed on overall}

@@ -12,7 +12,6 @@ allowed-tools:
 <objective>
 Mark milestone {{version}} complete, archive to milestones/, and update ROADMAP.md and REQUIREMENTS.md.
 
-Purpose: Create historical record of shipped version, archive milestone artifacts (roadmap + requirements), and prepare for next milestone.
 Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tagged.
 </objective>
 
@@ -122,7 +121,7 @@ After the milestone is archived and tagged, emit a Milestone Complete continuati
 - Parenthetical: *(`/clear` is safe — `/gsd:resume-work` restores position from `HANDOFF.json` if you change your mind)*
 - Optional "Also available:" with `/gsd:audit-milestone` (retrospective audit) or `/gsd:review-backlog` (deferred items review)
 
-Milestone close is the single biggest context-shed point in the workflow. The just-shipped milestone's plan/execute conversation is finished; the next milestone wants a clean slate. Always suggest `/clear`.
+Milestone close is the biggest context-shed point; always suggest `/clear`.
 </output_format>
 
 <success_criteria>

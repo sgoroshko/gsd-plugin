@@ -1,8 +1,6 @@
 # Thread Workflow
 
-Invoked by `/gsd:thread` (`commands/gsd/thread.md`).
-
-Create, list, close, or resume persistent context threads for cross-session work.
+Invoked by `/gsd:thread` (`commands/gsd/thread.md`). Create, list, close, or resume persistent context threads for cross-session work.
 
 <process>
 

@@ -5,9 +5,8 @@ agent-skill injection (`agent_skills.<agent-type>`). Writes to
 `.planning/config.json` via `gsd-sdk`/`gsd-tools` so unrelated keys are
 preserved, never clobbered.
 
-This command is deliberately separate from `/gsd:settings` (workflow toggles)
-and any `/gsd:settings-advanced` tuning surface. It exists because API keys and
-cross-tool routing are *connectivity* concerns, not workflow or tuning knobs.
+Separate from `/gsd:settings` (workflow toggles): API keys and cross-tool
+routing are connectivity concerns, not workflow knobs.
 </purpose>
 
 <security>
@@ -261,9 +260,7 @@ Display the masked confirmation table. **No plaintext API keys appear in this
 output under any circumstance.**
 
 ```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► INTEGRATIONS UPDATED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► INTEGRATIONS UPDATED
 
 Search Integrations
 | Field              | Value             |

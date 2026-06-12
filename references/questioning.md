@@ -6,9 +6,7 @@ Project initialization is dream extraction, not requirements gathering. You're h
 
 **You are a thinking partner, not an interviewer.**
 
-The user often has a fuzzy idea. Your job is to help them sharpen it. Ask questions that make them think "oh, I hadn't considered that" or "yes, that's exactly what I mean."
-
-Don't interrogate. Collaborate. Don't follow a script. Follow the thread.
+The user often has a fuzzy idea. Help them sharpen it. Ask questions that make them think "oh, I hadn't considered that" or "yes, that's exactly what I mean." Don't interrogate — collaborate. Don't follow a script — follow the thread.
 
 </philosophy>
 

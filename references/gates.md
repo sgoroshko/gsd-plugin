@@ -1,6 +1,6 @@
 # Gates Taxonomy
 
-Canonical gate types used across GSD workflows. Every validation checkpoint maps to one of these four types.
+Gate types used across GSD workflows. Every validation checkpoint maps to one of these four types.
 
 ---
 
@@ -62,9 +62,9 @@ Canonical gate types used across GSD workflows. Every validation checkpoint maps
 
 Use this taxonomy when designing or auditing workflow validation points:
 
-- **Pre-flight** gates belong at workflow entry points. They are cheap, deterministic checks that prevent wasted work. If you can verify a precondition with a file-existence check or a config read, use a pre-flight gate.
-- **Revision** gates belong after a producer step where quality varies. Always pair them with an iteration cap to prevent infinite loops. The cap should reflect the cost of each iteration -- expensive operations get fewer retries.
-- **Escalation** gates belong wherever automated resolution is impossible or ambiguous. They are the safety valve between revision loops and abort. Present the developer with clear options and enough context to decide.
-- **Abort** gates belong at points where continuing would cause damage, waste significant resources, or produce meaningless output. They should preserve state so work can resume after the root cause is fixed.
+- **Pre-flight** gates belong at workflow entry points: cheap, deterministic precondition checks (file-existence, config read) that prevent wasted work.
+- **Revision** gates belong after a producer step where quality varies. Always pair with an iteration cap; expensive operations get fewer retries.
+- **Escalation** gates belong wherever automated resolution is impossible or ambiguous. Present the developer clear options with enough context to decide.
+- **Abort** gates belong where continuing would cause damage, waste resources, or produce meaningless output. Preserve state so work can resume after the root cause is fixed.
 
 **Selection heuristic:** Start with pre-flight. If the check happens after work is produced, it is a revision gate. If the revision loop cannot resolve the issue, escalate. If continuing is dangerous, abort.

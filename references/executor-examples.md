@@ -1,13 +1,11 @@
 # Executor Extended Examples
 
-> Reference file for gsd-executor agent. Loaded on-demand via `@` reference.
-> For sub-200K context windows, this content is stripped from the agent prompt and available here for on-demand loading.
+> Reference file for gsd-executor agent. Loaded on-demand via `@` reference (stripped from the agent prompt for sub-200K context windows).
 
 ## Deviation Rule Examples
 
 ### Rule 1 — Auto-fix bugs
 
-**Examples of Rule 1 triggers:**
 - Wrong queries returning incorrect data
 - Logic errors in conditionals
 - Type errors and type mismatches
@@ -19,7 +17,6 @@
 
 ### Rule 2 — Auto-add missing critical functionality
 
-**Examples of Rule 2 triggers:**
 - Missing error handling (unhandled promise rejections, no try/catch on I/O)
 - No input validation on user-facing endpoints
 - Missing null checks before property access
@@ -32,7 +29,6 @@
 
 ### Rule 3 — Auto-fix blocking issues
 
-**Examples of Rule 3 triggers:**
 - Missing dependency not in package.json
 - Wrong types preventing compilation
 - Broken imports (wrong path, wrong export name)
@@ -44,7 +40,6 @@
 
 ### Rule 4 — Ask about architectural changes
 
-**Examples of Rule 4 triggers:**
 - New DB table (not just adding a column)
 - Major schema changes (renaming tables, changing relationships)
 - New service layer (adding a queue, cache, or message bus)

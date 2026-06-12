@@ -131,7 +131,7 @@ Planning for ONE person (the user) and ONE implementer (Claude).
 
 ## Plans Are Prompts
 
-PLAN.md IS the prompt (not a document that becomes one). Contains:
+PLAN.md IS the prompt. Contains:
 - Objective (what and why)
 - Context (@file references)
 - Tasks (with verification criteria)
@@ -262,7 +262,7 @@ When a plan creates new interfaces consumed by subsequent tasks:
 2. **Middle tasks: Implement** — Build against the defined contracts
 3. **Last task: Wire** — Connect implementations to consumers
 
-This prevents the "scavenger hunt" anti-pattern where executors explore the codebase to understand contracts. They receive the contracts in the plan itself.
+Prevents the "scavenger hunt" anti-pattern: executors receive contracts in the plan instead of exploring the codebase.
 
 ## Specificity
 
@@ -282,7 +282,7 @@ This prevents the "scavenger hunt" anti-pattern where executors explore the code
 
 **Standard tasks:** UI layout/styling, configuration, glue code, one-off scripts, simple CRUD with no business logic.
 
-**Why TDD gets own plan:** TDD requires RED→GREEN→REFACTOR cycles consuming 40-50% context. Embedding in multi-task plans degrades quality.
+**Why TDD gets own plan:** RED→GREEN→REFACTOR cycles consume 40-50% context; embedding in multi-task plans degrades quality.
 
 **Task-level TDD** (for code-producing tasks in standard plans): When a task creates or modifies production code, add `tdd="true"` and a `<behavior>` block to make test expectations explicit before implementation:
 
@@ -310,7 +310,7 @@ Exceptions where `tdd="true"` is not needed: `type="checkpoint:*"` tasks, config
 
 **When `MVP_MODE` is enabled (passed by the plan-phase orchestrator):** Decompose tasks as **vertical feature slices**, not horizontal layers. Required reading: `@${CLAUDE_PLUGIN_ROOT}/references/planner-mvp-mode.md` (loaded conditionally by the orchestrator).
 
-**Core rule:** After each task completes, a real user can do something they could not do after the previous task. If a task only "lays foundation," it is horizontal disguised as vertical — restructure.
+**Core rule:** After each task, a real user can do something they could not before. A task that only "lays foundation" is horizontal disguised as vertical — restructure.
 
 **Plan structure under MVP_MODE:**
 
@@ -519,9 +519,7 @@ Wave numbers are pre-computed during planning. Execute-phase reads `wave` direct
 
 ## Interface Context for Executors
 
-**Key insight:** "The difference between handing a contractor blueprints versus telling them 'build me a house.'"
-
-When creating plans that depend on existing code or create new interfaces consumed by other plans:
+Give executors blueprints, not "build me a house." When a plan depends on existing code or creates interfaces consumed by other plans:
 
 ### For plans that USE existing code:
 After determining `files_modified`, extract the key interfaces/types/exports from the codebase that executors will need:
@@ -535,18 +533,7 @@ Embed these in the plan's `<context>` section as an `<interfaces>` block:
 
 ```xml
 <interfaces>
-<!-- Key types and contracts the executor needs. Extracted from codebase. -->
-<!-- Executor should use these directly — no codebase exploration needed. -->
-
-From src/types/user.ts:
-```typescript
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  createdAt: Date;
-}
-```
+<!-- Key types and contracts the executor needs. Extracted from codebase. Use directly — no exploration. -->
 
 From src/api/auth.ts:
 ```typescript
@@ -666,7 +653,7 @@ Message list component wiring:
 - Handles empty state (not just crashes)
 
 **Step 5: Identify Key Links**
-"Where is this most likely to break?" Key links = critical connections where breakage causes cascading failures.
+"Where is this most likely to break?" Key links = critical connections where breakage cascades.
 
 ## Must-Haves Output Format
 
@@ -747,7 +734,7 @@ Do NOT use for: Deploying (use CLI), creating webhooks (use API), creating datab
 
 ## Authentication Gates
 
-When Claude tries CLI/API and gets auth error → creates checkpoint → user authenticates → Claude retries. Auth gates are created dynamically, NOT pre-planned.
+When Claude tries CLI/API and gets auth error → creates checkpoint → user authenticates → Claude retries. Created dynamically, NOT pre-planned.
 
 ## Writing Guidelines
 
@@ -887,7 +874,7 @@ ls .planning/graphs/graph.json 2>/dev/null
 If graph.json exists, check freshness:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs" graphify status
+node "${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}/bin/gsd-tools.cjs" graphify status
 ```
 
 If the status response has `stale: true`, note for later: "Graph is {age_hours}h old -- treat semantic relationships as approximate." Include this annotation inline with any graph context injected below.
@@ -895,7 +882,7 @@ If the status response has `stale: true`, note for later: "Graph is {age_hours}h
 Query the graph for phase-relevant dependency context (single query per D-06):
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs" graphify query "<phase-goal-keyword>" --budget 2000
+node "${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}/bin/gsd-tools.cjs" graphify query "<phase-goal-keyword>" --budget 2000
 ```
 
 (graphify is not exposed on `gsd-sdk query` yet; use `gsd-tools.cjs` for graphify only.)
@@ -931,7 +918,7 @@ Apply discovery level protocol (see discovery_levels section).
 </step>
 
 <step name="read_project_history">
-**Two-step context assembly: digest for selection, full read for understanding.**
+Digest for selection, full read for understanding.
 
 **Step 1 — Generate digest index:**
 ```bash

@@ -137,10 +137,7 @@ The commit message **must** include the finding ID (e.g., F-01) for traceability
 ```bash
 git checkout -- {changed_files} 2>/dev/null
 ```
-Log the failure reason and stop processing — do not continue to the next finding.
-A test failure indicates the codebase may be in an unexpected state, so the pipeline
-must halt to avoid cascading issues. Remaining auto-fixable findings will appear in the
-report as `not-attempted`.
+Log the failure reason and stop processing — do not continue to the next finding. Remaining auto-fixable findings appear in the report as `not-attempted`.
 </step>
 
 <step name="report">

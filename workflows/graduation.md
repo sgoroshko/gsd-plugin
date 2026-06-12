@@ -120,7 +120,7 @@ Cluster: "{title}" [{category}, {K} phases] → {target}
 Action [P/D/X/A]:
 ```
 
-Use `AskUserQuestion` (or equivalent HITL primitive for the current runtime). If `TEXT_MODE` is true, display the cluster question as plain text and accept typed input. Accept single-character input: `P`, `D`, `X`, `A` (case-insensitive).
+Use `AskUserQuestion`. If `TEXT_MODE` is true, display the cluster question as plain text and accept typed input. Accept single-character input: `P`, `D`, `X`, `A` (case-insensitive).
 
 **On `P` (Promote now):**
 
@@ -183,7 +183,7 @@ If no clusters qualified (all filtered by backlog or threshold), print:
 
 ## First-Run Behaviour
 
-On the first transition after upgrading to a version that includes this workflow, all extant LEARNINGS.md files may produce a large batch of candidates at once. A `[Defer all]` shorthand is available: if the developer enters `A` at any cluster prompt, all remaining clusters for this run are deferred to the next transition.
+The first transition after upgrade may produce a large candidate batch from all extant LEARNINGS.md files. Use `A` at any cluster prompt to defer all remaining clusters (see Step 6).
 
 ---
 

@@ -61,22 +61,6 @@ Parse current values (default to `true` if not present):
 
 **Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is not available.
 
-**Non-Claude runtime note:** If `TEXT_MODE` is active (i.e. the runtime is non-Claude), prepend the following notice before the model profile question:
-
-```
-Note: Quality, Balanced, Budget, and Adaptive profiles assign semantic tiers
-(Opus/Sonnet/Haiku) to each agent. When `runtime` is set in .planning/config.json,
-tiers resolve to runtime-native model IDs — on Codex that's gpt-5.4 / gpt-5.3-codex /
-gpt-5.4-mini with appropriate reasoning effort. See "Runtime-Aware Profiles" in
-docs/CONFIGURATION.md.
-
-If `runtime` is unset on a non-Claude runtime, the profile tiers have no effect on
-actual model selection — agents use the runtime's default model. Choose "Inherit" to
-force session-model behavior, set `runtime` + a profile to get tiered models, or
-configure `model_overrides` manually in .planning/config.json to target specific
-models per agent.
-```
-
 Use AskUserQuestion with current values pre-selected. Questions are grouped into six visual sections; the first question in each section carries the section-denoting `header` field (AskUserQuestion renders abbreviated section tags for grouping, max 12 chars).
 
 Section layout:
@@ -437,9 +421,7 @@ Write `~/.gsd/defaults.json` with:
 Display:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SETTINGS UPDATED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► SETTINGS UPDATED
 
 | Setting              | Value |
 |----------------------|-------|

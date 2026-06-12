@@ -1,6 +1,6 @@
 # Verification Patterns
 
-How to verify different types of artifacts are real implementations, not stubs or placeholders.
+How to verify artifacts are real implementations, not stubs or placeholders.
 
 <core_principle>
 **Existence ≠ Implementation**
@@ -78,17 +78,13 @@ grep -E "props\.|useState|useEffect|useContext|\{.*\}" "$component_path"
 
 **Stub patterns specific to React:**
 ```javascript
-// RED FLAGS - These are stubs:
-return <div>Component</div>
+// RED FLAGS - stubs:
 return <div>Placeholder</div>
-return <div>{/* TODO */}</div>
-return <p>Coming soon</p>
 return null
 return <></>
 
-// Also stubs - empty handlers:
+// Empty handlers:
 onClick={() => {}}
-onChange={() => console.log('clicked')}
 onSubmit={(e) => e.preventDefault()}  // Only prevents default, does nothing
 ```
 
@@ -146,19 +142,13 @@ grep -E "Response\.json|res\.json|res\.send|return.*\{" "$route_path" | grep -v 
 
 **Stub patterns specific to API routes:**
 ```typescript
-// RED FLAGS - These are stubs:
+// RED FLAGS - stubs:
 export async function POST() {
   return Response.json({ message: "Not implemented" })
 }
-
 export async function GET() {
   return Response.json([])  // Empty array with no DB query
 }
-
-export async function PUT() {
-  return new Response()  // Empty response
-}
-
 // Console log only:
 export async function POST(req) {
   console.log(await req.json())
@@ -213,17 +203,11 @@ grep -A 20 "model $model_name" "$schema_path" | grep -E "Int|DateTime|Boolean|Fl
 
 **Stub patterns specific to schemas:**
 ```prisma
-// RED FLAGS - These are stubs:
+// RED FLAGS - stubs:
 model User {
   id String @id
   // TODO: add fields
 }
-
-model Message {
-  id        String @id
-  content   String  // Only one real field
-}
-
 // Missing critical fields:
 model Order {
   id     String @id
@@ -273,16 +257,10 @@ grep -E "return \{|return \[" "$hook_path"
 
 **Stub patterns specific to hooks:**
 ```typescript
-// RED FLAGS - These are stubs:
+// RED FLAGS - stubs:
 export function useAuth() {
   return { user: null, login: () => {}, logout: () => {} }
 }
-
-export function useCart() {
-  const [items, setItems] = useState([])
-  return { items, addItem: () => console.log('add'), removeItem: () => {} }
-}
-
 // Hardcoded return:
 export function useUser() {
   return { name: "Test User", email: "test@example.com" }
@@ -348,7 +326,7 @@ grep -E "$VAR_NAME" src/env.ts src/env.mjs 2>/dev/null
 
 ## Wiring Verification Patterns
 
-Wiring verification checks that components actually communicate. This is where most stubs hide.
+Checks that components actually communicate. This is where most stubs hide.
 
 ### Pattern: Component → API
 
@@ -367,14 +345,9 @@ grep -E "await.*fetch|\.then\(|setData|setState" "$component_path"
 
 **Red flags:**
 ```typescript
-// Fetch exists but response ignored:
 fetch('/api/messages')  // No await, no .then, no assignment
-
-// Fetch in comment:
-// fetch('/api/messages').then(r => r.json()).then(setMessages)
-
-// Fetch to wrong endpoint:
-fetch('/api/message')  // Typo - should be /api/messages
+// fetch('/api/messages').then(...)  // Commented out
+fetch('/api/message')  // Typo - wrong endpoint
 ```
 
 ### Pattern: API → Database
@@ -420,16 +393,9 @@ grep -A 5 "onSubmit" "$component_path" | grep -v "only.*preventDefault" -i
 
 **Red flags:**
 ```typescript
-// Handler only prevents default:
-onSubmit={(e) => e.preventDefault()}
-
-// Handler only logs:
-const handleSubmit = (data) => {
-  console.log(data)
-}
-
-// Handler is empty:
-onSubmit={() => {}}
+onSubmit={(e) => e.preventDefault()}  // Only prevents default
+const handleSubmit = (data) => { console.log(data) }  // Only logs
+onSubmit={() => {}}  // Empty
 ```
 
 ### Pattern: State → Render
@@ -519,7 +485,7 @@ For each artifact type, run through this checklist:
 
 ## Automated Verification Approach
 
-For the verification subagent, use this pattern:
+For the verification subagent:
 
 ```bash
 # 1. Check existence

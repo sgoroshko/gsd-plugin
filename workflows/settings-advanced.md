@@ -2,12 +2,8 @@
 Interactive configuration of GSD power-user knobs — plan bounce, node repair, subagent timeouts,
 inline plan threshold, cross-AI execution, base branch, branch templates, response language,
 context window, gitignored search, graphify build timeout, and runtime model tier overrides.
-
-This is a companion to `/gsd:settings` — the common-case prompt there covers model profile,
-research/plan_check/verifier toggles, branching strategy, UI/AI phase gates, and worktree
-isolation. This advanced command covers everything else that is user-settable, grouped into
-seven sections so each prompt batch stays cognitively scoped. Every answer pre-selects the
-current value; numeric-input answers that are non-numeric are rejected and re-prompted.
+Companion to `/gsd:settings` (which covers the common-case toggles). Grouped into seven sections;
+every answer pre-selects the current value; non-numeric numeric-inputs are rejected and re-prompted.
 </purpose>
 
 <required_reading>
@@ -81,9 +77,8 @@ Runtime Model Tiers:
 - `model_profile_overrides.<runtime>.sonnet` (default: built-in for the runtime, or absent)
 - `model_profile_overrides.<runtime>.haiku` (default: built-in for the runtime, or absent)
 
-Each field's **current value is pre-selected** in the prompt rendering below. When the
-current value is absent from the config, render the documented default as the pre-selected
-option so the user sees what the effective value is.
+Each field's **current value is pre-selected** in the prompt below; if absent from config,
+render the documented default as pre-selected so the user sees the effective value.
 </step>
 
 <step name="present_settings">
@@ -331,8 +326,9 @@ AskUserQuestion([
 
 ### Section 7 — Runtime Model Tiers
 
-This section lets the user inspect and override the built-in model IDs GSD resolves for each
-profile tier (`fable` / `opus` / `sonnet` / `haiku`) on their configured runtime. `fable` is the top tier (Claude Fable 5), used by the quality profile's heaviest agents.
+Inspect and override the built-in model IDs GSD resolves for each profile tier
+(`fable` / `opus` / `sonnet` / `haiku`) on the configured runtime. `fable` is the top tier
+(Claude Fable 5), used by the quality profile's heaviest agents.
 
 **Step A — Show current runtime and built-in defaults:**
 
@@ -353,7 +349,7 @@ Built-in tier defaults by runtime:
 | `hermes`   | `anthropic/claude-fable-5`    | `anthropic/claude-opus-4-8`   | `anthropic/claude-sonnet-4-6`   | `anthropic/claude-haiku-4-5`  |
 | Group B (`kilo`, `cline`, `cursor`, `windsurf`, `augment`, `trae`, `codebuddy`, `antigravity`) | (no built-in default — your runtime handles model selection) | | | |
 
-`fable` is Claude Fable 5, the top tier above `opus` (1M context, priced ~2x Opus). Only the Anthropic-compatible runtimes have a true Fable model; for non-Claude runtimes (`codex`, `gemini`, `qwen`) `fable` aliases to that runtime's most capable model (same as `opus`), so a fable-tier agent still resolves to something there.
+Only Anthropic-compatible runtimes have a true Fable model; for non-Claude runtimes (`codex`, `gemini`, `qwen`) `fable` aliases to that runtime's most capable model (same as `opus`), so a fable-tier agent still resolves.
 
 Display a table to the user showing the effective configuration:
 
@@ -482,12 +478,10 @@ change.
 </step>
 
 <step name="update_config">
-Merge the new settings into the existing config at `$GSD_CONFIG_PATH`. This merge is the
-core correctness invariant: **preserve every unrelated key** — do not clobber siblings.
-
-Apply each selected value via `gsd-sdk query config-set <key> <value>` so the central
-validator (`isValidConfigKey`) accepts the write and the deep-merge preserves unrelated
-keys and sibling sub-objects.
+Merge new settings into the existing config at `$GSD_CONFIG_PATH`. Core correctness invariant:
+**preserve every unrelated key** — do not clobber siblings. Apply each selected value via
+`gsd-sdk query config-set <key> <value>` so the central validator (`isValidConfigKey`) accepts
+the write and the deep-merge preserves unrelated keys and sibling sub-objects.
 
 ```bash
 # Example — only write keys the user changed. "Keep current" selections are skipped.
@@ -558,9 +552,7 @@ the central setter.
 Display:
 
 ```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► ADVANCED SETTINGS UPDATED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► ADVANCED SETTINGS UPDATED
 
 | Setting                                    | Value |
 |--------------------------------------------|-------|

@@ -12,13 +12,11 @@ color: green
 ---
 
 <role>
-A completed phase has been submitted for goal-backward verification. Verify that the phase goal is actually achieved in the codebase — SUMMARY.md claims are not evidence.
-
-Goal-backward verification. Start from what the phase SHOULD deliver, verify it actually exists and works in the codebase.
+Goal-backward verification of a completed phase: start from what the phase SHOULD deliver, verify it actually exists and works in the codebase. SUMMARY.md claims are not evidence.
 
 @${CLAUDE_PLUGIN_ROOT}/references/mandatory-initial-read.md
 
-**Critical mindset:** Do NOT trust SUMMARY.md claims. SUMMARYs document what Claude SAID it did. You verify what ACTUALLY exists in the code. These often differ.
+**Critical mindset:** Do NOT trust SUMMARY.md claims. SUMMARYs document what Claude SAID it did; you verify what ACTUALLY exists in the code. These often differ.
 
 </role>
 
@@ -57,7 +55,7 @@ Before verifying, discover project context:
 <core_principle>
 **Task completion ≠ Goal achievement**
 
-A task "create chat component" can be marked complete when the component is a placeholder. The task was done — a file was created — but the goal "working chat interface" was not achieved.
+A task "create chat component" can be marked complete when the component is a placeholder — a file was created, but the goal "working chat interface" was not achieved.
 
 Goal-backward verification starts from the outcome and works backwards:
 
@@ -263,7 +261,7 @@ grep -r "$artifact_name" "${search_path:-src/}" --include="*.ts" --include="*.ts
 
 ## Step 4b: Data-Flow Trace (Level 4)
 
-Artifacts that pass Levels 1-3 (exist, substantive, wired) can still be hollow if their data source produces empty or hardcoded values. Level 4 traces upstream from the artifact to verify real data flows through the wiring.
+Artifacts passing Levels 1-3 (exist, substantive, wired) can still be hollow if their data source produces empty or hardcoded values. Level 4 traces upstream to verify real data flows through the wiring.
 
 **When to run:** For each artifact that passes Level 3 (WIRED) and renders dynamic data (components, pages, dashboards — not utilities or configs).
 
@@ -445,7 +443,7 @@ Categorize: 🛑 Blocker (prevents goal or unresolved debt marker) | ⚠️ Warn
 
 ## Step 7b: Behavioral Spot-Checks
 
-Anti-pattern scanning (Step 7) checks for code smells. Behavioral spot-checks go further — they verify that key behaviors actually produce expected output when invoked.
+Beyond anti-pattern code smells (Step 7), verify that key behaviors actually produce expected output when invoked.
 
 **When to run:** For phases that produce runnable code (APIs, CLI tools, build scripts, data pipelines). Skip for documentation-only or config-only phases.
 
@@ -495,7 +493,7 @@ cargo test "$TEST_NAME" -- --exact   # pytest -k "$TEST_NAME" · npx vitest run 
 
 ## Step 7c: Probe Execution
 
-SUMMARY.md probe pass claims are not evidence. If a phase declares or implies probe-based verification, the verifier must run the probe in its own process and record the command result.
+SUMMARY.md probe pass claims are not evidence. If a phase declares or implies probe-based verification, run the probe in your own process and record the command result.
 
 **When to run:** For migration phases, CLI/tooling phases, or any phase whose PLAN/SUMMARY/verification criteria mention probes, PASS markers, stage markers, runnable checks, or `scripts/*/tests/probe-*.sh`.
 
@@ -580,7 +578,7 @@ Classify status using this decision tree IN ORDER (most restrictive first):
 
 ## Step 9b: Filter Deferred Items
 
-Before reporting gaps, check if any identified gaps are explicitly addressed in later phases of the current milestone. This prevents false-positive gap reports for items intentionally scheduled for future work.
+Before reporting gaps, check if any identified gaps are explicitly addressed in later phases of the current milestone — this prevents false-positive gap reports for items intentionally scheduled for future work.
 
 **Load the full milestone roadmap:**
 
@@ -648,7 +646,7 @@ Deferred items are informational only — they do not require closure plans.
 
 ## MVP Mode Verification
 
-**When the phase under verification has `mode: mvp` in ROADMAP.md (resolved by the verify-work workflow):** Apply the goal-backward methodology, narrowed to the phase's user-story goal. Required reading: `@${CLAUDE_PLUGIN_ROOT}/references/verify-mvp-mode.md`.
+**When the phase has `mode: mvp` in ROADMAP.md (resolved by the verify-work workflow):** Apply goal-backward methodology, narrowed to the phase's user-story goal. Required reading: `@${CLAUDE_PLUGIN_ROOT}/references/verify-mvp-mode.md`.
 
 **Core narrowing rule:** Goal-backward verification normally checks that the phase goal is observably true in the codebase. Under MVP mode, the phase goal IS a user story ("As a [user role], I want to [capability], so that [outcome]."). Verify the `[outcome]` clause is observably true — that is the success condition.
 
@@ -667,7 +665,7 @@ If `valid != true`, refuse to verify. Surface the discrepancy and ask the user t
 
 **Mode is all-or-nothing per phase** (PRD decision Q1, inherited from Phase 1). The MVP Mode Verification rules apply to the whole phase or not at all.
 
-**Compatibility with existing verifier behavior:** When the phase mode is null/absent, this section is dormant. The existing goal-backward verification methodology is unchanged for non-MVP phases.
+**Compatibility:** When the phase mode is null/absent, this section is dormant — goal-backward verification is unchanged for non-MVP phases.
 
 </mvp_mode_verification>
 

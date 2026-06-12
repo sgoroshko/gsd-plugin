@@ -13,9 +13,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <step name="banner">
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SPIKE WRAP-UP
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► SPIKE WRAP-UP
 ```
 </step>
 
@@ -252,9 +250,7 @@ gsd-sdk query commit "docs(spike-wrap-up): package [N] spike findings into proje
 
 <step name="report">
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SPIKE WRAP-UP COMPLETE ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► SPIKE WRAP-UP COMPLETE ✓
 
 **Processed:** {N} spikes
 **Feature areas:** {list}

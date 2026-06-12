@@ -13,7 +13,6 @@ Read all files referenced by the invoking prompt's execution_context before star
 Read project state to determine current position:
 
 ```bash
-# Get state snapshot
 gsd-sdk query state.json 2>/dev/null || echo "{}"
 ```
 
@@ -83,7 +82,7 @@ Use `--force` to bypass this check.
 Exit.
 
 **Prior-phase completeness scan:**
-After passing all three hard-stop gates, scan all phases that precede the current phase in ROADMAP.md order for incomplete work. For each prior phase number `N`, use `gsd-sdk query find-phase <N>` JSON (plans, summaries, incomplete_plans, etc.) to inspect that phase.
+After passing all three hard-stop gates, scan all phases preceding the current phase in ROADMAP.md order. For each prior phase number `N`, use `gsd-sdk query find-phase <N>` JSON (plans, summaries, incomplete_plans, etc.) to inspect it.
 
 Detect three categories of incomplete work:
 1. **Plans without summaries** — a PLAN.md exists in a prior phase directory but no matching SUMMARY.md exists (execution started but not completed).
@@ -135,15 +134,13 @@ gsd-sdk query commit "docs: defer incomplete Phase {src} items to backlog"
 </step>
 
 <step name="resume_incomplete_phase">
-**Hard invariant: any phase with PLAN.md files lacking matching SUMMARY.md files must be completed before /gsd:next routes to any forward action.**
-
-This catches the common failure mode where a session died mid-execution (hang, token exhaustion, API connection drop) and STATE.md's `current_phase` got advanced past the phase that actually has unfinished work. Without this gate, `/gsd:next` would route by `current_phase` and silently skip the partially-executed phase.
+**Hard invariant: any phase with PLAN.md files lacking matching SUMMARY.md files must be completed before /gsd:next routes to any forward action.** This catches the failure mode where a session died mid-execution and STATE.md's `current_phase` advanced past the phase with unfinished work; without this gate, `/gsd:next` would route by `current_phase` and skip the partially-executed phase.
 
 **Skip if `--force` or `--no-resume` was passed.**
 
-Scan ALL phases in ROADMAP order (lowest-numbered to highest) for incomplete-execution state. Use `gsd-sdk query roadmap.analyze` to get the phase list, then for each phase number `N` query `gsd-sdk query find-phase <N>` JSON and inspect its `plans` and `summaries` arrays. A phase is **incomplete-execution** when at least one entry in `plans` has no matching SUMMARY.md (i.e., `plans.length > summaries.length`, or `incomplete_plans` array is non-empty if the find-phase JSON exposes that directly).
+Scan ALL phases in ROADMAP order (lowest to highest) for incomplete-execution state. Use `gsd-sdk query roadmap.analyze` to get the phase list, then for each phase number `N` query `gsd-sdk query find-phase <N>` JSON and inspect its `plans` and `summaries` arrays. A phase is **incomplete-execution** when at least one entry in `plans` has no matching SUMMARY.md (i.e., `plans.length > summaries.length`, or `incomplete_plans` array is non-empty if the find-phase JSON exposes that directly).
 
-Stop at the first such phase. Record its phase number as `INCOMPLETE_PHASE`. This is the lowest-numbered phase that needs continued execution.
+Stop at the first such phase. Record its phase number as `INCOMPLETE_PHASE` (the lowest-numbered phase needing continued execution).
 
 Illustrative bash:
 
@@ -174,17 +171,15 @@ Then invoke via SlashCommand. Do not continue to subsequent steps.
 
 **If `INCOMPLETE_PHASE` is empty:** continue to `spike_sketch_notice`.
 
-**Why this is Route 0 and not part of `determine_next_action`:** it's a hard invariant independent of `current_phase`'s value, so it must run before any routing rule that reads `current_phase`. The prior-phase-scan in `safety_gates` above still runs and remains the explicit-opt-out path for users who want to defer the incomplete plans to backlog (via `--no-resume`); this Route 0 makes the no-flag default "continue the partially-executed phase" instead of "stop and ask."
+**Why Route 0, not part of `determine_next_action`:** it's a hard invariant independent of `current_phase`, so it must run before any routing rule that reads `current_phase`. The prior-phase-scan in `safety_gates` remains the explicit opt-out path (via `--no-resume`) for deferring incomplete plans to backlog; this Route 0 makes the no-flag default "continue the partially-executed phase" instead of "stop and ask."
 </step>
 
 <step name="spike_sketch_notice">
 Check for pending spike/sketch work and surface a notice (does not change routing):
 
 ```bash
-# Check for pending spikes (verdict: PENDING in any README)
+# Pending spikes (verdict: PENDING) and sketches (winner: null)
 PENDING_SPIKES=$(grep -rl 'verdict: PENDING' .planning/spikes/*/README.md 2>/dev/null | wc -l | tr -d ' ')
-
-# Check for pending sketches (winner: null in any README)
 PENDING_SKETCHES=$(grep -rl 'winner: null' .planning/sketches/*/README.md 2>/dev/null | wc -l | tr -d ' ')
 ```
 
@@ -250,7 +245,7 @@ Display the determination:
 ```
 
 Then immediately invoke the determined command via SlashCommand.
-Do not ask for confirmation — the whole point of `/gsd:progress --next` is zero-friction advancement.
+Do not ask for confirmation — `/gsd:progress --next` is zero-friction advancement.
 </step>
 
 </process>

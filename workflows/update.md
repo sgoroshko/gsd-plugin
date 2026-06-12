@@ -33,10 +33,7 @@ expand_home() {
   esac
 }
 
-# Runtime candidates: "<runtime>:<config-dir>" stored as an array.
-# Using an array instead of a space-separated string ensures correct
-# iteration in both bash and zsh (zsh does not word-split unquoted
-# variables by default). Fixes #1173.
+# Runtime candidates "<runtime>:<config-dir>" as array (correct bash+zsh iteration). Fixes #1173.
 RUNTIME_DIRS=( "claude:.claude" "opencode:.config/opencode" "opencode:.opencode" "antigravity:.gemini/antigravity" "gemini:.gemini" "kilo:.config/kilo" "kilo:.kilo" "codex:.codex" )
 ENV_RUNTIME_DIRS=()
 
@@ -81,10 +78,7 @@ fi
 # runtime directories.
 if [ -n "$PREFERRED_CONFIG_DIR" ] && { [ -f "$PREFERRED_CONFIG_DIR/get-shit-done/VERSION" ] || [ -f "$PREFERRED_CONFIG_DIR/get-shit-done/workflows/update.md" ]; }; then
   INSTALL_SCOPE="GLOBAL"
-  # Normalize a path for comparison: on Windows with Git Bash, pwd returns
-  # POSIX-style /c/Users/... but PREFERRED_CONFIG_DIR may carry C:/Users/...
-  # Convert Windows drive-letter paths to POSIX form so the comparison works
-  # on both Windows (Git Bash) and POSIX systems.
+  # Convert Windows drive-letter paths to POSIX form so comparison works on Git Bash and POSIX.
   normalize_path() {
     local p="$1"
     case "$p" in
@@ -116,11 +110,8 @@ if [ -n "$PREFERRED_CONFIG_DIR" ] && { [ -f "$PREFERRED_CONFIG_DIR/get-shit-done
   echo "$INSTALLED_VERSION"
   echo "$INSTALL_SCOPE"
   echo "${PREFERRED_RUNTIME:-claude}"
-  # 4-line output contract (#2993 CR): early-return path must also emit
-  # GSD_DIR or downstream check_latest_version misreads the install as
-  # UNKNOWN. PREFERRED_CONFIG_DIR is the resolved config dir we just
-  # validated above (line 95-96); it is the right GSD_DIR value for
-  # this fast path.
+  # 4-line output contract (#2993 CR): early-return path must also emit GSD_DIR or
+  # check_latest_version misreads install as UNKNOWN. PREFERRED_CONFIG_DIR is the validated config dir.
   echo "$PREFERRED_CONFIG_DIR"
   exit 0
 fi
@@ -305,10 +296,7 @@ if [ -z "$GSD_DIR" ]; then
 else
   LATEST_RESULT="$(node "$GSD_DIR/get-shit-done/bin/check-latest-version.cjs" --json 2>/dev/null)"
   LATEST_STATUS=$?
-  # #2993 CR: when node is missing or the script doesn't exist, LATEST_RESULT
-  # is empty and piping it to `jq` produces a parse error on stderr while
-  # leaving LATEST_OK / LATEST_REASON as empty strings. Fail the check with a
-  # meaningful reason instead of a blank diagnostic.
+  # #2993 CR: empty LATEST_RESULT (node/script missing) -> fail with a meaningful reason, not a blank jq error.
   if [ -n "$LATEST_RESULT" ]; then
     LATEST_OK="$(printf '%s' "$LATEST_RESULT" | jq -r '.ok // false')"
     LATEST_VERSION="$(printf '%s' "$LATEST_RESULT" | jq -r '.version // empty')"
@@ -427,10 +415,7 @@ Use AskUserQuestion:
 </step>
 
 <step name="backup_custom_files">
-Before running the installer, detect and back up any user-added files inside
-GSD-managed directories. These are files that exist on disk but are NOT listed
-in `gsd-file-manifest.json` — i.e., files the user added themselves that the
-installer does not know about and will delete during the wipe.
+Before running the installer, detect and back up user-added files inside GSD-managed directories — files on disk but NOT in `gsd-file-manifest.json`, which the installer will delete during the wipe.
 
 **Do not use bash path-stripping (`${filepath#$RUNTIME_DIR/}`) or `node -e require()`
 inline** — those patterns fail when `$RUNTIME_DIR` is unset and the stripped
@@ -443,9 +428,7 @@ First, resolve the config directory (`RUNTIME_DIR`) from the install scope
 detected in `get_installed_version`:
 
 ```bash
-# RUNTIME_DIR is the resolved config directory (e.g. ~/.config/opencode, ~/.gemini)
-# It should already be set from get_installed_version as GLOBAL_DIR or LOCAL_DIR.
-# Use the appropriate variable based on INSTALL_SCOPE.
+# RUNTIME_DIR is the resolved config dir, set from get_installed_version per INSTALL_SCOPE.
 if [ "$INSTALL_SCOPE" = "LOCAL" ]; then
   RUNTIME_DIR="$LOCAL_DIR"
 elif [ "$INSTALL_SCOPE" = "GLOBAL" ]; then
@@ -592,9 +575,7 @@ for dir in .claude .config/opencode .opencode .gemini/antigravity .gemini .confi
   rm -f "$HOME/$dir/cache/gsd-update-check.json"
 done
 
-# Clear the shared tool-agnostic cache written by gsd-check-update.js hook (#2784).
-# The hook uses ~/.cache/gsd/gsd-update-check.json regardless of runtime; clear it
-# so the statusline stops showing the stale "⬆ /gsd:update" indicator after update.
+# Clear shared tool-agnostic cache from gsd-check-update.js hook (#2784) so statusline stops showing stale "⬆ /gsd:update".
 rm -f "$HOME/.cache/gsd/gsd-update-check.json"
 ```
 
@@ -605,9 +586,7 @@ The SessionStart hook (`gsd-check-update.js`) writes to the detected runtime's c
 Format completion message (changelog was already shown in confirmation step):
 
 ```
-╔═══════════════════════════════════════════════════════════╗
-║  GSD Updated: v1.5.10 → v1.5.15                           ║
-╚═══════════════════════════════════════════════════════════╝
+GSD Updated: v1.5.10 → v1.5.15
 
 ⚠️  Restart your runtime to pick up the new commands.
 

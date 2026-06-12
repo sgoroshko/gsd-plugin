@@ -1,10 +1,6 @@
 <internal_workflow>
 
-**This is an INTERNAL workflow — NOT a user-facing command.**
-
-There is no `/gsd:transition` command. This workflow is invoked automatically by
-`execute-phase` during auto-advance, or inline by the orchestrator after phase
-verification. Users should never be told to run `/gsd:transition`.
+**INTERNAL workflow — NOT a user-facing command.** There is no `/gsd:transition`. Invoked automatically by `execute-phase` during auto-advance, or inline by the orchestrator after phase verification. Never tell users to run `/gsd:transition`.
 
 **Valid user commands for phase progression:**
 - `/gsd:discuss-phase {N}`, discuss a phase before planning
@@ -28,9 +24,7 @@ verification. Users should never be told to run `/gsd:transition`.
 
 <purpose>
 
-Mark current phase complete and advance to next. This is the natural point where progress tracking and PROJECT.md evolution happen.
-
-"Planning next phase" = "current phase is done"
+Mark current phase complete and advance to next — the natural point for progress tracking and PROJECT.md evolution. "Planning next phase" = "current phase is done".
 
 </purpose>
 
@@ -38,15 +32,12 @@ Mark current phase complete and advance to next. This is the natural point where
 
 <step name="load_project_state" priority="first">
 
-Before transition, read project state:
+Read project state, then parse current position to verify we're transitioning the right phase. Note accumulated context that may need updating after transition.
 
 ```bash
 cat .planning/STATE.md 2>/dev/null || true
 cat .planning/PROJECT.md 2>/dev/null || true
 ```
-
-Parse current position to verify we're transitioning the right phase.
-Note accumulated context that may need updating after transition.
 
 </step>
 
@@ -77,7 +68,7 @@ cat .planning/config.json 2>/dev/null || true
 **Check for verification debt in this phase:**
 
 ```bash
-# Count outstanding items in current phase
+# Count outstanding items
 OUTSTANDING=""
 for f in .planning/phases/XX-current/*-UAT.md .planning/phases/XX-current/*-VERIFICATION.md; do
   [ -f "$f" ] || continue
@@ -179,16 +170,13 @@ Extract from result: `completed_phase`, `plans_executed`, `next_phase`, `next_ph
 
 <step name="archive_prompts">
 
-If prompts were generated for the phase, they stay in place.
-The `completed/` subfolder pattern from create-meta-prompts handles archival.
+Generated phase prompts stay in place; the `completed/` subfolder pattern from create-meta-prompts handles archival.
 
 </step>
 
 <step name="evolve_project">
 
-Evolve PROJECT.md to reflect learnings from completed phase.
-
-**Read phase summaries:**
+Evolve PROJECT.md to reflect learnings from the completed phase. Read phase summaries:
 
 ```bash
 cat .planning/phases/XX-current/*-SUMMARY.md
@@ -216,48 +204,14 @@ cat .planning/phases/XX-current/*-SUMMARY.md
    - If the product has meaningfully changed, update the description
    - Keep it current and accurate
 
-**Update PROJECT.md:**
-
-Make the edits inline. Update "Last updated" footer:
+**Update PROJECT.md:** make the edits inline, then update the "Last updated" footer:
 
 ```markdown
 ---
 *Last updated: [date] after Phase [X]*
 ```
 
-**Example evolution:**
-
-Before:
-
-```markdown
-### Active
-
-- [ ] JWT authentication
-- [ ] Real-time sync < 500ms
-- [ ] Offline mode
-
-### Out of Scope
-
-- OAuth2 — complexity not needed for v1
-```
-
-After (Phase 2 shipped JWT auth, discovered rate limiting needed):
-
-```markdown
-### Validated
-
-- ✓ JWT authentication — Phase 2
-
-### Active
-
-- [ ] Real-time sync < 500ms
-- [ ] Offline mode
-- [ ] Rate limiting on sync endpoint
-
-### Out of Scope
-
-- OAuth2 — complexity not needed for v1
-```
+**Example:** Phase 2 ships JWT auth and discovers rate limiting is needed → move `JWT authentication` from `### Active` to `### Validated` as `- ✓ JWT authentication — Phase 2`, and add `- [ ] Rate limiting on sync endpoint` to `### Active`.
 
 **Step complete when:**
 
@@ -347,24 +301,7 @@ Review and update Accumulated Context section in STATE.md.
 - If still relevant for future: Keep with "Phase X" prefix
 - Add any new concerns from completed phase's summaries
 
-**Example:**
-
-Before:
-
-```markdown
-### Blockers/Concerns
-
-- ⚠️ [Phase 1] Database schema not indexed for common queries
-- ⚠️ [Phase 2] WebSocket reconnection behavior on flaky networks unknown
-```
-
-After (if database indexing was addressed in Phase 2):
-
-```markdown
-### Blockers/Concerns
-
-- ⚠️ [Phase 2] WebSocket reconnection behavior on flaky networks unknown
-```
+**Example:** if Phase 2 addressed `⚠️ [Phase 1] Database schema not indexed`, drop that line and keep `⚠️ [Phase 2] WebSocket reconnection behavior on flaky networks unknown`.
 
 **Step complete when:**
 
@@ -405,28 +342,22 @@ The `is_last_phase` field from the phase complete result tells you directly:
 - `is_last_phase: false` → More phases remain → Go to **Route A**
 - `is_last_phase: true` → Last phase done → **Check for workstream collisions first**
 
-The `next_phase` and `next_phase_name` fields give you the next phase details.
+The `next_phase` and `next_phase_name` fields give the next phase details.
 
-If you need additional context, use:
+For additional context (all phases with goals, disk status, completion info):
 ```bash
 ROADMAP=$(gsd-sdk query roadmap.analyze)
 ```
-
-This returns all phases with goals, disk status, and completion info.
 
 ---
 
 **Workstream collision check (when `is_last_phase: true`):**
 
-Before routing to Route B, check whether other workstreams are still active.
-This prevents one workstream from advancing or completing the milestone while
-other workstreams are still working on their phases.
+Before routing to Route B, check whether other workstreams are still active — prevents one workstream from advancing or completing the milestone while others are still working.
 
-**Skip this check if NOT in workstream mode** (i.e., `GSD_WORKSTREAM` is not set / flat mode).
-In flat mode, go directly to **Route B**.
+**Skip this check if NOT in workstream mode** (`GSD_WORKSTREAM` unset / flat mode); go directly to **Route B**.
 
 ```bash
-# Only check if we're in workstream mode
 if [ -n "$GSD_WORKSTREAM" ]; then
   WS_LIST=$(gsd-sdk query workstream.list --raw)
 fi

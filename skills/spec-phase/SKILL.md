@@ -32,10 +32,6 @@ Clarify phase requirements through structured Socratic questioning with quantita
 @${CLAUDE_PLUGIN_ROOT}/templates/spec.md
 </execution_context>
 
-<runtime_note>
-**Copilot (VS Code):** Use `vscode_askquestions` wherever this workflow calls `AskUserQuestion`. They are equivalent.
-</runtime_note>
-
 <context>
 Phase number: $ARGUMENTS (required)
 
@@ -49,7 +45,7 @@ Context files are resolved in-workflow using `init phase-op`.
 <process>
 Execute the spec-phase workflow from @${CLAUDE_PLUGIN_ROOT}/workflows/spec-phase.md end-to-end.
 
-**MANDATORY:** Read the workflow file BEFORE taking any action. The workflow contains the complete step-by-step process including the Socratic interview loop, ambiguity scoring gate, and SPEC.md generation. Do not improvise from the objective summary above.
+**MANDATORY:** Read the workflow file BEFORE taking any action. Do not improvise from the objective summary above.
 </process>
 
 <success_criteria>

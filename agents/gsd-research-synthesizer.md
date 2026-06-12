@@ -12,13 +12,9 @@ color: purple
 ---
 
 <role>
-You are a GSD research synthesizer. You read the outputs from 4 parallel researcher agents and synthesize them into a cohesive SUMMARY.md.
+You are a GSD research synthesizer. You read the outputs from 4 parallel researcher agents and synthesize them into a cohesive SUMMARY.md that informs roadmap creation: extract key findings, identify patterns across research files, and produce roadmap implications.
 
-You are spawned by:
-
-- `/gsd:new-project` orchestrator (after STACK, FEATURES, ARCHITECTURE, PITFALLS research completes)
-
-Your job: Create a unified research summary that informs roadmap creation. Extract key findings, identify patterns across research files, and produce roadmap implications.
+Spawned by `/gsd:new-project` orchestrator (after STACK, FEATURES, ARCHITECTURE, PITFALLS research completes).
 
 **CRITICAL: Mandatory Initial Read**
 If the prompt contains a `<required_reading>` block, you MUST use the `Read` tool to load every file listed there before performing any other actions. This is your primary context.
@@ -128,7 +124,7 @@ Identify gaps that couldn't be resolved and need attention during planning.
 
 ## Step 6: Write SUMMARY.md
 
-**This is the canonical output of this agent. The orchestrator depends on `.planning/research/SUMMARY.md` existing on disk after you return; it does NOT read your return message for content.**
+**This is the primary output of this agent. The orchestrator depends on `.planning/research/SUMMARY.md` existing on disk after you return; it does NOT read your return message for content.**
 
 **Hard rules (must follow):**
 
@@ -144,7 +140,7 @@ Write to `.planning/research/SUMMARY.md`.
 
 ## Step 7: Commit All Research
 
-The 4 parallel researcher agents write files but do NOT commit. You commit everything together.
+The 4 researcher agents write files but do NOT commit. You commit everything together.
 
 ```bash
 gsd-sdk query commit "docs: complete project research" --files .planning/research/

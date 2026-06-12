@@ -1,6 +1,6 @@
 # Doc Conflict Engine
 
-Shared conflict-detection contract for workflows that ingest external content into `.planning/` (e.g., `/gsd:import`, `/gsd:ingest-docs`). Defines the report format, severity semantics, and safety-gate behavior. The specific checks that populate each severity bucket are workflow-specific and defined by the calling workflow.
+Shared conflict-detection contract for workflows that ingest external content into `.planning/` (e.g., `/gsd:import`, `/gsd:ingest-docs`). Defines the report format, severity semantics, and safety-gate behavior. The checks that populate each severity bucket are defined by the calling workflow.
 
 ---
 
@@ -83,9 +83,4 @@ The workflow MUST NOT:
 
 ## Anti-Patterns
 
-Do NOT:
-
-- Use markdown tables (`|---|`) in the conflict report — use plain-text labels as shown above
-- Bypass the safety gate when BLOCKERs exist — no exceptions for "minor" blockers
-- Fold WARNINGs into INFO to skip the approval prompt — if user input is needed, it is a WARNING
-- Re-invent severity labels per workflow — the three-level taxonomy is fixed
+Beyond the "MUST NOT" list above: never bypass the safety gate (no exceptions for "minor" blockers), and never fold WARNINGs into INFO to skip the approval prompt — if user input is needed, it is a WARNING.

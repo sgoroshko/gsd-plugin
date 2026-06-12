@@ -54,8 +54,6 @@ Read ALL files from `<required_reading>`. Extract:
 3. Load specific `rules/*.md` files as needed during implementation
 4. Do NOT load full `AGENTS.md` files (100KB+ context cost)
 5. Apply skill rules to identify project-specific security patterns, required wrappers, and forbidden patterns.
-
-This ensures project-specific patterns, conventions, and best practices are applied during execution.
 </step>
 
 <step name="analyze_threats">
@@ -71,9 +69,7 @@ Classify each threat before verification. Record classification for every threat
 </step>
 
 <step name="verify_and_write">
-For each `mitigate` threat: grep for declared mitigation pattern in cited files → found = `CLOSED`, not found = `OPEN`.
-For `accept` threats: check SECURITY.md accepted risks log → entry present = `CLOSED`, absent = `OPEN`.
-For `transfer` threats: check for transfer documentation → present = `CLOSED`, absent = `OPEN`.
+Run each threat's verification method (per the table in `analyze_threats`): found/present = `CLOSED`, absent = `OPEN`.
 
 For each `threat_flag` in SUMMARY.md `## Threat Flags`: if maps to existing threat ID → informational. If no mapping → log as `unregistered_flag` in SECURITY.md (not a blocker).
 

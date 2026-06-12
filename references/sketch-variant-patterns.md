@@ -4,7 +4,7 @@ Every sketch produces 2-3 variants in the same HTML file. The user switches betw
 
 ## Tab-Based Variants
 
-The standard approach: a tab bar at the top of the page, each tab shows a different variant.
+Standard approach: a tab bar at the top, each tab shows a different variant.
 
 ```html
 <div id="variant-nav" style="position:fixed;top:0;left:0;right:0;z-index:9998;background:var(--color-surface, #fff);border-bottom:1px solid var(--color-border, #e5e5e5);padding:8px 16px;display:flex;gap:8px;font-family:system-ui;">
@@ -47,7 +47,7 @@ Keep all variants visible and navigable — the winner is highlighted, not the o
 
 ## Side-by-Side (for small variants)
 
-When comparing small elements (button styles, card layouts, icon treatments), render them next to each other with labels rather than using tabs:
+For small elements (button styles, card layouts, icon treatments), render them next to each other with labels instead of tabs:
 
 ```html
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding:24px;">

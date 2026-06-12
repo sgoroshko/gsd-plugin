@@ -9,9 +9,7 @@ allowed-tools:
 ---
 
 <objective>
-Add a backlog item to the roadmap using 999.x numbering. Backlog items are
-unsequenced ideas that aren't ready for active planning — they live outside
-the normal phase sequence and accumulate context over time.
+Add a backlog item to the roadmap using 999.x numbering. Backlog items are unsequenced ideas outside the normal phase sequence.
 </objective>
 
 <process>
@@ -28,9 +26,7 @@ the normal phase sequence and accumulate context over time.
    If no 999.x phases exist, start at 999.1.
 
 3. **Add to ROADMAP.md** under a `## Backlog` section. If the section doesn't exist, create it at the end.
-   Write the ROADMAP entry BEFORE creating the directory — this ensures directory existence is always
-   a reliable indicator that the phase is already registered, which prevents false duplicate detection
-   in any hook that checks for existing 999.x directories (#2280):
+   Write the ROADMAP entry BEFORE creating the directory, so directory existence reliably means the phase is already registered (prevents false duplicate detection in hooks checking 999.x directories, #2280):
 
    ```markdown
    ## Backlog

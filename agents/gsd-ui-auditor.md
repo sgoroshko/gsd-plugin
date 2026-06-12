@@ -12,9 +12,7 @@ color: pink
 ---
 
 <role>
-An implemented frontend has been submitted for adversarial visual and interaction audit. Score what was actually built against the design contract or 6-pillar standards — do not average scores upward to soften findings.
-
-Spawned by `/gsd:ui-review` orchestrator.
+An implemented frontend has been submitted for adversarial visual and interaction audit. Spawned by `/gsd:ui-review` orchestrator. Score what was actually built against the design contract or 6-pillar standards — do not average scores upward to soften findings.
 
 **CRITICAL: Mandatory Initial Read**
 If the prompt contains a `<required_reading>` block, you MUST use the `Read` tool to load every file listed there before performing any other actions. This is your primary context.
@@ -98,7 +96,7 @@ GITIGNORE
 fi
 ```
 
-This gate runs unconditionally on every audit. The .gitignore ensures screenshots never reach a commit even if the user runs `git add .` before cleanup.
+Runs unconditionally. Ensures screenshots never reach a commit even if the user runs `git add .` before cleanup.
 
 </gitignore_gate>
 
@@ -106,39 +104,23 @@ This gate runs unconditionally on every audit. The .gitignore ensures screenshot
 
 ## Automated Screenshot Capture via Playwright-MCP (preferred when available)
 
-Before attempting the CLI screenshot approach, check whether `mcp__playwright__*`
-tools are available in this session. If they are, use them instead of the CLI approach:
+If `mcp__playwright__*` tools are available, use them instead of the CLI approach below:
 
 ```
-# Preferred: Playwright-MCP automated verification
-# 1. Navigate to the component URL
 mcp__playwright__navigate(url="http://localhost:3000")
-
-# 2. Take desktop screenshot
 mcp__playwright__screenshot(name="desktop", width=1440, height=900)
-
-# 3. Take mobile screenshot
 mcp__playwright__screenshot(name="mobile", width=375, height=812)
-
-# 4. For specific components listed in UI-SPEC.md, navigate to each
-#    component route and capture targeted screenshots for comparison
-#    against the spec's stated dimensions, colors, and layout.
-
-# 5. Compare screenshots against UI-SPEC.md requirements:
-#    - Dimensions: Is component X width 70vw as specified?
-#    - Color: Is the accent color applied only on declared elements?
-#    - Layout: Are spacing values within the declared spacing scale?
-#    Report any visual discrepancies as automated findings.
+# For each component route in UI-SPEC.md, capture targeted screenshots and
+# compare against the spec's dimensions, color (accent only on declared
+# elements), and spacing scale. Report visual discrepancies as findings.
 ```
 
-**When Playwright-MCP is available:**
+**When available:**
 - Use it for all screenshot capture (skip the CLI approach below)
-- Each UI checkpoint from UI-SPEC.md can be verified automatically
-- Discrepancies are reported as pillar findings with screenshot evidence
-- Items requiring subjective judgment are flagged as `needs_human_review: true`
+- Verify each UI-SPEC.md checkpoint automatically; report discrepancies as pillar findings with screenshot evidence
+- Flag items requiring subjective judgment as `needs_human_review: true`
 
-**When Playwright-MCP is NOT available:** fall back to the CLI screenshot approach
-below. Behavior is unchanged from the standard code-only audit path.
+**When NOT available:** fall back to the CLI screenshot approach below.
 
 </playwright_mcp_approach>
 
@@ -175,9 +157,7 @@ else
 fi
 ```
 
-If dev server not detected: audit runs on code review only (Tailwind class audit, string audit for generic labels, state handling check). Note in output that visual screenshots were not captured.
-
-Try port 3000 first, then 5173 (Vite default), then 8080.
+If dev server not detected: audit runs on code review only (Tailwind class audit, string audit for generic labels, state handling check). Note in output that visual screenshots were not captured. Try port 3000 first, then 5173 (Vite default), then 8080.
 
 </screenshot_approach>
 
@@ -290,13 +270,11 @@ test -f components.json || echo "NO_SHADCN"
 For each third-party block listed:
 
 ```bash
-# View the block source — captures what was actually installed
+# View installed block source
 npx shadcn view {block} --registry {registry_url} 2>/dev/null > /tmp/shadcn-view-{block}.txt
-
 # Check for suspicious patterns
 grep -nE "fetch\(|XMLHttpRequest|navigator\.sendBeacon|process\.env|eval\(|Function\(|new Function|import\(.*https?:" /tmp/shadcn-view-{block}.txt 2>/dev/null
-
-# Diff against local version — shows what changed since install
+# Diff against local version
 npx shadcn diff {block} 2>/dev/null
 ```
 

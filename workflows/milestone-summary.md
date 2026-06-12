@@ -1,7 +1,6 @@
 # Milestone Summary Workflow
 
-Generate a comprehensive, human-friendly project summary from completed milestone artifacts.
-Designed for team onboarding — a new contributor can read the output and understand the entire project.
+Generate a human-friendly project summary from completed milestone artifacts, for team onboarding.
 
 ---
 
@@ -49,8 +48,6 @@ STATE_PATH=".planning/STATE.md"
 Read all files that exist. Missing files are fine — the summary adapts to what's available.
 
 ## Step 3: Discover Phase Artifacts
-
-Find all phase directories:
 
 ```bash
 gsd-sdk query init.progress
@@ -198,8 +195,6 @@ gsd-sdk query commit "docs(v${VERSION}): generate milestone summary for onboardi
 Display the full summary document inline.
 
 ## Step 8: Offer Interactive Mode
-
-After presenting the summary:
 
 > "Summary written to `.planning/reports/MILESTONE_SUMMARY-v{VERSION}.md`.
 >

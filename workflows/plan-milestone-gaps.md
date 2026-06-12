@@ -11,7 +11,6 @@ Read all files referenced by the invoking prompt's execution_context before star
 ## 1. Load Audit Results
 
 ```bash
-# Find the most recent audit file
 (ls -t .planning/v*-MILESTONE-AUDIT.md 2>/dev/null || true) | head -1
 ```
 
@@ -64,7 +63,6 @@ Gap: Flow "View dashboard" broken at data fetch
 
 Find highest existing phase:
 ```bash
-# Get sorted phase list, extract last one
 HIGHEST=$(gsd-sdk query phases.list --pick directories[-1])
 ```
 
@@ -133,7 +131,6 @@ Reset checked-off requirements the audit found unsatisfied:
 - Update coverage count at top of REQUIREMENTS.md
 
 ```bash
-# Verify traceability table reflects gap closure assignments
 grep -c "Pending" .planning/REQUIREMENTS.md
 ```
 
@@ -194,74 +191,21 @@ gsd-sdk query commit "docs(roadmap): add gap closure phases {N}-{M}" --files .pl
 
 ## How Gaps Become Tasks
 
+Each gap's `missing` items become one task each in the new phase.
+
 **Requirement gap → Tasks:**
 ```yaml
-gap:
-  id: DASH-01
-  description: "User sees their data"
-  reason: "Dashboard exists but doesn't fetch from API"
-  missing:
-    - "useEffect with fetch to /api/user/data"
-    - "State for user data"
-    - "Render user data in JSX"
-
-becomes:
-
-phase: "Wire Dashboard Data"
-tasks:
-  - name: "Add data fetching"
-    files: [src/components/Dashboard.tsx]
-    action: "Add useEffect that fetches /api/user/data on mount"
-
-  - name: "Add state management"
-    files: [src/components/Dashboard.tsx]
-    action: "Add useState for userData, loading, error states"
-
-  - name: "Render user data"
-    files: [src/components/Dashboard.tsx]
-    action: "Replace placeholder with userData.map rendering"
+gap: {id: DASH-01, missing: ["useEffect fetch /api/user/data", "user data state", "render data in JSX"]}
+becomes phase "Wire Dashboard Data" with one task per missing item, files scoped to the affected component.
 ```
 
 **Integration gap → Tasks:**
 ```yaml
-gap:
-  from_phase: 1
-  to_phase: 3
-  connection: "Auth token → API calls"
-  reason: "Dashboard API calls don't include auth header"
-  missing:
-    - "Auth header in fetch calls"
-    - "Token refresh on 401"
-
-becomes:
-
-phase: "Add Auth to Dashboard API Calls"
-tasks:
-  - name: "Add auth header to fetches"
-    files: [src/components/Dashboard.tsx, src/lib/api.ts]
-    action: "Include Authorization header with token in all API calls"
-
-  - name: "Handle 401 responses"
-    files: [src/lib/api.ts]
-    action: "Add interceptor to refresh token or redirect to login on 401"
+gap: {from_phase: 1, to_phase: 3, missing: ["Auth header in fetch calls", "Token refresh on 401"]}
+becomes phase "Add Auth to Dashboard API Calls" with one task per missing item.
 ```
 
-**Flow gap → Tasks:**
-```yaml
-gap:
-  name: "User views dashboard after login"
-  broken_at: "Dashboard data load"
-  reason: "No fetch call"
-  missing:
-    - "Fetch user data on mount"
-    - "Display loading state"
-    - "Render user data"
-
-becomes:
-
-# Usually same phase as requirement/integration gap
-# Flow gaps often overlap with other gap types
-```
+**Flow gap → Tasks:** Usually the same phase as the overlapping requirement/integration gap; flow gaps often overlap with other gap types.
 
 </gap_to_phase_mapping>
 

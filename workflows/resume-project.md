@@ -120,17 +120,13 @@ fi
 Present complete project status to user:
 
 ```
-╔══════════════════════════════════════════════════════════════╗
-║  PROJECT STATUS                                               ║
-╠══════════════════════════════════════════════════════════════╣
-║  Building: [one-liner from PROJECT.md "What This Is"]         ║
-║                                                               ║
-║  Phase: [X] of [Y] - [Phase name]                            ║
-║  Plan:  [A] of [B] - [Status]                                ║
-║  Progress: [██████░░░░] XX%                                  ║
-║                                                               ║
-║  Last activity: [date] - [what happened]                     ║
-╚══════════════════════════════════════════════════════════════╝
+PROJECT STATUS
+
+Building: [one-liner from PROJECT.md "What This Is"]
+Phase: [X] of [Y] - [Phase name]
+Plan:  [A] of [B] - [Status]
+Progress: [██████░░░░] XX%
+Last activity: [date] - [what happened]
 
 [If incomplete work found:]
 ⚠️  Incomplete work detected:
@@ -271,9 +267,7 @@ Resume-specific exception: do **not** emit `/clear then:` here. Resume is alread
 </step>
 
 <step name="update_session">
-Before proceeding to routed workflow, update session continuity:
-
-Update STATE.md:
+Before proceeding to routed workflow, update STATE.md session continuity:
 
 ```markdown
 ## Session Continuity
@@ -300,12 +294,7 @@ If STATE.md is missing but other artifacts exist:
 5. Check for .continue-here files → Session continuity
 
 Reconstruct and write STATE.md, then proceed normally.
-
-This handles cases where:
-
-- Project predates STATE.md introduction
-- File was accidentally deleted
-- Cloning repo without full .planning/ state
+(Handles: project predates STATE.md, file deleted, or repo cloned without full .planning/ state.)
   </reconstruction>
 
 <quick_resume>

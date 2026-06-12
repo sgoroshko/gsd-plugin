@@ -2,8 +2,7 @@
 
 Invoked by `/gsd:debug` (`commands/gsd/debug.md`).
 
-Systematic debugging using the scientific method with subagent isolation.
-Orchestrates symptom gathering, session creation, and delegation to `gsd-debug-session-manager`.
+Systematic debugging (scientific method, subagent isolation): orchestrates symptom gathering, session creation, and delegation to `gsd-debug-session-manager`.
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
@@ -42,16 +41,10 @@ For each file found, parse frontmatter fields (`status`, `trigger`, `updated`) a
 
 ```
 Active Debug Sessions
-─────────────────────────────────────────────
-  #  Slug                    Status         Updated
-  1  auth-token-null         investigating  2026-04-12
+  #  Slug              Status         Updated
+  1  auth-token-null   investigating  2026-04-12
      hypothesis: JWT decode fails when token contains nested claims
      next: Add logging at jwt.verify() call site
-
-  2  form-submit-500         fixing         2026-04-11
-     hypothesis: Missing null check on req.body.user
-     next: Verify fix passes regression test
-─────────────────────────────────────────────
 Run `/gsd:debug continue <slug>` to resume a session.
 No sessions? `/gsd:debug <description>` to start.
 ```
@@ -218,12 +211,11 @@ If summary shows `DEBUG SESSION COMPLETE`: done.
 If summary shows `ABANDONED`: note session saved at `.planning/debug/{slug}.md` for later `/gsd:debug continue {slug}`.
 
 **Auto-capture durable decisions (only when `DEBUG SESSION COMPLETE`):** run the protocol in
-`references/auto-memory-capture.md`. Gated on `workflow.auto_memory_capture` (default ON). A
-resolved bug often yields a durable `project` memory — a non-obvious root cause and the
-rationale of the fix that a future session could not recover from the diff alone. If so,
-write ONE memory via `gsd-tools write-decision-memory` and surface only the
-`Saved memory: <slug>` line. Skip silently for abandoned sessions or when the fix is
-self-evident from the code.
+`references/auto-memory-capture.md`. Gated on `workflow.auto_memory_capture` (default ON). If the
+resolved bug yields a durable `project` memory (non-obvious root cause + fix rationale a future
+session could not recover from the diff alone), write ONE memory via
+`gsd-tools write-decision-memory` and surface only the `Saved memory: <slug>` line. Skip silently
+for abandoned sessions or when the fix is self-evident from the code.
 
 </process>
 

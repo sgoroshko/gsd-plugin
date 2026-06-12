@@ -15,7 +15,7 @@ If none of these fire, skip SPIDR entirely and proceed to ROADMAP write.
 
 ## The five SPIDR axes
 
-For each axis, ask one targeted question. The user picks the axis that best fits their story; only one axis is applied per split.
+Ask one targeted question per axis. The user picks the best-fit axis; only one axis is applied per split.
 
 ### Spike
 
@@ -49,7 +49,7 @@ If yes: split by rule complexity. Minimum viable rules first; complex policy in 
 
 ## Workflow
 
-When SPIDR triggers, the workflow:
+When SPIDR triggers:
 
 1. Restates the user-supplied story.
 2. Asks "Which SPIDR axis fits best?" with the five options above.

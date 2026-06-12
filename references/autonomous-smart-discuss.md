@@ -16,8 +16,6 @@ Parse from JSON: `phase_dir`, `phase_slug`, `padded_phase`, `phase_name`.
 
 Read project-level and prior phase context to avoid re-asking decided questions.
 
-**Read project files:**
-
 ```bash
 cat .planning/PROJECT.md 2>/dev/null || true
 cat .planning/REQUIREMENTS.md 2>/dev/null || true
@@ -62,8 +60,6 @@ If no prior context exists, continue without — expected for early phases.
 ## Sub-step 2: Scout Codebase
 
 Lightweight codebase scan to inform grey area identification and proposals. Keep under ~5% context.
-
-**Check for existing codebase maps:**
 
 ```bash
 ls .planning/codebase/*.md 2>/dev/null || true
@@ -149,9 +145,7 @@ Display a table:
 | # | Question | ✅ Recommended | Alternative(s) |
 |---|----------|---------------|-----------------|
 | 1 | {question} | {answer} — {rationale} | {alt1}; {alt2} |
-| 2 | {question} | {answer} — {rationale} | {alt1} |
-| 3 | {question} | {answer} — {rationale} | {alt1}; {alt2} |
-| 4 | {question} | {answer} — {rationale} | {alt1} |
+| ... (one row per question) |
 ```
 
 Then prompt the user via **AskUserQuestion**:
@@ -192,7 +186,7 @@ Track deferred ideas internally for inclusion in CONTEXT.md.
 
 ## Sub-step 5: Write CONTEXT.md
 
-After all areas are resolved (or infrastructure skip), write the CONTEXT.md file.
+After all areas are resolved (or infrastructure skip):
 
 **File path:** `${phase_dir}/${padded_phase}-CONTEXT.md`
 

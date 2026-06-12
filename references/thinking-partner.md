@@ -6,7 +6,7 @@ Conditional extended thinking at workflow decision points. Activates when `featu
 
 ## Tradeoff Detection Signals
 
-The thinking partner activates when developer responses contain specific signals indicating competing priorities:
+Activate when developer responses contain signals of competing priorities:
 
 **Keyword signals:**
 - "or" / "versus" / "vs" connecting two approaches
@@ -83,7 +83,7 @@ Apply this recommendation to the revision? [Yes] / [No, let me decide]
 }
 ```
 
-Default: `false`. The thinking partner is opt-in because it adds latency to interactive workflows.
+Default: `false` (opt-in; adds latency to interactive workflows).
 
 ---
 

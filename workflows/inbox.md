@@ -238,9 +238,7 @@ the project auto-closes PRs without proper approval gates.
 Produce a structured triage report:
 
 ```
-===================================================================
-  GSD INBOX TRIAGE — {repo} — {date}
-===================================================================
+GSD INBOX TRIAGE — {repo} — {date}
 
 SUMMARY
 -------
@@ -286,8 +284,6 @@ READY TO MERGE
 STALE ITEMS (>30 days, no activity)
 ------------------------------------
 {Issues and PRs with no updates in 30+ days}
-
-===================================================================
 ```
 
 Write this report to `.planning/INBOX-TRIAGE.md` if a `.planning/` directory exists,

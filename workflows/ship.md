@@ -149,13 +149,7 @@ Read append-only project-specific PRD/PR body sections from config:
 CUSTOM_PR_SECTIONS=$(gsd-sdk query config-get ship.pr_body_sections --default '[]' 2>/dev/null || echo '[]')
 ```
 
-`ship.pr_body_sections` is an onboarding-time extension point for teams that need extra PRD-style sections such as `User Stories & Acceptance Criteria`, `Risks & Dependencies`, `Success Metrics`, `Release Criteria`, or `Stakeholder Review & Approval`.
-
-Use these sections for lean/agile PRD material that should travel with the PR without making the core `/gsd:ship` body configurable:
-
-- User stories and acceptance criteria that explain the functional increment from the user's point of view.
-- Definition of Done or release criteria that make the completion standard explicit.
-- Risks, dependencies, stakeholder review, and traceability notes needed by regulated or approval-heavy projects.
+`ship.pr_body_sections` is an onboarding-time extension point for extra PRD-style sections (e.g. User Stories & Acceptance Criteria, Risks & Dependencies, Success Metrics, Release Criteria, Stakeholder Review & Approval).
 
 Rules:
 
@@ -276,7 +270,6 @@ If `REVIEW_CMD` is non-empty and not `"null"`, run the external review:
 
 Ask if user wants to trigger a code review:
 
-
 **Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is not available.
 
 ```
@@ -316,8 +309,6 @@ gsd-sdk query commit "docs(${padded_phase}): ship phase ${PHASE_NUMBER} — PR #
 
 <step name="report">
 ```
-───────────────────────────────────────────────────────────────
-
 ## ✓ Phase {X}: {Name} — Shipped
 
 PR: #{number} ({url})
@@ -331,8 +322,6 @@ Next steps:
 - Merge when CI passes
 - /gsd:complete-milestone (if last phase in milestone)
 - /gsd:progress (to see what's next)
-
-───────────────────────────────────────────────────────────────
 ```
 </step>
 

@@ -1,11 +1,8 @@
 # Forensics Workflow
 
-Post-mortem investigation for failed or stuck GSD workflows. Analyzes git history,
-`.planning/` artifacts, and file system state to detect anomalies and generate a
-structured diagnostic report.
+Post-mortem investigation for failed or stuck GSD workflows. Analyzes git history, `.planning/` artifacts, and file system state to detect anomalies and generate a structured diagnostic report.
 
-**Principle:** This is a read-only investigation. Do not modify project files.
-Only write the forensic report.
+**Principle:** Read-only investigation. Do not modify project files. Only write the forensic report.
 
 ---
 
@@ -28,16 +25,9 @@ Collect data from all available sources. Missing sources are fine — adapt to w
 ### 2a. Git History
 
 ```bash
-# Recent commits (last 30)
 git log --oneline -30
-
-# Commits with timestamps for gap analysis
-git log --format="%H %ai %s" -30
-
-# Files changed in recent commits (detect repeated edits)
-git log --name-only --format="" -20 | sort | uniq -c | sort -rn | head -20
-
-# Uncommitted work
+git log --format="%H %ai %s" -30  # timestamps for gap analysis
+git log --name-only --format="" -20 | sort | uniq -c | sort -rn | head -20  # most-edited files
 git status --short
 git diff --stat
 ```
@@ -98,7 +88,6 @@ Evaluate the gathered evidence against these anomaly patterns:
 **Signal:** Same file appears in 3+ consecutive commits within a short time window.
 
 ```bash
-# Look for files committed repeatedly in sequence
 git log --name-only --format="---COMMIT---" -20
 ```
 
@@ -120,20 +109,14 @@ For each phase that should be complete:
 **Signal:** commits exist but SUMMARY.md is missing for the current or recently
 active plan.
 
-Run the same comparison as the execute-phase safe-resume verifier: identify the
-active plan from STATE.md/phase artifacts, search git history for that plan id,
-then compare against the expected SUMMARY.md path. If production commits exist
-but SUMMARY.md is missing, flag a high-confidence partial-plan drift anomaly.
-This usually means an executor was interrupted after implementation commits but
-before atomic close-out.
+Run the same comparison as the execute-phase safe-resume verifier: identify the active plan from STATE.md/phase artifacts, search git history for that plan id, then compare against the expected SUMMARY.md path. If production commits exist but SUMMARY.md is missing, flag a high-confidence partial-plan drift anomaly (executor interrupted after implementation commits but before atomic close-out).
 
 ### Abandoned Work Detection
 
 **Signal:** Large gap between last commit and current time, with STATE.md showing mid-execution.
 
 ```bash
-# Time since last commit
-git log -1 --format="%ai"
+git log -1 --format="%ai"  # time since last commit
 ```
 
 If STATE.md shows an active phase but the last commit is >2 hours old and there are
@@ -255,7 +238,7 @@ If actionable anomalies were found (HIGH or MEDIUM confidence):
 
 If confirmed:
 ```bash
-# Check if "bug" label exists before using it
+# Use "bug" label only if it exists
 BUG_LABEL=$(gh label list --repo open-gsd/get-shit-done-redux --search "bug" --json name -q '.[0].name' 2>/dev/null)
 LABEL_FLAG=""
 if [ -n "$BUG_LABEL" ]; then

@@ -55,7 +55,7 @@ fi
 
 ## Step 2: Resolve Skills Roots
 
-Use `install.js --skills-root` to resolve paths — this reuses the single authoritative path table rather than duplicating it:
+Use `install.js --skills-root` to resolve paths (reuses the single authoritative path table):
 
 ```bash
 INSTALL_JS="$(dirname "$0")/../get-shit-done/bin/install.js"
@@ -171,12 +171,11 @@ Sync complete: <N> skills synced to <M> runtime(s).
 1. **Only `gsd-*` directories** are created, updated, or removed. Any directory not starting with `gsd-` in a destination root is untouched.
 2. **Dry-run is the default.** `--apply` must be passed explicitly to write anything.
 3. **Source root must exist.** Never create the source root; it must have been created by a prior `gsd-update` or installer run.
-4. **No cross-runtime content transformation.** Sync copies files verbatim. It does not apply runtime-specific content transformations (those happen at install time). If a runtime requires transformed content (e.g. Augment's format differs), the developer should run the installer for that runtime instead of using sync.
+4. **No cross-runtime content transformation.** Sync copies files verbatim (transformations happen at install time). If a runtime requires transformed content (e.g. Augment's format differs), run the installer for that runtime instead.
 
 ---
 
 ## Limitations
 
-- Sync copies files verbatim and does not apply runtime-specific content transformations. Use the GSD installer directly for runtimes that require format conversion.
 - Cross-project skills (`.agents/skills/`) are out of scope — this command only touches global runtime skills roots.
-- Bidirectional sync is not supported. Choose one canonical source with `--from`.
+- Bidirectional sync is not supported. Choose one source with `--from`.

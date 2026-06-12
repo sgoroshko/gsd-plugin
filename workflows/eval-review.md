@@ -25,9 +25,7 @@ AUDITOR_MODEL=$(gsd-sdk query resolve-model gsd-eval-auditor 2>/dev/null | jq -r
 
 Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► EVAL AUDIT — PHASE {N}: {name}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► EVAL AUDIT — PHASE {N}: {name}
 ```
 
 ## 1. Detect Input State
@@ -59,8 +57,6 @@ Path: ${EVAL_REVIEW_FILE}
 **If `EVAL_REVIEW_FILE` non-empty AND `--refresh`:** continue (re-spawn eval-auditor for a fresh audit).
 
 **If `EVAL_REVIEW_FILE` empty:** continue (first audit run).
-
-(Prior behavior was a two-way AskUserQuestion prompt with Re-audit/View options when the file existed. Removed in favor of the auto-use-existing default plus explicit escape hatches.)
 
 **If State B (no AI-SPEC.md):** Warn:
 ```
@@ -122,9 +118,7 @@ Read the written EVAL-REVIEW.md. Extract:
 ## 5. Display Summary
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► EVAL AUDIT COMPLETE — PHASE {N}: {name}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► EVAL AUDIT COMPLETE — PHASE {N}: {name}
 
 ◆ Score: {overall_score}/100
 ◆ Verdict: {verdict}

@@ -184,21 +184,14 @@ For each requirement: parse description → identify supporting truths/artifacts
 </step>
 
 <step name="verify_decisions">
-**Decision coverage validation gate (issue #2492).**
+**Decision coverage validation gate (issue #2492).** Non-blocking / warning only.
 
-After requirements coverage, also check that each trackable CONTEXT.md
+After requirements coverage, check that each trackable CONTEXT.md
 `<decisions>` entry shows up somewhere in the shipped artifacts (plans,
 SUMMARY.md, files modified by the phase, or recent commit subjects on the
-phase branch).
-
-This gate is **non-blocking / warning only** by deliberate asymmetry with
-the plan-phase translation gate. The plan-phase gate already blocked at
-translation time, so by the time verification runs every decision has
-either been translated or explicitly deferred. This gate's job is to
-surface decisions that *were* translated but vanished during execution —
-that's a soft signal because "honors a decision" is a fuzzy substring
-heuristic, and we don't want a paraphrase miss to fail an otherwise good
-phase.
+phase branch). This surfaces decisions that were translated at plan time but
+vanished during execution. It is a soft signal because "honors a decision" is
+a fuzzy substring heuristic.
 
 **Skip if** `workflow.context_coverage_gate` is explicitly set to `false`
 (absent key = enabled). Also skip cleanly when CONTEXT.md is missing or has
@@ -207,9 +200,7 @@ no `<decisions>` block.
 ```bash
 GATE_CFG=$(gsd-sdk query config-get workflow.context_coverage_gate 2>/dev/null || echo "true")
 if [ "$GATE_CFG" != "false" ]; then
-  # Discover the phase CONTEXT.md via glob expansion rather than `ls | head`
-  # (review F17 / ShellCheck SC2012). Globs preserve filenames containing
-  # spaces and avoid an extra subprocess.
+  # Discover CONTEXT.md via glob, not `ls | head` (SC2012); preserves spaces in names.
   CONTEXT_PATH=""
   for f in "${PHASE_DIR}"/*-CONTEXT.md; do
     [ -e "$f" ] && CONTEXT_PATH="$f" && break
@@ -229,21 +220,14 @@ time. Set `decision_coverage` in the verification result to
 
 **Status impact:** none. The decision gate does NOT influence the
 `gaps_found` / `human_needed` / `passed` decision tree in
-`determine_status`. Its findings are warnings the user reviews and may act
-on by re-opening the phase or by acknowledging the decision was abandoned
-intentionally.
+`determine_status`. Its findings are warnings the user reviews.
 </step>
 
 <step name="behavioral_verification">
 **Run the project's test suite and CLI commands to verify behavior, not just structure.**
 
-Static checks (grep, file existence, wiring) catch structural gaps but miss runtime
-failures. This step runs actual tests and project commands to verify the phase goal
-is behaviorally achieved.
-
-This follows Anthropic's harness engineering principle: separating generation from
-evaluation, with the evaluator interacting with the running system rather than
-inspecting static artifacts.
+Static checks (grep, file existence, wiring) miss runtime failures. This step runs
+actual tests and project commands to verify the phase goal is behaviorally achieved.
 
 **Step 1: Run test suite**
 
@@ -428,7 +412,7 @@ If a requirement specifies a quantity of test cases (e.g., "30 calculations"), c
 <step name="identify_human_verification">
 **First: determine if this is an infrastructure/foundation phase.**
 
-Infrastructure and foundation phases — code foundations, database schema, internal APIs, data models, build tooling, CI/CD, internal service integrations — have no user-facing elements by definition. For these phases:
+Infrastructure and foundation phases — code foundations, database schema, internal APIs, data models, build tooling, CI/CD, internal service integrations — have no user-facing elements. For these phases:
 
 - Do NOT invent artificial manual steps (e.g., "manually run git commits", "manually invoke methods", "manually check database state").
 - Mark human verification as **N/A** with rationale: "Infrastructure/foundation phase — no user-facing elements to test manually."

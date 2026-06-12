@@ -21,24 +21,9 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 </available_agent_types>
 
 <runtime_compatibility>
-**Subagent spawning — top-level Claude Code:**
-The Agent tool IS available in a top-level Claude Code session. Always spawn
-gsd-phase-researcher, gsd-planner, and gsd-plan-checker as separate Agent() calls.
-Never absorb these roles inline. Role separation is required regardless of `--chain`
-or `--auto` — those options suppress interactive prompts only; they NEVER authorize
-collapsing plan roles into the orchestrator context.
+Always spawn gsd-phase-researcher, gsd-planner, and gsd-plan-checker as separate Agent() calls. Never absorb these roles inline. Role separation is required regardless of `--chain` or `--auto` — those suppress interactive prompts only; they NEVER authorize collapsing plan roles into the orchestrator context. Independent agent contexts are required for the plan-checker gate to be meaningful.
 
-**Backgrounded Claude Code (via manager/autonomous):**
-The calling workflow already runs plan-phase inline via Skill() on Claude Code so that
-the plan-checker subagent can still spawn. plan-phase itself does not need to detect this.
-
-**Other runtimes:**
-Do not pre-judge Agent availability by introspection. Always attempt the actual Agent()
-call for gsd-phase-researcher, gsd-planner, and gsd-plan-checker. Only a real
-tool-unavailable error returned by Agent() is a reliable absence signal — never stop based
-on a self-assessed "I think Agent is unavailable." If the call fails with a tool-unavailable
-error, log the gap and stop — do NOT collapse researcher/planner/checker roles inline.
-Independent agent contexts are required for the plan-checker gate to be meaningful.
+If an Agent() call fails with a real tool-unavailable error, log the gap and stop — do NOT collapse researcher/planner/checker roles inline.
 </runtime_compatibility>
 
 <process>
@@ -76,7 +61,7 @@ Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_
 
 ## 1.5. Closed-Phase Gate (#3569)
 
-The init JSON includes `phase_status` — one of `Pending | Planned | In Progress | Executed | Complete | Needs Review`. `Complete` means the phase has all summaries AND a `VERIFICATION.md` with `status: passed`. Replanning a closed phase silently rewrites plan docs that no longer match the shipped code, so the workflow must hard-stop here unless the operator explicitly overrides.
+The init JSON includes `phase_status` — one of `Pending | Planned | In Progress | Executed | Complete | Needs Review`. `Complete` means the phase has all summaries AND a `VERIFICATION.md` with `status: passed`. Replanning a closed phase rewrites plan docs that no longer match shipped code, so hard-stop unless the operator explicitly overrides.
 
 Parse `phase_status` from the init JSON, then:
 
@@ -88,8 +73,7 @@ fi
 
 if [ "${phase_status}" = "Complete" ]; then
   if [[ "$ARGUMENTS" =~ (^|[[:space:]])--reviews([[:space:]]|$) ]]; then
-    # --reviews on a closed phase is never legitimate — concerns belong in a
-    # new phase or issue against the closed phase's commits.
+    # --reviews on a closed phase is never legitimate (no --force override).
     cat <<EOF >&2
 Phase ${phase_number} (${phase_name}) is already CLOSED (VERIFICATION status: passed).
 /gsd:plan-phase --reviews cannot replan a closed phase. If the review surfaced
@@ -109,8 +93,7 @@ Otherwise, to view what shipped, see: ${verification_path}
 EOF
     exit 1
   fi
-  # FORCE_REPLAN=true: continue, but emit a banner so the operator sees the
-  # decision in the transcript and in any committed plan docs.
+  # FORCE_REPLAN=true: continue, but warn so the decision is visible in the transcript.
   echo "WARNING: Replanning CLOSED phase ${phase_number} under --force. Verify the closeout was wrong before committing new plan docs." >&2
 fi
 ```
@@ -241,9 +224,7 @@ fi
 
 2. Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PRD EXPRESS PATH
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > PRD EXPRESS PATH
 
 Using PRD: {PRD_FILE}
 Generating CONTEXT.md from requirements...
@@ -326,7 +307,7 @@ gsd-sdk query commit "docs(${padded_phase}): generate context from PRD" --files 
 
 6. Set `context_content` to the generated CONTEXT.md content and continue to step 5 (Handle Research).
 
-**Effect:** This completely bypasses step 4 (Load CONTEXT.md) since we just created it. The rest of the workflow (research, planning, verification) proceeds normally with the PRD-derived context.
+**Effect:** Bypasses step 4 (Load CONTEXT.md) since CONTEXT.md was just created. Research/planning/verification proceed normally with the PRD-derived context.
 
 ## 3.6. Handle ADR Ingest Express Path
 
@@ -334,7 +315,7 @@ gsd-sdk query commit "docs(${padded_phase}): generate context from PRD" --files 
 
 **If `--ingest <path-or-glob>` provided:**
 
-1. Display banner: `GSD ► ADR Ingest Express Path` with `{INGEST_PATH}` and `{INGEST_FORMAT}`.
+1. Display banner: `GSD > ADR Ingest Express Path` with `{INGEST_PATH}` and `{INGEST_FORMAT}`.
 2. Parse each resolved ADR through `${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/lib/adr-parser.cjs` (`--input`, `--format`) and collect normalized records.
 3. Status gate: reject `superseded`/`rejected`/`deprecated`; warn on `proposed`; missing status defaults to `accepted`.
 4. Empty-decisions fallback: if all parsed ADRs have zero `decisions[]`, emit `ADR ingest produced no locked decisions; fall back to discuss-phase for this phase.` and exit with `/gsd:discuss-phase {N}` guidance.
@@ -454,7 +435,7 @@ Three branches in research-only mode (`--research-phase <N>`):
    Path: ${research_path}
    ```
 
-   This matches the standard plan-phase flow at §5.1 (line 440), which already auto-uses existing research without prompting. Forcing an interactive Update/View/Skip menu here required the user to confirm an action they did not ask to confirm; the explicit-flag escape hatches (`--research` and `--view`) already cover the cases where the caller wants to deviate from "use existing." Prior behavior (the three-way prompt) was a 2026-05 design that mirrored the deleted `/gsd-research-phase` standalone's menu (#3042 parity); it is replaced here by auto-proceed because the prompt's friction outweighed its value in practice.
+   This matches the standard plan-phase flow at §5.1, which auto-uses existing research without prompting. The explicit-flag escape hatches (`--research` and `--view`) cover the cases where the caller wants to deviate from "use existing."
 
 ```bash
 if [[ "$VIEW_ONLY" == "true" ]]; then
@@ -505,9 +486,7 @@ If user selects "Skip research": skip to step 6.
 
 Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCHING PHASE {X}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > RESEARCHING PHASE {X}
 
 ◆ Spawning researcher...
 ```
@@ -626,9 +605,7 @@ SECURITY_BLOCK=$(gsd-sdk query config-get workflow.security_block_on --raw 2>/de
 **If `SECURITY_CFG` is `true`:** Display banner:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SECURITY THREAT MODEL REQUIRED (ASVS L{SECURITY_ASVS})
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > SECURITY THREAT MODEL REQUIRED (ASVS L{SECURITY_ASVS})
 
 Each PLAN.md must include a <threat_model> block.
 Block on: {SECURITY_BLOCK} severity threats.
@@ -835,9 +812,7 @@ PATTERN_MAPPER_CFG=$(gsd-sdk query config-get workflow.pattern_mapper 2>/dev/nul
 
 Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PATTERN MAPPING PHASE {X}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > PATTERN MAPPING PHASE {X}
 
 ◆ Spawning pattern mapper...
 ```
@@ -885,9 +860,7 @@ PATTERNS_PATH="${PHASE_DIR}/${PADDED_PHASE}-PATTERNS.md"
 
 Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PLANNING PHASE {X}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > PLANNING PHASE {X}
 
 ◆ Spawning planner...
 ```
@@ -1226,9 +1199,7 @@ Use AskUserQuestion for each gap (or batch if multiple gaps).
 
 Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► VERIFYING PLANS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > VERIFYING PLANS
 
 ◆ Spawning plan checker...
 ```
@@ -1417,9 +1388,7 @@ BOUNCE_SCRIPT=$(gsd-sdk query config-get workflow.plan_bounce_script 2>/dev/null
 
 Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► BOUNCING PLANS (External Refinement)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > BOUNCING PLANS (External Refinement)
 
 Script: ${BOUNCE_SCRIPT}
 Max passes: ${BOUNCE_PASSES}
@@ -1520,11 +1489,7 @@ If `TEXT_MODE` is true, present as a plain-text numbered list (options already s
 
 ## 13a. Decision Coverage Gate
 
-After the requirements coverage gate passes, verify that every trackable
-decision captured by discuss-phase in CONTEXT.md `<decisions>` is referenced
-by at least one plan. This is the **translation gate** from issue #2492 —
-its job is to refuse to mark a phase planned when a discuss-phase decision
-silently dropped on the way into the plans.
+After the requirements coverage gate passes, verify that every trackable decision captured by discuss-phase in CONTEXT.md `<decisions>` is referenced by at least one plan. This is the **translation gate** from issue #2492 — it refuses to mark a phase planned when a discuss-phase decision silently dropped on the way into the plans.
 
 **Skip if** `workflow.context_coverage_gate` is explicitly set to `false`
 (absent key = enabled). Also skip if no CONTEXT.md exists for this phase
@@ -1579,10 +1544,7 @@ If `TEXT_MODE` is true, present as a plain-text numbered list. Otherwise use
 AskUserQuestion. Selecting "Proceed anyway" continues to step 13b but
 records the override in STATE.md so verify-phase can re-surface it.
 
-**Why this gate blocks:** failing here is cheap. The plans are the contract
-between discuss-phase and execute-phase; if a decision isn't visible in any
-plan, no executor will implement it. Catching that now beats discovering it
-after thousands of dollars of execution.
+**Why this gate blocks:** if a decision isn't visible in any plan, no executor will implement it. Catching that now is cheap; discovering it after execution is not.
 
 ## 13b. Record Planning Completion in STATE.md
 
@@ -1616,23 +1578,18 @@ If `commit_docs` is true (from the init JSON parsed in step 1), commit the gener
 gsd-sdk query commit "docs(${PADDED_PHASE}): create phase plan" --files "${PHASE_DIR}"/*-PLAN.md .planning/STATE.md .planning/ROADMAP.md
 ```
 
-This commits all PLAN.md files for the phase plus the updated STATE.md and ROADMAP.md to version-control the planning artifacts. Skip this step if `commit_docs` is false.
+Skip this step if `commit_docs` is false.
 
 ## 13e. Post-Planning Gap Analysis
 
-After all plans are generated, committed, and the Requirements Coverage Gate (§13)
-has run, emit a single unified gap report covering both REQUIREMENTS.md and the
-CONTEXT.md `<decisions>` section. This is a **proactive, post-hoc report** — it
-does not block phase advancement and does not re-plan. It exists so that any
-requirement or decision that slipped through the per-plan checks is surfaced in
-one place before execution begins.
+After all plans are generated, committed, and the Requirements Coverage Gate (§13) has run, emit a single unified gap report covering both REQUIREMENTS.md and the CONTEXT.md `<decisions>` section. This is a **proactive, post-hoc report** — it does not block phase advancement and does not re-plan; it surfaces anything that slipped through the per-plan checks before execution begins.
 
 **Skip if:** `workflow.post_planning_gaps` is `false`. Default is `true`.
 
 ```bash
 POST_PLANNING_GAPS=$(gsd-sdk query config-get workflow.post_planning_gaps --default true 2>/dev/null || echo true)
 if [ "$POST_PLANNING_GAPS" = "true" ]; then
-  node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs" gap-analysis --phase-dir "${PHASE_DIR}"
+  node "${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}/bin/gsd-tools.cjs" gap-analysis --phase-dir "${PHASE_DIR}"
 fi
 ```
 
@@ -1697,9 +1654,7 @@ fi
 
 Display banner:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AUTO-ADVANCING TO EXECUTE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > AUTO-ADVANCING TO EXECUTE
 
 Plans ready. Launching execute-phase...
 ```
@@ -1714,9 +1669,7 @@ The `--no-transition` flag tells execute-phase to return status after verificati
 **Handle execute-phase return:**
 - **PHASE COMPLETE** → Display final summary:
   ```
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   GSD ► PHASE ${PHASE} COMPLETE ✓
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  GSD > PHASE ${PHASE} COMPLETE ✓
 
   Auto-advance pipeline finished.
 
@@ -1738,9 +1691,7 @@ Route to `<offer_next>` (existing behavior).
 <offer_next>
 Output this markdown directly (not as a code block):
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PHASE {X} PLANNED ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD > PHASE {X} PLANNED ✓
 
 **Phase {X}: {Name}** — {N} plan(s) in {M} wave(s)
 

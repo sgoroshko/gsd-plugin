@@ -10,13 +10,7 @@ Future: `--prd` mode (PRD extraction into PROJECT.md + REQUIREMENTS.md + ROADMAP
 
 <step name="banner">
 
-Display the stage banner:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► IMPORT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Display the stage heading: `GSD > IMPORT`
 
 </step>
 
@@ -51,9 +45,7 @@ test -f "{FILEPATH}" || echo "FILE_NOT_FOUND"
 If FILE_NOT_FOUND: display error and exit:
 
 ```
-╔══════════════════════════════════════════════════════════════╗
-║  ERROR                                                       ║
-╚══════════════════════════════════════════════════════════════╝
+ERROR
 
 File not found: {FILEPATH}
 
@@ -228,12 +220,7 @@ Commit the imported plan and updated files:
 gsd-sdk query commit "docs({phase}): import plan from {basename FILEPATH}" --files .planning/phases/{phase}/{plan}-PLAN.md .planning/ROADMAP.md
 ```
 
-Display completion:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► IMPORT COMPLETE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Display completion heading: `GSD > IMPORT COMPLETE`
 
 Show: plan filename written, phase directory, validation result, next steps.
 

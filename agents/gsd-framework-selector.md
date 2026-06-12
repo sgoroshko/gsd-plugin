@@ -19,7 +19,7 @@ Scan for existing technology signals before the interview:
 ```bash
 find . -maxdepth 2 \( -name "package.json" -o -name "pyproject.toml" -o -name "requirements*.txt" \) -not -path "*/node_modules/*" 2>/dev/null | head -5
 ```
-Read found files to extract: existing AI libraries, model providers, language, team size signals. This prevents recommending a framework the team has already rejected.
+Read found files to extract: existing AI libraries, model providers, language, team size signals.
 </project_context>
 
 <interview>
@@ -134,9 +134,7 @@ FRAMEWORK_RECOMMENDATION:
 Display to user:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- FRAMEWORK RECOMMENDATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FRAMEWORK RECOMMENDATION
 
 ◆ Primary Pick: {framework}
   {rationale}

@@ -2,8 +2,7 @@
 
 ## Overview
 
-The `--ws <name>` flag scopes GSD operations to a specific workstream, enabling
-parallel milestone work by multiple Claude Code instances on the same codebase.
+The `--ws <name>` flag scopes GSD operations to a specific workstream, enabling parallel milestone work by multiple Claude Code instances on the same codebase.
 
 ## Resolution Priority
 
@@ -15,14 +14,9 @@ parallel milestone work by multiple Claude Code instances on the same codebase.
 
 ## Why session-scoped pointers exist
 
-The shared `.planning/active-workstream` file is fundamentally unsafe when multiple
-Claude/Codex instances are active on the same repo at the same time. One session can
-silently repoint another session's `STATE.md`, `ROADMAP.md`, and phase paths.
+The shared `.planning/active-workstream` file is unsafe when multiple instances are active on the same repo at once: one session can silently repoint another session's `STATE.md`, `ROADMAP.md`, and phase paths.
 
-GSD now prefers a session-scoped pointer keyed by runtime/session identity
-(`GSD_SESSION_KEY`, `CODEX_THREAD_ID`, `CLAUDE_CODE_SSE_PORT`, terminal session IDs,
-or the controlling TTY). This keeps concurrent sessions isolated while preserving
-legacy compatibility for runtimes that do not expose a stable session key.
+GSD prefers a session-scoped pointer keyed by runtime/session identity (`GSD_SESSION_KEY`, `CLAUDE_CODE_SSE_PORT`, terminal session IDs, or the controlling TTY). This isolates concurrent sessions while preserving legacy compatibility for runtimes without a stable session key.
 
 ## Session Identity Resolution
 
@@ -35,29 +29,17 @@ When GSD resolves the session-scoped pointer in step 3 above, it uses this order
 2. `TTY` or `SSH_TTY` if the shell/runtime already exposes the terminal path
 3. A single best-effort `tty` probe, but only when stdin is interactive
 
-If none of those produce a stable identity, GSD does not keep probing. It falls
-back directly to the legacy shared `.planning/active-workstream` file.
-
-This matters in headless or stripped environments: when stdin is already
-non-interactive, GSD intentionally skips shelling out to `tty` because that path
-cannot discover a stable session identity and only adds avoidable failures on the
-routing hot path.
+If none produce a stable identity, GSD stops probing and falls back directly to the legacy shared `.planning/active-workstream` file. In headless/non-interactive environments it skips shelling out to `tty` (that path cannot discover a stable identity and only adds avoidable failures on the routing hot path).
 
 ## Pointer Lifecycle
 
-Session-scoped pointers are intentionally lightweight and best-effort:
+Session-scoped pointers are lightweight and best-effort:
 
 - Clearing a workstream for one session removes only that session's pointer file
-- If that was the last pointer for the repo, GSD also removes the now-empty
-  per-project temp directory
-- If sibling session pointers still exist, the temp directory is left in place
-- When a pointer refers to a workstream directory that no longer exists, GSD
-  treats it as stale state: it removes that pointer file and resolves to `null`
-  until the session explicitly sets a new active workstream again
+- If that was the last pointer for the repo, GSD also removes the now-empty per-project temp directory; if sibling pointers still exist, the temp directory is left in place
+- When a pointer refers to a workstream directory that no longer exists, GSD treats it as stale: it removes that pointer file and resolves to `null` until the session sets a new active workstream
 
-GSD does not currently run a background garbage collector for historical temp
-directories. Cleanup is opportunistic at the pointer being cleared or self-healed,
-and broader temp hygiene is left to OS temp cleanup or future maintenance work.
+There is no background garbage collector for historical temp directories. Cleanup is opportunistic (at the pointer being cleared or self-healed); broader temp hygiene is left to OS temp cleanup.
 
 ## Routing Propagation
 

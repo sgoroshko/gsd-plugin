@@ -2,9 +2,9 @@
 
 Invoked by `/gsd:update --reapply` (`commands/gsd/update.md`).
 
-After a GSD update wipes and reinstalls files, this workflow merges user's previously saved local modifications back into the new version. Uses three-way comparison (pristine baseline, user-modified backup, newly installed version) to reliably distinguish user customizations from version drift.
+After a GSD update reinstalls files, this workflow merges user's previously saved local modifications back into the new version. Uses three-way comparison (pristine baseline, user-modified backup, newly installed version) to distinguish user customizations from version drift.
 
-**Critical invariant:** Every file in `gsd-local-patches/` was backed up because the installer's hash comparison detected it was modified. The workflow must NEVER conclude "no custom content" for any backed-up file — that is a logical contradiction. When in doubt, classify as CONFLICT requiring user review, not SKIP.
+**Critical invariant:** Every file in `gsd-local-patches/` was backed up because the installer's hash comparison detected it was modified. The workflow must NEVER conclude "no custom content" for any backed-up file. When in doubt, classify as CONFLICT requiring user review, not SKIP.
 
 <process>
 
@@ -118,7 +118,7 @@ Exit.
 
 ## Step 2: Determine baseline for three-way comparison
 
-The quality of the merge depends on having a **pristine baseline** — the original unmodified version of each file from the pre-update GSD release. This enables three-way comparison:
+A **pristine baseline** (the original unmodified file from the pre-update GSD release) enables three-way comparison:
 - **Pristine baseline** (original GSD file before any user edits)
 - **User's version** (backed up in `gsd-local-patches/`)
 - **New version** (freshly installed after update)
@@ -160,7 +160,7 @@ Extract the pristine version from the matched commit:
 git -C "$CONFIG_DIR" show "${BASELINE_COMMIT}:${file_path}"
 ```
 
-**Why this matters:** `git log --diff-filter=A` returns the commit that *first added* the file, which is the wrong baseline on repos that have been through multiple GSD update cycles. The `pristine_hashes` field in `backup-meta.json` records the SHA-256 of the file as it existed in the pre-update GSD release — matching against it finds the correct baseline regardless of how many updates have occurred.
+**Why this matters:** `git log --diff-filter=A` returns the *first-added* commit, the wrong baseline on repos with multiple update cycles. `pristine_hashes` records the SHA-256 of the file in the pre-update release; matching against it finds the correct baseline regardless of update count.
 
 ### Option B: Pristine snapshot directory
 Check if a `gsd-pristine/` directory exists alongside `gsd-local-patches/`:
@@ -275,13 +275,12 @@ Two layered gates. Both must pass before proceeding to cleanup.
 
 Run the deterministic verifier script. Do NOT rely solely on the free-text `verified: yes/no` Hunk Verification Table from Step 4 — bug #2969 traced repeated false-positive `verified: yes` reports to that table being filled in without an actual content-presence check. The script performs the check structurally and exits non-zero on any miss.
 
-Run the verifier as a child process (the gsd-tools binary directory is not required — the script ships under `get-shit-done/bin/` in the source repo and is installed to `${GSD_HOME}/get-shit-done/bin/`; it is also exposed via the SDK at `sdk/dist/cli.js verify-reapply` when present):
+Run the verifier as a child process (the script ships under `get-shit-done/bin/` in the source repo, is installed to `${GSD_HOME}/get-shit-done/bin/`, and is also exposed via the SDK at `sdk/dist/cli.js verify-reapply` when present):
 
 ```bash
 PRISTINE_DIR="${CONFIG_DIR}/gsd:pristine"
 
-# Build args as a bash array so paths with spaces survive expansion intact
-# (string-concat + unquoted expansion would split incorrectly on whitespace).
+# Bash array so paths with spaces survive expansion intact.
 VERIFY_ARGS=(
   --patches-dir "$PATCHES_DIR"
   --config-dir  "$CONFIG_DIR"
@@ -291,10 +290,7 @@ if [ -d "$PRISTINE_DIR" ]; then
 fi
 VERIFY_ARGS+=(--json)
 
-# Capture stdout (the structured JSON report) separately from stderr so that
-# Node warnings, deprecation notices, or stack traces do not corrupt the
-# JSON parse downstream. Stderr is preserved on the controlling terminal
-# for operator visibility.
+# Capture stdout (JSON report) separately so stderr noise can't corrupt the parse.
 VERIFY_OUTPUT="$(node "${GSD_HOME}/get-shit-done/bin/verify-reapply-patches.cjs" "${VERIFY_ARGS[@]}")"
 VERIFY_STATUS=$?
 ```
@@ -355,7 +351,7 @@ Review the merged file manually, then either:
 
 Do not proceed to cleanup until both gates (5a and 5b) pass.
 
-**Why both gates?** 5a (the script) is the binding gate — it does the actual substring check structurally and cannot be shortcut by the LLM. 5b (the table review) is the advisory gate — it provides a redundant safety net via the Step 4 prose summary, ensuring that even a script regression or absent pristine baseline cannot silently allow a `verified: no` row to slip past, nor can a missing table go unnoticed. Layered gates favour false-positive halts (recoverable) over silent successes on lost content (unrecoverable).
+**Why both gates?** 5a (the script) is binding — a structural substring check the LLM cannot shortcut. 5b (the table review) is a redundant safety net catching `verified: no` rows or a missing table if the script regresses or the pristine baseline is absent. Layered gates favour false-positive halts (recoverable) over silent successes on lost content (unrecoverable).
 
 ## Step 6: Cleanup option
 

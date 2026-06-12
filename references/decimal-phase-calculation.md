@@ -53,7 +53,7 @@ DECIMAL_PHASE=$(gsd-sdk query phase.next-decimal "${AFTER_PHASE}" --raw)
 
 ## Directory Naming
 
-Decimal phase directories use the full decimal number:
+Decimal phase directories use the full decimal number.
 
 ```bash
 SLUG=$(gsd-sdk query generate-slug "$DESCRIPTION" --raw)

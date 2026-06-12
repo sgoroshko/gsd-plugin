@@ -8,6 +8,18 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [3.4.10] - 2026-06-12  (/gsd:version resolution fix + token-overhead reduction; no upstream change)
+
+### Changed
+- **Reviewed and compacted all 173 token-loaded instruction documents** (`workflows/`, `skills/`, `agents/`, `references/`) for **~1,810 fewer lines** loaded into context per invocation, with no behavior change. Removed pure overhead: verbose multi-paragraph prose, decorative ASCII banners (collapsed to single heading lines), repeated blocks, oversized examples, over-commented bash, and genuinely non-Claude scaffolding (this plugin is Claude Code only). Executed as a multi-agent pipeline (one agent compacts each file under strict preserve-behavior rules, a second independently diff-verifies that only overhead was removed), followed by deterministic integrity checks.
+- **Preserved and re-verified** all behavior-bearing content: bash commands and ordering, `${...}` paths and `gsd-sdk`/`gsd-tools.cjs` invocations (632 commands, unchanged), `subagent_type=` spawns (67, unchanged), gates, JSON schemas, frontmatter, `<ultracode_gate>` blocks, security/validation notes, and the Claude-serving runtime fallbacks. Two of those were initially over-removed and restored after the verifiers flagged them: the **`TEXT_MODE` fallback** (required for Claude Code `/rc` remote sessions where AskUserQuestion TUI menus do not work, so NOT non-Claude dead weight) across 40 files, and the **orchestrator-wait rule** (relabeled ALL RUNTIMES upstream in #913) across 25 files. Full suite 20/20; file-layout drift, jargon ratchet, and plugin manifest all pass.
+
+### Fixed
+- **`/gsd:version` now resolves the installed version reliably.** The first cut fell back to `$HOME/.claude/plugins/cache/gsd-plugin/current` when `CLAUDE_PLUGIN_ROOT` was unset (which it is in the Bash-tool environment), but recent Claude Code has **no `current` symlink** (the cache layout is `.../cache/gsd-plugin/gsd/<version>/`), so the command reported `Installed: unknown`. `workflows/version.md` now prefers `CLAUDE_PLUGIN_ROOT` when it points at a real manifest, else globs the newest versioned cache dir (`gsd/*/.claude-plugin/plugin.json`, `sort -V`), and only then tries a legacy `current` symlink. `tests/version-command.test.cjs` updated to assert the versioned-dir fallback. Verified against the live cache: `Installed: 3.4.9, Latest: 3.4.9` -> "on the latest release".
+
+- **Hardened the same `…/gsd-plugin/current` fallback in all 16 other executed bash references** (`resume-work`, `graphify`, `from-gsd2`, `plan-phase`, `plan-review-convergence`, `code-review`, `ingest-docs`, `spec-phase`, `gsd-phase-researcher`, `gsd-planner`). Each `node "${CLAUDE_PLUGIN_ROOT:-…/current}/bin/gsd-tools.cjs"` (and the `code-review` `fallow-runner` `require`) now uses a command-substitution default that globs the newest versioned cache dir only when `CLAUDE_PLUGIN_ROOT` is unset: `${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}`. The 68 prose (non-executed) `current` mentions are left as-is. `tests/skill-cjs-path-resolution.test.cjs` updated to accept both fallback forms.
+- **`workflows/version.md` compacted** from 102 to 40 lines (terser comments, collapsed resolution + status logic) to cut per-invocation token cost, with identical behavior.
+
 ## [3.4.9] - 2026-06-11  (/gsd:version command + legacy install-path sweep; no upstream change)
 
 ### Added

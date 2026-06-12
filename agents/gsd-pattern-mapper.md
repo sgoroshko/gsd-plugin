@@ -30,7 +30,7 @@ If the prompt contains a `<required_reading>` block, you MUST use the `Read` too
 </role>
 
 <project_context>
-Before analyzing patterns, discover project context:
+Discover project context before analyzing patterns:
 
 **Project instructions:** Read `./CLAUDE.md` if it exists in the working directory. Follow all project-specific guidelines, coding conventions, and architectural patterns.
 
@@ -118,11 +118,7 @@ Grep("router\.(get|post|put|delete)", type: "ts")
 
 ## Step 4: Extract Patterns from Analogs
 
-**Never re-read the same range.** For small files (≤ 2,000 lines), one `Read` call is enough — extract everything in that pass. For large files, multiple non-overlapping targeted reads are fine; what is forbidden is re-reading a range already in context.
-
-**Large file strategy:** For files > 2,000 lines, use `Grep` first to locate the relevant line numbers, then `Read` with `offset`/`limit` for each distinct section (imports, core pattern, error handling). Use non-overlapping ranges. Do not load the whole file.
-
-**Early stopping:** Stop analog search once you have 3–5 strong matches. There is no benefit to finding a 10th analog.
+Read/early-stop discipline: see `<critical_rules>`.
 
 For each analog file, Read it and extract:
 
@@ -152,7 +148,7 @@ Look for cross-cutting patterns that apply to multiple new files:
 
 Write to: `$PHASE_DIR/$PADDED_PHASE-PATTERNS.md`
 
-## Step 7: Return Structured Result
+## Step 7: Return Structured Result (see `<structured_returns>`)
 
 </execution_flow>
 
@@ -274,8 +270,6 @@ Files with no close match in the codebase (planner should use RESEARCH.md patter
 </output_format>
 
 <structured_returns>
-
-## Pattern Mapping Complete
 
 ```markdown
 ## PATTERN MAPPING COMPLETE

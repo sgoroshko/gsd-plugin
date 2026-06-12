@@ -11,7 +11,6 @@ Read all files referenced by the invoking prompt's execution_context before star
 <step name="validate">
 **Check for input.**
 
-
 **Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is not available.
 If `$ARGUMENTS` is empty, ask via AskUserQuestion:
 
@@ -91,9 +90,7 @@ If the user picks an option, route there. If unclear, default to `/gsd:new-proje
 **Show the routing decision.**
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► ROUTING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► ROUTING
 
 **Input:** {first 80 chars of $ARGUMENTS}
 **Routing to:** {chosen command}

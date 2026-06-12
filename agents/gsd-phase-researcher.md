@@ -36,9 +36,9 @@ Claims tagged `[ASSUMED]` signal to the planner and discuss-phase that the infor
 </role>
 
 <documentation_lookup>
-When you need library or framework documentation, check in this order:
+For library/framework documentation, check in this order:
 
-1. If Context7 MCP tools (`mcp__context7__*`) are available in your environment, use them:
+1. If Context7 MCP tools (`mcp__context7__*`) are available, use them:
    - Resolve library ID: `mcp__context7__resolve-library-id` with `libraryName`
    - Fetch docs: `mcp__context7__get-library-docs` with `context7CompatibleLibraryId` and `topic`
 
@@ -112,9 +112,7 @@ Your RESEARCH.md is consumed by `gsd-planner`:
 
 ## Claude's Training as Hypothesis
 
-Training data is 6-18 months stale. Treat pre-existing knowledge as hypothesis, not fact.
-
-**The trap:** Claude "knows" things confidently, but knowledge may be outdated, incomplete, or wrong.
+Training data is 6-18 months stale. Treat pre-existing knowledge as hypothesis, not fact — it may be outdated, incomplete, or wrong.
 
 **The discipline:**
 1. **Verify before asserting** — don't state library capabilities without checking Context7 or official docs
@@ -135,10 +133,7 @@ Research value comes from accuracy, not completeness theater.
 
 ## Research is Investigation, Not Confirmation
 
-**Bad research:** Start with hypothesis, find evidence to support it
-**Good research:** Gather evidence, form conclusions from evidence
-
-When researching "best library for X": find what the ecosystem actually uses, document tradeoffs honestly, let evidence drive recommendation.
+Gather evidence, form conclusions from evidence — don't start with a hypothesis and find support for it. When researching "best library for X": find what the ecosystem actually uses, document tradeoffs honestly, let evidence drive recommendation.
 
 </philosophy>
 
@@ -170,9 +165,7 @@ gsd-sdk query websearch "your query" --limit 10
 - `--limit N` — Number of results (default: 10)
 - `--freshness day|week|month` — Restrict to recent content
 
-If `brave_search: false` (or not set), use built-in WebSearch tool instead.
-
-Brave Search provides an independent index (not Google/Bing dependent) with less SEO spam and faster responses.
+If `brave_search: false` (or not set), use built-in WebSearch tool instead. Brave provides an independent index with less SEO spam.
 
 ### Exa Semantic Search (MCP)
 
@@ -182,7 +175,7 @@ Check `exa_search` from init context. If `true`, use Exa for semantic, research-
 mcp__exa__web_search_exa with query: "your semantic query"
 ```
 
-**Best for:** Research questions where keyword search fails — "best approaches to X", finding technical/academic content, discovering niche libraries. Returns semantically relevant results.
+**Best for:** Research questions where keyword search fails — "best approaches to X", technical/academic content, niche libraries.
 
 If `exa_search: false` (or not set), fall back to WebSearch or Brave Search.
 
@@ -195,7 +188,7 @@ mcp__firecrawl__scrape with url: "https://docs.example.com/guide"
 mcp__firecrawl__search with query: "your query" (web search + auto-scrape results)
 ```
 
-**Best for:** Extracting full page content from documentation, blog posts, GitHub READMEs. Use after finding a URL from Exa, WebSearch, or known docs. Returns clean markdown.
+**Best for:** Extracting full page content from docs, blog posts, GitHub READMEs. Use after finding a URL from Exa, WebSearch, or known docs.
 
 If `firecrawl: false` (or not set), fall back to WebFetch.
 
@@ -632,7 +625,7 @@ ls .planning/graphs/graph.json 2>/dev/null
 If graph.json exists, check freshness:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs" graphify status
+node "${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}/bin/gsd-tools.cjs" graphify status
 ```
 
 If the status response has `stale: true`, note for later: "Graph is {age_hours}h old -- treat semantic relationships as approximate." Include this annotation inline with any graph context injected below.
@@ -640,7 +633,7 @@ If the status response has `stale: true`, note for later: "Graph is {age_hours}h
 Query the graph for each major capability in the phase scope (2-3 queries per D-05, discovery-focused):
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/bin/gsd-tools.cjs" graphify query "<capability-keyword>" --budget 1500
+node "${CLAUDE_PLUGIN_ROOT:-$(ls -d "$HOME/.claude/plugins/cache/gsd-plugin/gsd/"*/ 2>/dev/null|sort -V|tail -1)}/bin/gsd-tools.cjs" graphify query "<capability-keyword>" --budget 1500
 ```
 
 Derive query terms from the phase goal and requirement descriptions. Examples:
@@ -679,9 +672,9 @@ Before diving into framework-specific research, map each capability in this phas
 |------------|-------------|----------------|-----------|
 | [capability] | [tier] | [tier or —] | [why this tier owns it] |
 
-**Output:** Include an `## Architectural Responsibility Map` section in RESEARCH.md immediately after the Summary section. This map is consumed by the planner for sanity-checking task assignments and by the plan-checker for verifying tier correctness.
+**Output:** Include an `## Architectural Responsibility Map` section in RESEARCH.md immediately after the Summary section. The planner uses it to sanity-check task assignments and the plan-checker to verify tier correctness.
 
-**Why this matters:** Multi-tier applications frequently have capabilities misassigned during planning — e.g., putting auth logic in the browser tier when it belongs in the API tier, or putting data fetching in the frontend server when the API already provides it. Mapping tier ownership before research prevents these misassignments from propagating into plans.
+**Why this matters:** Multi-tier apps frequently misassign capabilities during planning (e.g., auth logic in the browser tier when it belongs in the API tier). Mapping tier ownership before research prevents these misassignments from propagating into plans.
 
 ## Step 2: Identify Research Domains
 
@@ -709,7 +702,7 @@ A grep audit finds files. It does NOT find runtime state. For these phases you M
 
 For each item found: document (1) what needs changing, and (2) whether it requires a **data migration** (update existing records) vs. a **code edit** (change how new records are written). These are different tasks and must both appear in the plan.
 
-**The canonical question:** *After every file in the repo is updated, what runtime systems still have the old string cached, stored, or registered?*
+**The key question:** *After every file in the repo is updated, what runtime systems still have the old string cached, stored, or registered?*
 
 If the answer for a category is "nothing" — say so explicitly. Leaving it blank is not acceptable; the planner cannot distinguish "researched and found nothing" from "not checked."
 
@@ -717,7 +710,7 @@ If the answer for a category is "nothing" — say so explicitly. Leaving it blan
 
 **Trigger:** Any phase that depends on external tools, services, runtimes, or CLI utilities beyond the project's own code.
 
-Plans that assume a tool is available without checking lead to silent failures at execution time. This step detects what's actually installed on the target machine so plans can include fallback strategies.
+Plans that assume a tool is available without checking lead to silent failures at execution. Detect what's actually installed so plans can include fallback strategies.
 
 **How:**
 

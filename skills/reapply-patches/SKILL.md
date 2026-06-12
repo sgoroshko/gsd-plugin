@@ -5,7 +5,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion
 ---
 
 <purpose>
-After a GSD update wipes and reinstalls files, this command merges user's previously saved local modifications back into the new version. Uses three-way comparison (pristine baseline, user-modified backup, newly installed version) to reliably distinguish user customizations from version drift.
+After a GSD update reinstalls files, this command merges the user's previously saved local modifications back in. Uses three-way comparison (pristine baseline, user-modified backup, newly installed version) to distinguish user customizations from version drift.
 
 **Critical invariant:** Every file in `gsd-local-patches/` was backed up because the installer's hash comparison detected it was modified. The workflow must NEVER conclude "no custom content" for any backed-up file — that is a logical contradiction. When in doubt, classify as CONFLICT requiring user review, not SKIP.
 </purpose>
@@ -82,7 +82,7 @@ if [ -z "$PATCHES_DIR" ] && [ -n "$CLAUDE_CONFIG_DIR" ]; then
   fi
 fi
 
-# Global install — detect runtime config directory defaults
+# Global install — runtime config directory defaults
 if [ -z "$PATCHES_DIR" ]; then
   if [ -d "$HOME/.config/kilo/gsd-local-patches" ]; then
     PATCHES_DIR="$HOME/.config/kilo/gsd-local-patches"
@@ -122,7 +122,7 @@ Exit.
 
 ## Step 2: Determine baseline for three-way comparison
 
-The quality of the merge depends on having a **pristine baseline** — the original unmodified version of each file from the pre-update GSD release. This enables three-way comparison:
+A **pristine baseline** (original unmodified file from the pre-update release) enables three-way comparison:
 - **Pristine baseline** (original GSD file before any user edits)
 - **User's version** (backed up in `gsd-local-patches/`)
 - **New version** (freshly installed after update)
@@ -137,11 +137,11 @@ if git -C "$CONFIG_DIR" rev-parse --git-dir >/dev/null 2>&1; then
   HAS_GIT=true
 fi
 ```
-When `HAS_GIT=true`, use `git log` to find the commit where GSD was originally installed (before user edits). For each file, the pristine baseline can be extracted with:
+When `HAS_GIT=true`, find the commit that first added each file (the install commit, before user edits):
 ```bash
 git -C "$CONFIG_DIR" log --diff-filter=A --format="%H" -- "{file_path}"
 ```
-This gives the commit that first added the file (the install commit). Extract the pristine version:
+Extract the pristine version:
 ```bash
 git -C "$CONFIG_DIR" show {install_commit}:{file_path}
 ```
@@ -182,9 +182,8 @@ For each file in `backup-meta.json`:
 
 ### Three-way merge (when baseline is available)
 
-Compare the three versions to isolate changes:
-- **User changes** = diff(pristine → user's version) — these are the customizations to preserve
-- **Upstream changes** = diff(pristine → new version) — these are version updates to accept
+- **User changes** = diff(pristine → user's version) — customizations to preserve
+- **Upstream changes** = diff(pristine → new version) — version updates to accept
 
 **Merge rules:**
 - Sections changed only by user → apply user's version
@@ -211,10 +210,9 @@ d. **If ALL differences appear to be mechanical drift → still flag as CONFLICT
 
 When the config directory is a git repo but the pristine install commit can't be found, use commit history to identify user changes:
 ```bash
-# Find non-update commits that touched this file
 git -C "$CONFIG_DIR" log --oneline --no-merges -- "{file_path}" | grep -v "gsd:update\|GSD update\|gsd-install"
 ```
-Each matching commit represents an intentional user modification. Use the commit messages and diffs to understand what was changed and why.
+Each matching commit is an intentional user modification. Use the messages and diffs to understand what changed and why.
 
 4. **Write merged result** to the installed location
 

@@ -21,10 +21,7 @@ Ask about experience. Investigate the cause yourself.
 
 When debugging code you wrote, you're fighting your own mental model.
 
-**Why this is harder:**
-- You made the design decisions - they feel obviously correct
-- You remember intent, not what you actually implemented
-- Familiarity breeds blindness to bugs
+**Why this is harder:** You made the design decisions (they feel obviously correct), you remember intent rather than what you implemented, and familiarity breeds blindness to bugs.
 
 **The discipline:**
 1. **Treat your code as foreign** - Read it as if someone else wrote it
@@ -35,8 +32,6 @@ When debugging code you wrote, you're fighting your own mental model.
 **The hardest admission:** "I implemented this wrong." Not "requirements were unclear" - YOU made an error.
 
 ## Foundation Principles
-
-When debugging, return to foundational truths:
 
 - **What do you know for certain?** Observable facts, not assumptions
 - **What are you assuming?** "This library should work this way" - have you verified?

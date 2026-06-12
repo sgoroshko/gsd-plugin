@@ -15,11 +15,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 <process>
 
 <step name="banner">
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SPIKING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+GSD ► SPIKING
 
 Parse `$ARGUMENTS` for:
 - `--quick` flag → set `QUICK_MODE=true`
@@ -166,21 +162,17 @@ Order by risk — most likely to kill the idea runs first.
 <step name="align">
 **If `QUICK_MODE` is true:** Skip.
 
-╔══════════════════════════════════════════════════════════════╗
-║  CHECKPOINT: Decision Required                               ║
-╚══════════════════════════════════════════════════════════════╝
+CHECKPOINT: Decision Required
 
 {spike table from decompose step}
 
-──────────────────────────────────────────────────────────────
 → Build all in this order, or adjust the list?
-──────────────────────────────────────────────────────────────
 </step>
 
 <step name="research">
 ## Research and Briefing Before Each Spike
 
-This step runs **before each individual spike**, not once at the start.
+Runs **before each individual spike**, not once at the start.
 
 **a. Present a spike briefing:**
 
@@ -245,9 +237,7 @@ Before starting each spike (not just the first), re-read `.planning/spikes/MANIF
 
 **a.** Create `.planning/spikes/NNN-descriptive-name/`
 
-**b.** Default to giving the user something they can experience. The bias should be toward building a simple UI or interactive demo, not toward stdout that only Claude reads. The user wants to *feel* the spike working, not just be told it works.
-
-**The default is: build something the user can interact with.** This could be:
+**b.** Default to building something the user can interact with — a simple UI or interactive demo, not stdout only Claude reads. The user wants to *feel* the spike working. This could be:
 - A simple HTML page that shows the result visually
 - A web UI with a button that triggers the action and shows the response
 - A page that displays data flowing through a pipeline
@@ -258,7 +248,7 @@ Before starting each spike (not just the first), re-read `.planning/spikes/MANIF
 - Binary yes/no questions (does this API authenticate? does this library exist?)
 - Benchmark numbers (how fast is X? how much memory does Y use?)
 
-When in doubt, build the UI. It takes a few extra minutes but produces a spike the user can actually demo and feel confident about.
+When in doubt, build the UI.
 
 **If the spike needs runtime observability,** build a forensic log layer:
 1. Event log array with ISO timestamps and category tags
@@ -318,17 +308,13 @@ tags: [tag1, tag2]
 - Self-verifiable: run, iterate if findings warrant deeper investigation, update verdict
 - Needs human judgment: present checkpoint box:
 
-╔══════════════════════════════════════════════════════════════╗
-║  CHECKPOINT: Verification Required                           ║
-╚══════════════════════════════════════════════════════════════╝
+CHECKPOINT: Verification Required
 
 **Spike {NNN}: {name}**
 **How to run:** {command}
 **What to expect:** {concrete outcomes}
 
-──────────────────────────────────────────────────────────────
 → Does this match what you expected? Describe what you see.
-──────────────────────────────────────────────────────────────
 
 **h.** Update `.planning/spikes/MANIFEST.md` with the spike's row.
 
@@ -349,16 +335,12 @@ Do not rush to a verdict. A spike that says "VALIDATED — it works" with no nua
 
 **k.** If core assumption invalidated:
 
-╔══════════════════════════════════════════════════════════════╗
-║  CHECKPOINT: Decision Required                               ║
-╚══════════════════════════════════════════════════════════════╝
+CHECKPOINT: Decision Required
 
 Core assumption invalidated by Spike {NNN}.
 {what was invalidated and why}
 
-──────────────────────────────────────────────────────────────
 → Continue with remaining spikes / Pivot approach / Abandon
-──────────────────────────────────────────────────────────────
 </step>
 
 <step name="update_conventions">
@@ -394,9 +376,7 @@ gsd-sdk query commit "docs(spikes): update conventions" --files .planning/spikes
 
 <step name="report">
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SPIKE COMPLETE ✓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► SPIKE COMPLETE ✓
 
 ## Verdicts
 

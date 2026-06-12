@@ -1,9 +1,5 @@
 <purpose>
-Orchestrate parallel codebase mapper agents to analyze codebase and produce structured documents in .planning/codebase/
-
-Each agent has fresh context, explores a specific focus area, and **writes documents directly**. The orchestrator only receives confirmation + line counts, then writes a summary.
-
-Output: .planning/codebase/ folder with 7 structured documents about the codebase state.
+Orchestrate parallel codebase mapper agents to analyze the codebase and produce 7 structured documents in .planning/codebase/. Each agent explores a focus area and **writes documents directly**; the orchestrator only receives confirmation + line counts, then writes a summary.
 </purpose>
 
 <available_agent_types>
@@ -12,17 +8,11 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 </available_agent_types>
 
 <philosophy>
-**Why dedicated mapper agents:**
-- Fresh context per domain (no token contamination)
-- Agents write documents directly (no context transfer back to orchestrator)
-- Orchestrator only summarizes what was created (minimal context usage)
-- Faster execution (agents run simultaneously)
+Dedicated mapper agents: fresh context per domain, write documents directly, run simultaneously; orchestrator only summarizes what was created.
 
-**Document quality over length:**
-Include enough detail to be useful as reference. Prioritize practical examples (especially code patterns) over arbitrary brevity.
+Document quality over length: include enough detail to be useful as reference; prioritize practical code-pattern examples over brevity.
 
-**Always include file paths:**
-Documents are reference material for Claude when planning/executing. Always include actual file paths formatted with backticks: `src/services/user.ts`.
+Always include actual file paths formatted with backticks: `src/services/user.ts`.
 </philosophy>
 
 <ultracode_gate>
@@ -55,11 +45,7 @@ operates in **incremental-remap mode**:
 - On write, each mapper stamps `last_mapped_commit: <HEAD sha>` into the YAML
   frontmatter of every document it produces (see `bin/lib/drift.cjs:writeMappedCommit`).
 
-**Explicit contract — propagate `--paths` through a single normalized
-variable.** Downstream steps (`spawn_agents`, `sequential_mapping`, and any
-Agent-mode prompt construction) MUST use `${PATH_SCOPE_HINT}` to ensure every
-mapper receives the same deterministic scope. Without this contract
-incremental-remap can silently regress to a whole-repo scan.
+**Contract:** downstream steps (`spawn_agents` and any Agent-mode prompt) MUST use the single normalized `${PATH_SCOPE_HINT}` variable so every mapper gets the same scope. Without it, incremental-remap can silently regress to a whole-repo scan.
 
 ```bash
 # Validated, comma-separated paths (empty if --paths absent or all rejected):
@@ -117,8 +103,6 @@ To partially update specific documents, re-invoke with --update <docs> (comma-se
 
 **If doesn't exist:**
 Continue to `create_structure`.
-
-(Prior behavior was a three-way Refresh/Update/Skip prompt when the directory existed. The interactive confirmation was friction; the default "use as-is" path is what callers nearly always want, and the explicit flags cover the two deviation paths.)
 </step>
 
 <step name="create_structure">
@@ -140,20 +124,8 @@ mkdir -p .planning/codebase
 Continue to spawn_agents.
 </step>
 
-<step name="detect_runtime_capabilities">
-Before spawning agents, detect whether the current runtime supports the `Agent` tool for subagent delegation.
-
-**How to detect:** Check if you have access to an `Agent` tool (may be capitalized as `Agent` or lowercase as `agent` depending on runtime). If you do NOT have an `Agent`/`agent` tool (or only have tools like `browser_subagent` which is for web browsing, NOT code analysis):
-
-→ **Skip `spawn_agents` and `collect_confirmations`** — go directly to `sequential_mapping` instead.
-
-**CRITICAL:** Never use `browser_subagent` or `Explore` as a substitute for `Agent`. The `browser_subagent` tool is exclusively for web page interaction and will fail for codebase analysis. If `Agent` is unavailable, perform the mapping sequentially in-context.
-</step>
-
-<step name="spawn_agents" condition="Agent tool is available">
-Spawn 4 parallel gsd-codebase-mapper agents.
-
-Use Agent tool with `subagent_type="gsd:gsd-codebase-mapper"`, `model="{mapper_model}"`, and `run_in_background=true` for parallel execution.
+<step name="spawn_agents">
+Spawn 4 parallel gsd-codebase-mapper agents using the Agent tool with `subagent_type="gsd:gsd-codebase-mapper"`, `model="{mapper_model}"`, and `run_in_background=true`.
 
 **CRITICAL:** Use the dedicated `gsd-codebase-mapper` agent, NOT `Explore` or `browser_subagent`. The mapper agent writes documents directly.
 
@@ -301,41 +273,6 @@ If any agent failed, note the failure and continue with successful documents.
 Continue to verify_output.
 </step>
 
-<step name="sequential_mapping" condition="Agent tool is NOT available (e.g. Antigravity, Gemini CLI, Codex)">
-When the `Agent` tool is unavailable, perform codebase mapping sequentially in the current context. This replaces `spawn_agents` and `collect_confirmations`.
-
-**IMPORTANT:** Do NOT use `browser_subagent`, `Explore`, or any browser-based tool. Use only file system tools (Read, Bash, Write, Grep, Glob, list_dir, view_file, grep_search, or equivalent tools available in your runtime).
-
-**IMPORTANT:** Use `{date}` from init context for all `[YYYY-MM-DD]` date placeholders in documents. NEVER guess the date.
-
-**SCOPE:** When `${PATH_SCOPE_HINT}` is non-empty (i.e. `--paths` was supplied), restrict every pass below to the validated path prefixes in `${SCOPED_PATHS}`. Do NOT scan files outside those prefixes. When `${PATH_SCOPE_HINT}` is empty, perform a full-repo scan.
-
-Perform all 4 mapping passes sequentially:
-
-**Pass 1: Tech Focus**
-- Explore package.json/Cargo.toml/go.mod/requirements.txt, config files, dependency trees
-- Write `.planning/codebase/STACK.md` — Languages, runtime, frameworks, dependencies, configuration
-- Write `.planning/codebase/INTEGRATIONS.md` — External APIs, databases, auth providers, webhooks
-
-**Pass 2: Architecture Focus**
-- Explore directory structure, entry points, module boundaries, data flow
-- Write `.planning/codebase/ARCHITECTURE.md` — Pattern, layers, data flow, abstractions, entry points
-- Write `.planning/codebase/STRUCTURE.md` — Directory layout, key locations, naming conventions
-
-**Pass 3: Quality Focus**
-- Explore code style, error handling patterns, test files, CI config
-- Write `.planning/codebase/CONVENTIONS.md` — Code style, naming, patterns, error handling
-- Write `.planning/codebase/TESTING.md` — Framework, structure, mocking, coverage
-
-**Pass 4: Concerns Focus**
-- Explore TODOs, known issues, fragile areas, security patterns
-- Write `.planning/codebase/CONCERNS.md` — Tech debt, bugs, security, performance, fragile areas
-
-Use the same document templates as the `gsd-codebase-mapper` agent. Include actual file paths formatted with backticks.
-
-Continue to verify_output.
-</step>
-
 <step name="verify_output">
 Verify all documents created successfully:
 
@@ -448,8 +385,7 @@ End workflow.
 
 <success_criteria>
 - .planning/codebase/ directory created
-- If Agent tool available: 4 parallel gsd-codebase-mapper agents spawned with run_in_background=true
-- If Agent tool NOT available: 4 sequential mapping passes performed inline (never using browser_subagent)
+- 4 parallel gsd-codebase-mapper agents spawned with run_in_background=true
 - All 7 codebase documents exist
 - No empty documents (each should have >20 lines)
 - Clear completion summary with line counts

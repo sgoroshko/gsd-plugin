@@ -1,9 +1,7 @@
 <purpose>
 Orchestrate parallel debug agents to investigate UAT gaps and find root causes.
 
-After UAT finds gaps, spawn one debug agent per gap. Each agent investigates autonomously with symptoms pre-filled from UAT. Collect root causes, update UAT.md gaps with diagnosis, then hand off to plan-phase --gaps with actual diagnoses.
-
-Orchestrator stays lean: parse gaps, spawn agents, collect results, update UAT.
+Spawn one debug agent per gap (symptoms pre-filled from UAT). Collect root causes, update UAT.md gaps with diagnosis, then hand off to plan-phase --gaps. Orchestrator stays lean: parse gaps, spawn agents, collect results, update UAT.
 </purpose>
 
 <available_agent_types>
@@ -13,17 +11,12 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 
 <paths>
 DEBUG_DIR=.planning/debug
-
-Debug files use the `.planning/debug/` path (hidden directory with leading dot).
 </paths>
 
 <core_principle>
 **Diagnose before planning fixes.**
 
 UAT tells us WHAT is broken (symptoms). Debug agents find WHY (root cause). plan-phase --gaps then creates targeted fixes based on actual causes, not guesses.
-
-Without diagnosis: "Comment doesn't refresh" → guess at fix → maybe wrong
-With diagnosis: "Comment doesn't refresh" → "useEffect missing dependency" → precise fix
 </core_principle>
 
 <process>
@@ -188,9 +181,7 @@ gsd-sdk query commit "docs({phase_num}): add root causes from diagnosis" --files
 
 Display:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DIAGNOSIS COMPLETE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► DIAGNOSIS COMPLETE
 
 | Gap (Truth) | Root Cause | Files |
 |-------------|------------|-------|

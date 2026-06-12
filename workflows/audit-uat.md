@@ -5,8 +5,6 @@ Cross-phase audit of all UAT and verification files. Finds every outstanding ite
 <process>
 
 <step name="initialize">
-Run the CLI audit:
-
 ```bash
 AUDIT=$(gsd-sdk query audit-uat --raw)
 ```
@@ -44,8 +42,6 @@ For each item in "Testable Now", use Grep/Read to check if the underlying featur
 </step>
 
 <step name="present">
-Present the audit report:
-
 ```
 ## UAT Audit Report
 

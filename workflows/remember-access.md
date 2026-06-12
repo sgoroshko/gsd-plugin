@@ -1,10 +1,10 @@
 <purpose>
 Capture or review authentication / access recipes for the current project. Two modes:
 
-1. **Manual capture:** `/gsd:remember-access <system-name>` walks the user through documenting how to authenticate to a named system (e.g., github, aws, npm, ssh).
-2. **Inbox review:** `/gsd:remember-access --review` surfaces detections captured by the `gsd-auth-detector` PostToolUse hook and lets the user confirm or discard each.
+1. **Manual capture:** `/gsd:remember-access <system-name>` documents how to authenticate to a named system (e.g., github, aws, npm, ssh).
+2. **Inbox review:** `/gsd:remember-access --review` surfaces detections captured by the `gsd-auth-detector` PostToolUse hook for confirm/discard.
 
-In either mode, confirmed recipes go to `.planning/AUTH-RECIPES.md` (per-project) and optionally also to `~/.claude/auth-recipes/<system>.md` (cross-project memory).
+Confirmed recipes go to `.planning/AUTH-RECIPES.md` (per-project) and optionally `~/.claude/auth-recipes/<system>.md` (cross-project memory).
 </purpose>
 
 <required_reading>
@@ -53,7 +53,7 @@ Then ask freeform (text input) prompts to gather:
 
 ### 3b. Write per-project recipe
 
-Append to (or create) `.planning/AUTH-RECIPES.md` using this format:
+Append to (or create) `.planning/AUTH-RECIPES.md`:
 
 ```markdown
 # Auth Recipes

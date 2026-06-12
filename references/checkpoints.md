@@ -18,9 +18,7 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 
 **When:** Claude completed automated work, human confirms it works correctly.
 
-> **Default mode (#3309): `workflow.human_verify_mode = end-of-phase`.** New projects do NOT halt mid-flight at `checkpoint:human-verify`. The planner suppresses those task emissions and embeds the verification details into the relevant `auto` task's `<verify><human-check>` block; the verifier harvests every `<verify><human-check>` at end-of-phase (Step 8) and consolidates them into the existing `human_needed` → HUMAN-UAT.md flow in `workflows/execute-phase.md`. The user reviews everything in one batch.
->
-> **Why this is the default:** every mid-flight halt costs a full executor cold-start (CLAUDE.md, MEMORY.md, STATE.md, plan re-read on respawn) because subagent context is discarded across the pause. A plan with N human-verify checkpoints pays the cold-start cost N+1 times — measured at "tens of thousands of tokens" per round-trip on real projects.
+> **Default mode (#3309): `workflow.human_verify_mode = end-of-phase`.** New projects do NOT halt mid-flight at `checkpoint:human-verify`. The planner suppresses those task emissions and embeds the verification details into the relevant `auto` task's `<verify><human-check>` block; the verifier harvests every `<verify><human-check>` at end-of-phase (Step 8) and consolidates them into the existing `human_needed` → HUMAN-UAT.md flow in `workflows/execute-phase.md`. The user reviews everything in one batch. (Rationale: every mid-flight halt costs a full executor cold-start.)
 >
 > Set `workflow.human_verify_mode = mid-flight` in `.planning/config.json` to opt back into the pre-#3309 behavior of halting at every checkpoint. `checkpoint:decision` and `checkpoint:human-action` are unaffected by either value — those gate the work itself, not post-hoc verification.
 
@@ -43,16 +41,8 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
 </task>
 ```
 
-**Example: UI Component (shows key pattern: Claude starts server BEFORE checkpoint)**
+**Example (key pattern: Claude starts server BEFORE checkpoint)**
 ```xml
-<task type="auto">
-  <name>Build responsive dashboard layout</name>
-  <files>src/components/Dashboard.tsx, src/app/dashboard/page.tsx</files>
-  <action>Create dashboard with sidebar, header, and content area. Use Tailwind responsive classes for mobile.</action>
-  <verify>npm run build succeeds, no TypeScript errors</verify>
-  <done>Dashboard component builds without errors</done>
-</task>
-
 <task type="auto">
   <name>Start dev server for verification</name>
   <action>Run `npm run dev` in background, wait for "ready" message, capture port</action>
@@ -70,29 +60,6 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
     4. No layout shift or horizontal scroll at any size
   </how-to-verify>
   <resume-signal>Type "approved" or describe layout issues</resume-signal>
-</task>
-```
-
-**Example: Xcode Build**
-```xml
-<task type="auto">
-  <name>Build macOS app with Xcode</name>
-  <files>App.xcodeproj, Sources/</files>
-  <action>Run `xcodebuild -project App.xcodeproj -scheme App build`. Check for compilation errors in output.</action>
-  <verify>Build output contains "BUILD SUCCEEDED", no errors</verify>
-  <done>App builds successfully</done>
-</task>
-
-<task type="checkpoint:human-verify" gate="blocking">
-  <what-built>Built macOS app at DerivedData/Build/Products/Debug/App.app</what-built>
-  <how-to-verify>
-    Open App.app and test:
-    - App launches without crashes
-    - Menu bar icon appears
-    - Preferences window opens correctly
-    - No visual glitches or layout issues
-  </how-to-verify>
-  <resume-signal>Type "approved" or describe issues</resume-signal>
 </task>
 ```
 </type>
@@ -155,35 +122,6 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
     </option>
   </options>
   <resume-signal>Select: supabase, clerk, or nextauth</resume-signal>
-</task>
-```
-
-**Example: Database Selection**
-```xml
-<task type="checkpoint:decision" gate="blocking">
-  <decision>Select database for user data</decision>
-  <context>
-    App needs persistent storage for users, sessions, and user-generated content.
-    Expected scale: 10k users, 1M records first year.
-  </context>
-  <options>
-    <option id="supabase">
-      <name>Supabase (Postgres)</name>
-      <pros>Full SQL, generous free tier, built-in auth, real-time subscriptions</pros>
-      <cons>Vendor lock-in for real-time features, less flexible than raw Postgres</cons>
-    </option>
-    <option id="planetscale">
-      <name>PlanetScale (MySQL)</name>
-      <pros>Serverless scaling, branching workflow, excellent DX</pros>
-      <cons>MySQL not Postgres, no foreign keys in free tier</cons>
-    </option>
-    <option id="convex">
-      <name>Convex</name>
-      <pros>Real-time by default, TypeScript-native, automatic caching</pros>
-      <cons>Newer platform, different mental model, less SQL flexibility</cons>
-    </option>
-  </options>
-  <resume-signal>Select: supabase, planetscale, or convex</resume-signal>
 </task>
 ```
 </type>
@@ -262,7 +200,7 @@ Plans execute autonomously. Checkpoints formalize interaction points where human
   <resume-signal>Type "done" when authenticated</resume-signal>
 </task>
 
-<!-- After authentication, Claude retries the deployment -->
+<!-- Claude retries the deployment after auth -->
 
 <task type="auto">
   <name>Retry Vercel deployment</name>
@@ -287,9 +225,7 @@ When Claude encounters `type="checkpoint:*"`:
 
 **For checkpoint:human-verify:**
 ```
-╔═══════════════════════════════════════════════════════╗
-║  CHECKPOINT: Verification Required                    ║
-╚═══════════════════════════════════════════════════════╝
+CHECKPOINT: Verification Required
 
 Progress: 5/8 tasks complete
 Task: Responsive dashboard layout
@@ -302,16 +238,12 @@ How to verify:
   3. Tablet (768px): Sidebar collapses to icons
   4. Mobile (375px): Sidebar hidden, hamburger menu appears
 
-────────────────────────────────────────────────────────
 → YOUR ACTION: Type "approved" or describe issues
-────────────────────────────────────────────────────────
 ```
 
 **For checkpoint:decision:**
 ```
-╔═══════════════════════════════════════════════════════╗
-║  CHECKPOINT: Decision Required                        ║
-╚═══════════════════════════════════════════════════════╝
+CHECKPOINT: Decision Required
 
 Progress: 2/6 tasks complete
 Task: Select authentication provider
@@ -333,16 +265,12 @@ Options:
      Pros: Free, no vendor lock-in, widely adopted
      Cons: More setup work, DIY security updates
 
-────────────────────────────────────────────────────────
 → YOUR ACTION: Select supabase, clerk, or nextauth
-────────────────────────────────────────────────────────
 ```
 
 **For checkpoint:human-action:**
 ```
-╔═══════════════════════════════════════════════════════╗
-║  CHECKPOINT: Action Required                          ║
-╚═══════════════════════════════════════════════════════╝
+CHECKPOINT: Action Required
 
 Progress: 3/8 tasks complete
 Task: Deploy to Vercel
@@ -357,9 +285,7 @@ What you need to do:
 
 I'll verify: vercel whoami returns your account
 
-────────────────────────────────────────────────────────
 → YOUR ACTION: Type "done" when authenticated
-────────────────────────────────────────────────────────
 ```
 </execution_protocol>
 
@@ -592,26 +518,9 @@ timeout 30 bash -c 'until node -e "fetch(\"http://localhost:3000\").then(r=>{pro
 ### Example 2: Full Auth Flow (Single checkpoint at end)
 
 ```xml
-<task type="auto">
-  <name>Create user schema</name>
-  <files>src/db/schema.ts</files>
-  <action>Define User, Session, Account tables with Drizzle ORM</action>
-  <verify>npm run db:generate succeeds</verify>
-</task>
-
-<task type="auto">
-  <name>Create auth API routes</name>
-  <files>src/app/api/auth/[...nextauth]/route.ts</files>
-  <action>Set up NextAuth with GitHub provider, JWT strategy</action>
-  <verify>TypeScript compiles, no errors</verify>
-</task>
-
-<task type="auto">
-  <name>Create login UI</name>
-  <files>src/app/login/page.tsx, src/components/LoginButton.tsx</files>
-  <action>Create login page with GitHub OAuth button</action>
-  <verify>npm run build succeeds</verify>
-</task>
+<task type="auto">Create user schema (src/db/schema.ts)</task>
+<task type="auto">Create auth API routes (NextAuth, GitHub provider)</task>
+<task type="auto">Create login UI</task>
 
 <task type="auto">
   <name>Start dev server for auth testing</name>

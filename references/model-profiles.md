@@ -1,6 +1,6 @@
 # Model Profiles
 
-Model profiles control which Claude model each GSD agent uses. This allows balancing quality vs token spend, or inheriting the currently selected session model.
+Model profiles control which Claude model each GSD agent uses, balancing quality vs token spend, or inheriting the current session model.
 
 ## Profile Definitions
 
@@ -64,8 +64,6 @@ Model profiles control which Claude model each GSD agent uses. This allows balan
 - **`models`** is coarse phase-level tuning without learning agent names.
 - **`model_overrides`** is per-agent precision (e.g. force `haiku` on `gsd-codebase-mapper` for a fan-out).
 
-The three layers compose: `models` defaults a phase, `model_overrides` carves an exception out of it.
-
 ## Profile Philosophy
 
 **quality** - Maximum reasoning power
@@ -92,29 +90,9 @@ The three layers compose: `models` defaults a phase, `model_overrides` carves an
 
 **inherit** - Follow the current session model
 - All agents resolve to `inherit`
-- Best when you switch models interactively (for example OpenCode or Kilo `/model`)
+- Best when you switch models interactively (`/model`)
 - **Required when using non-Anthropic providers** (OpenRouter, local models, etc.) — otherwise GSD may call Anthropic models directly, incurring unexpected costs
 - Use when: you want GSD to follow your currently selected runtime model
-
-## Using Non-Claude Runtimes (Codex, OpenCode, Gemini CLI, Kilo)
-
-When installed for a non-Claude runtime, the GSD installer sets `resolve_model_ids: "omit"` in `~/.gsd/defaults.json`. This returns an empty model parameter for all agents, so each agent uses the runtime's default model. No manual setup is needed.
-
-To assign different models to different agents, add `model_overrides` with model IDs your runtime recognizes:
-
-```json
-{
-  "resolve_model_ids": "omit",
-  "model_overrides": {
-    "gsd-planner": "o3",
-    "gsd-executor": "o4-mini",
-    "gsd-debugger": "o3",
-    "gsd-codebase-mapper": "o4-mini"
-  }
-}
-```
-
-The same tiering logic applies: stronger models for planning and debugging, cheaper models for execution and mapping.
 
 ## Using Claude Code with Non-Anthropic Providers (OpenRouter, Local)
 
@@ -192,11 +170,6 @@ is (highest → lowest):
 6. Pass model parameter to Task call
 ```
 
-The same precedence applies to `reasoning_effort` resolution on runtimes
-that support it (Codex), so `model` and `reasoning_effort` always derive
-from the same tier source — a `models[phase_type]` or
-`dynamic_routing` override flips both.
-
 ## Per-Agent Overrides
 
 Override specific agents without changing the entire profile:
@@ -242,4 +215,4 @@ Read-only exploration and pattern extraction. No reasoning required, just struct
 Claude Code's `"opus"` alias maps to a specific model version. Organizations may block older opus versions while allowing newer ones. GSD returns `"inherit"` for opus-tier agents, causing them to use whatever opus version the user has configured in their session. This avoids version conflicts and silent fallbacks to Sonnet.
 
 **Why `inherit` profile?**
-Some runtimes (including OpenCode) let users switch models at runtime (`/model`). The `inherit` profile keeps all GSD subagents aligned to that live selection.
+When you switch models at runtime (`/model`), the `inherit` profile keeps all GSD subagents aligned to that live selection.

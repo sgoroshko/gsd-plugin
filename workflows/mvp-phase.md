@@ -9,8 +9,6 @@ Guide the user through MVP-mode planning for a phase. Prompts for an "As a / I w
 </required_reading>
 
 <runtime_note>
-**Copilot (VS Code):** Use `vscode_askquestions` wherever this workflow calls `AskUserQuestion`. They are equivalent.
-
 **TEXT_MODE fallback:** Set TEXT_MODE=true if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is true. When TEXT_MODE is active, replace every AskUserQuestion call with a plain-text numbered list and ask the user to type their choice number.
 </runtime_note>
 
@@ -107,7 +105,6 @@ if [ "$(echo "$USER_STORY_RESULT" | jq -r '.valid')" != "true" ]; then
 fi
 ```
 
-This guarantees the goal stored in ROADMAP.md will satisfy the same guard the verifier applies later.
 If `RE_PROMPT_USER_STORY=true`, re-run only the offending prompt field(s), rebuild `USER_STORY`, and validate again before continuing.
 
 ## 4. SPIDR splitting check
@@ -216,6 +213,6 @@ If SPIDR produced a split in step 4, append a final user-facing message:
 
 ## 9. Exit
 
-Workflow ends. The phase is now in MVP mode with a planned PLAN.md, optionally with deferred follow-up phases surfaced for the user.
+Workflow ends.
 
 </process>

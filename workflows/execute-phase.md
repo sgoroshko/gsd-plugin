@@ -7,20 +7,9 @@ Orchestrator coordinates, not executes. Each subagent loads the full execute-pla
 </core_principle>
 
 <runtime_compatibility>
-**Subagent spawning is runtime-specific:**
-- **Claude Code:** Uses `Agent(subagent_type="gsd:gsd-executor", ...)` — blocks until complete, returns result
-- **Copilot:** Subagent spawning does not reliably return completion signals. **Default to
-  sequential inline execution**: read and follow execute-plan.md directly for each plan
-  instead of spawning parallel agents. Only attempt parallel spawning if the user
-  explicitly requests it — and in that case, rely on the spot-check fallback in step 3
-  to detect completion.
-- **Other runtimes:** If `Agent`/`agent` tool is unavailable, use sequential inline execution as the
-  fallback. Check for tool availability at runtime rather than assuming based on runtime name.
+`Agent(subagent_type="gsd:gsd-executor", ...)` blocks until complete and returns the result.
 
-**Fallback rule:** If a spawned agent completes its work (commits visible, SUMMARY.md exists) but
-the orchestrator never receives the completion signal, treat it as successful based on spot-checks
-and continue to the next wave/plan. Never block indefinitely waiting for a signal — always verify
-via filesystem and git state.
+**Fallback rule:** If a spawned agent completes its work (commits visible, SUMMARY.md exists) but the orchestrator never receives the completion signal, treat it as successful based on spot-checks and continue. Never block indefinitely waiting for a signal — always verify via filesystem and git state.
 </runtime_compatibility>
 
 <required_reading>
@@ -90,9 +79,9 @@ if [ "$RUNTIME" = "codex" ] && [ "$USE_WORKTREES" != "false" ]; then
   exit 1
 fi
 ```
-Codex maps subagents to `spawn_agent`, which has no direct Codex mapping for Claude Code's `isolation="worktree"` parameter. Failing closed prevents main-checkout edits while the workflow believes agents are isolated.
+Failing closed prevents main-checkout edits while the workflow believes agents are isolated.
 
-If the project uses git submodules, worktree isolation is unsafe **only when a plan touches a submodule path** — the executor commit protocol cannot correctly handle submodule commits inside isolated worktrees. The previous behavior unconditionally disabled worktree isolation whenever `.gitmodules` existed, which penalised every plan in a submodule project even when the plan was nowhere near a submodule. Compute submodule paths once and intersect them per-plan with the plan's declared `files_modified` frontmatter.
+If the project uses git submodules, worktree isolation is unsafe **only when a plan touches a submodule path** — the executor commit protocol cannot correctly handle submodule commits inside isolated worktrees. Compute submodule paths once and intersect them per-plan with the plan's declared `files_modified` frontmatter.
 
 ```bash
 # Parse submodule paths from .gitmodules once (empty if no .gitmodules).
@@ -104,7 +93,7 @@ else
 fi
 ```
 
-`SUBMODULE_PATHS` is exported to the `execute_waves` step, where the per-plan decision actually happens (see "Per-plan worktree decision" sub-step inside `execute_waves`). The decision is per-plan because different plans in the same wave can touch different files — only plans whose paths intersect a submodule must drop worktree isolation; plans nowhere near a submodule keep parallel isolation.
+`SUBMODULE_PATHS` is exported to the `execute_waves` step, where the per-plan decision happens (see "Per-plan worktree decision" inside `execute_waves`). Only plans whose paths intersect a submodule drop worktree isolation; others keep parallel isolation.
 
 When `USE_WORKTREES` (project-level) is `false`, all executor agents run without `isolation="worktree"` — they execute sequentially on the main working tree instead of in parallel worktrees. The per-plan decision below has no effect when worktrees are project-disabled.
 
@@ -119,25 +108,15 @@ When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include rich
 - Verifier agents receive all PLAN.md, SUMMARY.md, CONTEXT.md files plus REQUIREMENTS.md
 - This enables cross-phase awareness and history-aware verification
 
-When `CONTEXT_WINDOW < 200000` (sub-200K models), subagent prompts are thinned to reduce static overhead:
-- Executor agents omit extended deviation rule examples and checkpoint examples from inline prompt — load on-demand via @${CLAUDE_PLUGIN_ROOT}/references/executor-examples.md
-- Planner agents omit extended anti-pattern lists and specificity examples from inline prompt — load on-demand via @${CLAUDE_PLUGIN_ROOT}/references/planner-antipatterns.md
-- Core rules and decision logic remain inline; only verbose examples and edge-case lists are extracted
-- This reduces executor static overhead by ~40% while preserving behavioral correctness
+When `CONTEXT_WINDOW < 200000` (sub-200K models), subagent prompts are thinned — core rules stay inline, verbose examples are extracted for on-demand load:
+- Executor agents omit extended deviation/checkpoint examples — load via @${CLAUDE_PLUGIN_ROOT}/references/executor-examples.md
+- Planner agents omit extended anti-pattern lists and specificity examples — load via @${CLAUDE_PLUGIN_ROOT}/references/planner-antipatterns.md
 
 **If `phase_found` is false:** Error — phase directory not found.
 **If `plan_count` is 0:** Error — no plans found in phase.
 **If `state_exists` is false but `.planning/` exists:** Offer reconstruct or continue.
 
 When `parallelization` is false, plans within a wave execute sequentially.
-
-**Runtime detection for Copilot:**
-Check if the current runtime is Copilot by testing for the `@gsd-executor` agent pattern
-or absence of the `Agent()` subagent API. If running under Copilot, force sequential inline
-execution regardless of the `parallelization` setting — Copilot's subagent completion
-signals are unreliable (see `<runtime_compatibility>`). Set `COPILOT_SEQUENTIAL=true`
-internally and skip the `execute_waves` step in favor of `check_interactive_mode`'s
-inline path for each plan.
 
 **REQUIRED — Sync chain flag with intent.** If user invoked manually (no `--auto`), clear the ephemeral chain flag from any previous interrupted `--auto` chain. This prevents stale `_auto_chain_active: true` from causing unwanted auto-advance. This does NOT touch `workflow.auto_advance` (the user's persistent settings preference). You MUST execute this bash block before any config reads:
 ```bash
@@ -250,12 +229,6 @@ checkpoints between tasks. The user can review, modify, or redirect work at any 
    e. **After plan complete:** Show results, commit, create SUMMARY.md, then present next plan.
 
 3. After all plans: proceed to verification (same as normal mode).
-
-**Benefits of interactive mode:**
-- No subagent overhead — dramatically lower token usage
-- User catches mistakes early — saves costly verification cycles
-- Maintains GSD's planning/tracking structure
-- Best for: small phases, bug fixes, verification gaps, learning GSD
 
 **Skip to handle_branching step** (interactive plans execute inline after grouping).
 </step>
@@ -415,16 +388,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
 **Stream-idle-timeout prevention — checkpoint heartbeats (#2410):**
 
-Multi-plan phases can accumulate enough subagent context that the Claude API
-SSE layer terminates with `Stream idle timeout - partial response received`
-between a large tool_result and the next assistant turn (seen on Claude Code
-+ Opus 4.7 at ~200K+ cache_read). To keep the stream warm, emit short
-assistant-text heartbeats — **no tool call, just a literal line** — at every
-wave and plan boundary. Each heartbeat MUST start with `[checkpoint]` so
-tooling and `/gsd:manager`'s background-completion handler can grep partial
-transcripts. `{P}/{Q}` is the phase-wide completed/total plans counter and
-increases monotonically across waves. `{status}` is `complete` (success),
-`failed` (executor error), or `checkpoint` (human-gate returned).
+To keep the SSE stream warm (it can otherwise terminate with `Stream idle timeout` at ~200K+ cache_read), emit short assistant-text heartbeats — **no tool call, just a literal line** — at every wave and plan boundary. Each heartbeat MUST start with `[checkpoint]` so tooling and `/gsd:manager`'s background-completion handler can grep partial transcripts. `{P}/{Q}` is the phase-wide completed/total plans counter, increasing monotonically across waves. `{status}` is `complete` (success), `failed` (executor error), or `checkpoint` (human-gate returned).
 
 ```
 [checkpoint] phase {PHASE_NUMBER} wave {N}/{M} starting, {wave_plan_count} plan(s), {P}/{Q} plans done
@@ -683,7 +647,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
    [checkpoint] phase {PHASE_NUMBER} wave {N}/{M} plan {plan_id} checkpoint ({P}/{Q} plans done)
    ```
 
-   **Completion signal fallback (Copilot and runtimes where Agent() may not return):**
+   **Completion signal fallback:**
 
    If a spawned agent does not return a completion signal but appears to have finished
    its work, do NOT block indefinitely. Instead, verify completion via spot-checks:
@@ -710,8 +674,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
    ask for one recovery path: `continue waiting`, `kill and retry`, or
    `kill and switch to inline execution`.
 
-   **This fallback applies automatically to all runtimes.** Claude Code's Agent() normally
-   returns synchronously, but the fallback ensures resilience if it doesn't.
+   Claude Code's Agent() normally returns synchronously; this fallback ensures resilience if it doesn't.
 
 5. **Post-wave hook validation (parallel mode only):** Hooks run on every executor commit by default (#2924); this post-wave run only fires when `workflow.worktree_skip_hooks=true` opted out of per-commit hooks:
    ```bash
@@ -905,11 +868,8 @@ increases monotonically across waves. `{status}` is `complete` (success),
    After merging all worktrees in a wave (parallel mode), or after the last plan completes
    (serial mode), run a build and then the project's test suite to catch cross-plan
    integration issues that individual worktree self-checks cannot detect (e.g., conflicting
-   type definitions, removed exports, import changes, link errors).
-
-   This addresses the Generator self-evaluation blind spot identified in Anthropic's
-   harness engineering research: agents reliably report Self-Check: PASSED even when
-   merging their work creates failures.
+   type definitions, removed exports, import changes, link errors). Agents reliably report
+   Self-Check: PASSED even when merging their work creates failures.
 
    Read and execute `${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/workflows/execute-phase/steps/post-merge-gate.md`.
 
@@ -968,11 +928,6 @@ increases monotonically across waves. `{status}` is `complete` (success),
    If "Fix now": diagnose failures (typically import conflicts, missing types,
    or changed function signatures from parallel plans modifying the same module).
    Fix, commit as `fix: resolve post-merge conflicts from wave {N}`, re-run tests.
-
-   **Why this matters:** Worktree isolation means each agent's Self-Check passes
-   in isolation. But when merged, add/add conflicts in shared files (models, registries,
-   CLI entry points) can silently drop code. The post-merge gate catches this before
-   the next wave builds on a broken foundation.
 
 6. **Report completion — spot-check claims first:**
 
@@ -1157,9 +1112,7 @@ TDD_PLANS=$(grep -rl "^type: tdd" "${PHASE_DIR}"/*-PLAN.md 2>/dev/null | wc -l |
    ```
 4. Present collaborative review summary:
    ```
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    TDD REVIEW — Phase {X}
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TDD REVIEW — Phase {X}
 
    TDD Plans: {TDD_PLANS} | Gate violations: {count}
 
@@ -1774,10 +1727,8 @@ STOP. Do not proceed to auto-advance or transition.
 **If `--auto` flag present OR `AUTO_MODE` is true (AND verification passed with no gaps):**
 
 ```
-╔══════════════════════════════════════════╗
-║  AUTO-ADVANCING → TRANSITION             ║
-║  Phase {X} verified, continuing chain    ║
-╚══════════════════════════════════════════╝
+AUTO-ADVANCING → TRANSITION
+Phase {X} verified, continuing chain
 ```
 
 Execute the transition workflow inline (do NOT use Agent — orchestrator context is ~10-15%, transition needs phase completion data already in context):

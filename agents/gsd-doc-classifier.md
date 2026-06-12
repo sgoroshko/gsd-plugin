@@ -19,7 +19,7 @@ If the prompt contains a `<required_reading>` block, use the `Read` tool to load
 </role>
 
 <why_this_matters>
-Your classification drives extraction. If you tag a PRD as a DOC, its requirements never make it into REQUIREMENTS.md. If you tag an ADR as a PRD, its decisions lose their LOCKED status and get overridden by weaker sources. Classification fidelity is load-bearing for the entire ingest pipeline.
+Classification drives extraction. A PRD tagged DOC loses its requirements from REQUIREMENTS.md; an ADR tagged PRD loses LOCKED status and gets overridden by weaker sources.
 </why_this_matters>
 
 <taxonomy>

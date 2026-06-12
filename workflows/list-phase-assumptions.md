@@ -1,7 +1,7 @@
 <purpose>
-Surface Claude's assumptions about a phase before planning, enabling users to correct misconceptions early.
+Surface Claude's assumptions about a phase before planning, so users can correct misconceptions early.
 
-Key difference from discuss-phase: This is ANALYSIS of what Claude thinks, not INTAKE of what user knows. No file output - purely conversational to prompt discussion.
+Difference from discuss-phase: this is ANALYSIS of what Claude thinks, not INTAKE of what the user knows. No file output - purely conversational.
 </purpose>
 
 <process>
@@ -52,35 +52,15 @@ Continue to analyze_phase.
 <step name="analyze_phase">
 Based on roadmap description and project context, identify assumptions across five areas:
 
-**1. Technical Approach:**
-What libraries, frameworks, patterns, or tools would Claude use?
-- "I'd use X library because..."
-- "I'd follow Y pattern because..."
-- "I'd structure this as Z because..."
+**1. Technical Approach:** What libraries, frameworks, patterns, or tools would Claude use, and why?
 
-**2. Implementation Order:**
-What would Claude build first, second, third?
-- "I'd start with X because it's foundational"
-- "Then Y because it depends on X"
-- "Finally Z because..."
+**2. Implementation Order:** What would Claude build first, second, third, and why?
 
-**3. Scope Boundaries:**
-What's included vs excluded in Claude's interpretation?
-- "This phase includes: A, B, C"
-- "This phase does NOT include: D, E, F"
-- "Boundary ambiguities: G could go either way"
+**3. Scope Boundaries:** What's included vs excluded vs ambiguous in Claude's interpretation?
 
-**4. Risk Areas:**
-Where does Claude expect complexity or challenges?
-- "The tricky part is X because..."
-- "Potential issues: Y, Z"
-- "I'd watch out for..."
+**4. Risk Areas:** Where does Claude expect complexity or challenges?
 
-**5. Dependencies:**
-What does Claude assume exists or needs to be in place?
-- "This assumes X from previous phases"
-- "External dependencies: Y, Z"
-- "This will be consumed by..."
+**5. Dependencies:** What does Claude assume exists from prior phases, external deps, and what consumes this?
 
 Be honest about uncertainty. Mark assumptions with confidence levels:
 - "Fairly confident: ..." (clear from roadmap)
@@ -89,7 +69,7 @@ Be honest about uncertainty. Mark assumptions with confidence levels:
 </step>
 
 <step name="present_assumptions">
-Present assumptions in a clear, scannable format:
+Present assumptions in this format:
 
 ```
 ## My Assumptions for Phase ${PHASE}: ${PHASE_NAME}

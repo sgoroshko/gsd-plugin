@@ -13,24 +13,22 @@ allowed-tools:
   - AskUserQuestion
 ---
 <objective>
-Execute small, ad-hoc tasks with GSD guarantees (atomic commits, STATE.md tracking).
-
-Quick mode is the same system with a shorter path:
+Execute small, ad-hoc tasks with GSD guarantees (atomic commits, STATE.md tracking). Same system, shorter path:
 - Spawns gsd-planner (quick mode) + gsd-executor(s)
 - Quick tasks live in `.planning/quick/` separate from planned phases
 - Updates STATE.md "Quick Tasks Completed" table (NOT ROADMAP.md)
 
 **Default:** Skips research, discussion, plan-checker, verifier. Use when you know exactly what to do.
 
-**`--discuss` flag:** Lightweight discussion phase before planning. Surfaces assumptions, clarifies gray areas, captures decisions in CONTEXT.md. Use when the task has ambiguity worth resolving upfront.
+**`--discuss` flag:** Lightweight discussion before planning. Surfaces assumptions, captures decisions in CONTEXT.md. Use when the task has ambiguity worth resolving upfront.
 
-**`--full` flag:** Enables the complete quality pipeline — discussion + research + plan-checking + verification. One flag for everything.
+**`--full` flag:** Complete quality pipeline — discussion + research + plan-checking + verification.
 
-**`--validate` flag:** Enables plan-checking (max 2 iterations) and post-execution verification only. Use when you want quality guarantees without discussion or research.
+**`--validate` flag:** Plan-checking (max 2 iterations) and post-execution verification only. Quality guarantees without discussion or research.
 
-**`--research` flag:** Spawns a focused research agent before planning. Investigates implementation approaches, library options, and pitfalls for the task. Use when you're unsure of the best approach.
+**`--research` flag:** Spawns a focused research agent before planning. Investigates approaches, library options, and pitfalls. Use when unsure of the best approach.
 
-Granular flags are composable: `--discuss --research --validate` gives the same result as `--full`.
+Granular flags are composable: `--discuss --research --validate` equals `--full`.
 
 **Subcommands:**
 - `list` — List all quick tasks with status
@@ -166,8 +164,6 @@ When the quick task completes (SUMMARY.md written, STATE.md updated), emit a Nex
 - Emit a `## ▶ Next Up` heading suggesting the next likely action (often `/gsd:next` or returning to a paused phase)
 - Use **`` `/clear` then: ``** before the command **only for quick tasks that ran for >5 tool calls or >10 minutes** — short trivial tasks don't accumulate enough context to warrant a clear
 - When `/clear` IS suggested, include the parenthetical: *(`/clear` is safe — `/gsd:resume-work` restores position from `HANDOFF.json` if you change your mind)*
-
-The skip-clear-on-trivial-tasks rule keeps the prompt cache investment intact for follow-up small fixes; the suggest-clear-on-substantial-tasks rule sheds accumulated context before a phase-scope shift.
 </output_format>
 
 <notes>

@@ -1,6 +1,6 @@
 <purpose>
-Extract implementation decisions that downstream agents need — using codebase-first analysis
-and assumption surfacing instead of interview-style questioning.
+Extract implementation decisions downstream agents need via codebase-first analysis and
+assumption surfacing, not interview-style questioning.
 
 You are a thinking partner, not an interviewer. Analyze the codebase deeply, surface what you
 believe based on evidence, and ask the user only to correct what's wrong.
@@ -640,9 +640,7 @@ gsd-sdk query config-set workflow._auto_chain_active true
 
 Display banner:
 ```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AUTO-ADVANCING TO PLAN
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GSD ► AUTO-ADVANCING TO PLAN
 
 Context captured (assumptions mode). Launching plan-phase...
 ```
