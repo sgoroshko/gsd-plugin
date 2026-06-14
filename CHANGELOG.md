@@ -8,6 +8,21 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-06-14  (adopt gsd-core 1.5.0-rc slice: lazy MVP refs + low-effort status reads)
+
+Minor bump opens the 3.5.x line, which begins tracking the `@opengsd/gsd-core` 1.5.x series. This release adopts the two pieces of the 1.5.0-rc that fit a Claude-only plugin; the rest of the roughly 55-feature rc (multi-runtime support, the Capability Registry refactor, `context:fork` on heavy skills, the install-time `disallowedTools` deny-list) was assessed and deliberately not ported (see Notes).
+
+### Changed
+- **Lazy-load MVP-only reference bodies on non-MVP runs** (adapted from gsd-core #746/#720). `plan-phase`, `execute-phase`, and the `gsd-planner` / `gsd-executor` agents previously `@`-imported four MVP-only references (`planner-mvp-mode.md`, `user-story-template.md`, `skeleton-template.md`, `execute-mvp-tdd.md`) into context on every run, including non-MVP ones. The `@` sigil is now stripped so each is a lazy path the agent Reads only when `MVP_MODE` / `WALKING_SKELETON` / `MVP+TDD` is active. Behavior is unchanged; non-MVP planning and execution simply carry less context. `workflows/mvp-phase.md` keeps its eager imports (invoking it is itself MVP mode). New `tests/lazy-mvp-refs.test.cjs` guards against any eager `@`-import being reintroduced in the four in-scope files.
+- **`effort: low` on the `progress` and `stats` quick-status reads** (slice of gsd-core #820/#769). Both are cheap read-only reports; running them at low reasoning effort (a native Claude Code skill-frontmatter field) saves tokens with no quality cost. New `tests/effort-frontmatter.test.cjs`.
+
+### Notes (1.5.0-rc assessed, not ported)
+- **`context: fork` on `execute-phase` / `plan-phase` / `autonomous` (#820): skipped.** A fork runs as a subagent, which cannot prompt the user (AskUserQuestion is unavailable to subagents) and returns only its final result to the parent. That would break these skills' checkpoints, the plan-verification revision loop, the blocker handler, the `Next Up` continuation block, and HANDOFF-based resume.
+- **`effort: xhigh` on the heavy orchestrators (#820): declined.** A static high effort is an always-on cost floor with no equivalent of the ultracode cost window, and it does not propagate to the executor/planner subagents that do the actual work, so it mostly pays to think harder about dispatch.
+- **Install-time `disallowedTools` deny-list on read-only agents (#1081/#767): skipped.** The plugin's read-only agents already ship `tools:` allow-lists that exclude write tools, so the deny-list is redundant; upstream's install-time injector exists only to work around multi-runtime frontmatter limits the plugin does not have.
+
+Full suite 23/23.
+
 ## [3.4.11] - 2026-06-13  (default-branch resolver + Fable availability knob; no upstream change)
 
 ### Changed
