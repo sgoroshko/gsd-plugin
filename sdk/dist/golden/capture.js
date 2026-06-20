@@ -6,12 +6,26 @@
  */
 import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { resolveGsdToolsPath } from '../gsd-tools.js';
 const CAPTURE_TIMEOUT_MS = 120_000;
 const MAX_BUFFER = 10 * 1024 * 1024;
+// Golden tests assert parity against THIS repo's CJS CLI. When CLAUDE_PLUGIN_ROOT
+// is unset (the default under vitest), resolveGsdToolsPath() falls back to a
+// legacy `~/.claude/get-shit-done/bin/gsd-tools.cjs` path that does not exist in
+// the dev tree, so every golden test errors with MODULE_NOT_FOUND. Prefer the
+// repo's own bin/gsd-tools.cjs (relative to this source file) so the suite is
+// self-contained; defer to the real resolver when CLAUDE_PLUGIN_ROOT is set.
+const REPO_GSD_TOOLS = fileURLToPath(new URL('../../../bin/gsd-tools.cjs', import.meta.url));
+function resolveToolsForGolden(projectDir) {
+    if (!process.env.CLAUDE_PLUGIN_ROOT && existsSync(REPO_GSD_TOOLS))
+        return REPO_GSD_TOOLS;
+    return resolveGsdToolsPath(projectDir);
+}
 function execGsdTools(projectDir, command, args) {
-    const script = resolveGsdToolsPath(projectDir);
+    const script = resolveToolsForGolden(projectDir);
     const fullArgs = [script, command, ...args];
     return new Promise((resolve, reject) => {
         execFile(process.execPath, fullArgs, {

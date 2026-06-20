@@ -452,7 +452,7 @@ export const configNewProject: QueryHandler = async (args, projectDir, workstrea
   // Build default config
   const defaults: Record<string, unknown> = {
     model_profile: 'balanced',
-    commit_docs: false,
+    commit_docs: true, // align with CJS buildNewProjectConfig + CONFIG_DEFAULTS (was false: CJS/SDK divergence)
     parallelization: 1,
     search_gitignored: false,
     brave_search: hasBraveSearch,

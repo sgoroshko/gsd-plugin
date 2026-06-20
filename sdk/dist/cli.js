@@ -5279,7 +5279,7 @@ import { join as join2 } from "node:path";
 import { fileURLToPath } from "node:url";
 var BUNDLED_GSD_TOOLS_PATH = fileURLToPath(new URL("../../get-shit-done/bin/gsd-tools.cjs", import.meta.url));
 var BUNDLED_CORE_CJS_PATH = fileURLToPath(new URL("../../get-shit-done/bin/lib/core.cjs", import.meta.url));
-var BUNDLED_GSD_TEMPLATES_DIR = fileURLToPath(new URL("../../get-shit-done/templates", import.meta.url));
+var BUNDLED_GSD_TEMPLATES_DIR = fileURLToPath(new URL("../../templates", import.meta.url));
 var BUNDLED_GSD_AGENTS_DIR = fileURLToPath(new URL("../../agents", import.meta.url));
 var LEGACY_ASSET_SUBPATH = {
   "gsd-tools": "gsd-tools.cjs",
@@ -9977,7 +9977,8 @@ var configNewProject = async (args, projectDir, workstream) => {
   const hasExaSearch = !!(process.env.EXA_API_KEY || existsSync7(join11(homeDir, ".gsd", "exa_api_key")));
   const defaults = {
     model_profile: "balanced",
-    commit_docs: false,
+    commit_docs: true,
+    // align with CJS buildNewProjectConfig + CONFIG_DEFAULTS (was false: CJS/SDK divergence)
     parallelization: 1,
     search_gitignored: false,
     brave_search: hasBraveSearch,

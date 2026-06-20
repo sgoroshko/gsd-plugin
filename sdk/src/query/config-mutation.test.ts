@@ -468,6 +468,23 @@ describe('configSetModelProfile', () => {
 // ─── configNewProject ──────────────────────────────────────────────────────
 
 describe('configNewProject', () => {
+  // Isolate from the developer's real ~/.gsd/defaults.json — configNewProject
+  // intentionally merges those global defaults (D11) over the hardcoded set, so
+  // without isolation these assertions depend on whoever runs the suite. Point
+  // HOME at the empty tmpDir (no .gsd/defaults.json) for deterministic defaults.
+  let savedHome: string | undefined;
+  let savedUserProfile: string | undefined;
+  beforeEach(() => {
+    savedHome = process.env.HOME;
+    savedUserProfile = process.env.USERPROFILE;
+    process.env.HOME = tmpDir;
+    process.env.USERPROFILE = tmpDir;
+  });
+  afterEach(() => {
+    if (savedHome === undefined) delete process.env.HOME; else process.env.HOME = savedHome;
+    if (savedUserProfile === undefined) delete process.env.USERPROFILE; else process.env.USERPROFILE = savedUserProfile;
+  });
+
   it('creates config.json with defaults', async () => {
     const { configNewProject } = await import('./config-mutation.js');
     const result = await configNewProject([], tmpDir);

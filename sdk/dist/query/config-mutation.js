@@ -403,7 +403,7 @@ export const configNewProject = async (args, projectDir, workstream) => {
     // Build default config
     const defaults = {
         model_profile: 'balanced',
-        commit_docs: false,
+        commit_docs: true, // align with CJS buildNewProjectConfig + CONFIG_DEFAULTS (was false: CJS/SDK divergence)
         parallelization: 1,
         search_gitignored: false,
         brave_search: hasBraveSearch,

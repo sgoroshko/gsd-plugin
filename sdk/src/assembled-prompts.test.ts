@@ -26,6 +26,9 @@ import type { GSDEventStream } from './event-stream.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const sdkPromptsDir = join(__dirname, '..', 'prompts');
+// Plugin flat layout: workflows/ and agents/ live at the repo root (sdk/src -> ..-> ..).
+// PromptFactory otherwise defaults gsdInstallDir to the legacy ~/.claude/get-shit-done path.
+const repoRoot = join(__dirname, '..', '..');
 
 // ─── Blocked patterns (aligned with headless-prompts.test.ts) ────────────────
 
@@ -96,7 +99,7 @@ describe('PromptFactory assembled output', () => {
   let factory: PromptFactory;
 
   beforeAll(() => {
-    factory = new PromptFactory({ sdkPromptsDir });
+    factory = new PromptFactory({ sdkPromptsDir, gsdInstallDir: repoRoot, agentsDir: join(repoRoot, 'agents') });
   });
 
   const phaseTypes = Object.values(PhaseType) as PhaseType[];

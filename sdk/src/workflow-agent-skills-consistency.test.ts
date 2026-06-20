@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..', '..');
-const workflowsDir = join(repoRoot, 'get-shit-done', 'workflows');
+const workflowsDir = join(repoRoot, 'workflows'); // plugin flat layout (not get-shit-done/workflows)
 const agentsDir = join(repoRoot, 'agents');
 
 /**

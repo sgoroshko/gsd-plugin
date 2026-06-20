@@ -28,8 +28,12 @@ export const BUNDLED_CORE_CJS_PATH = fileURLToPath(
   new URL('../../get-shit-done/bin/lib/core.cjs', import.meta.url),
 );
 
+// Plugin flat layout: templates/ sits at the plugin root alongside agents/, NOT
+// under a nested get-shit-done/. resolveBundledTemplatesDir() returns this with no
+// CLAUDE_PLUGIN_ROOT fallback, so the nested path broke profile commands (template
+// not found) at runtime in installs. Mirror BUNDLED_GSD_AGENTS_DIR below.
 export const BUNDLED_GSD_TEMPLATES_DIR = fileURLToPath(
-  new URL('../../get-shit-done/templates', import.meta.url),
+  new URL('../../templates', import.meta.url),
 );
 
 export const BUNDLED_GSD_AGENTS_DIR = fileURLToPath(
