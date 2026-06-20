@@ -7,6 +7,23 @@ decided: 2026-06-19 — "Discuss → resume plan interactive" (keep BOTH discuss
 
 # Collapse plan-phase upstream-artifact gates
 
+## STATUS 2026-06-20: UI-SPEC gate DONE (asymmetric resolution). CONTEXT gate still open.
+
+The two gates resolved DIFFERENTLY, matching the user's stated preferences:
+- **UI-SPEC gate (§5.6) — DONE (commit db4a657).** Now reads `active` (chain OR
+  auto_advance, default on); when auto-advance is on and no `--no-auto`, it
+  auto-generates the UI-SPEC (`Skill ui-phase --auto`) and continues — no gate.
+  The user flagged this gate as "needless"; UI-SPEC from recommended defaults is
+  acceptable (refine via `/gsd:ui-phase` or `--no-auto`). Guard in
+  `tests/auto-advance-context-aware.test.cjs`.
+- **CONTEXT gate (§4) — still open, and deliberately NOT auto-run `--auto`.** The
+  user VALUES the discussion interactively ("the discussions are very useful"), so
+  discuss must stay interactive. Decided approach remains "discuss -> resume plan
+  interactive" (the /clear hand-off), gated on the #1009 currency question. Do NOT
+  auto-run discuss `--auto` the way UI-SPEC now auto-generates.
+
+Original framing below.
+
 plan-phase has two happy-path dead-ends that force a manual round-trip (run the
 upstream command, then manually re-run plan-phase). Replace the bounce-back so
 the user only does the build-work (the discussion / UI spec), never the plumbing
