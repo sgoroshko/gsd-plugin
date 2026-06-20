@@ -8,6 +8,25 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [3.6.0] - 2026-06-20  (less GSD housekeeping prompts: auto-follow recommendations, context-aware auto-advance, severity-routed gaps)
+
+Minor bump. The theme is removing interactions about GSD's own plumbing while keeping every interaction about what you are building. A process prompt that merely confirmed a recommendation is a default, not a question, so those now auto-follow the recommendation (announced, with a per-run escape); build and design prompts are untouched.
+
+### Changed
+- **Rubber-stamp prompts removed (process only).**
+  - Research gate: the unconditional "Research first (Recommended)?" prompt is gone; plan-phase honors the existing `workflow.research` (default on), with `--research` / `--skip-research` as per-run escapes.
+  - Discuss-phase "explore more / ready for context?" gate auto-proceeds to write CONTEXT.md (say "explore more" to open more gray areas).
+  - First-run `/gsd:new-project` offers a single "use recommended defaults" gate seeded with built-in defaults instead of roughly 8 back-to-back config prompts ("Modify" / "Configure fresh" still customize fully).
+- **`auto_advance` now defaults on, and is context-aware.** Cheap phases (2 plans or fewer) flow plan to execute hands-free; big phases pause for a `/clear` hand-off (clean context plus live wave checkpoints); discuss to plan stays interactive (explicit `--chain` runs the full silent chain). Default flipped in both the CJS and SDK resolvers (kept in sync; SDK rebuilt and bundled). The `settings` recommendation and `references/planning-config.md` default updated to match.
+- **Verification gaps auto-route by blocking severity.** The verifier writes `has_blocking_gaps` plus per-gap `severity` to VERIFICATION.md frontmatter (from its existing BLOCKER vs WARNING judgment); `check.verification-status` parses it (fail-safe: unknown severity counts as blocking). `execute-phase` then auto-escalates goal-breaking gaps to gap-closure and auto-parks minor-only gaps to backlog, with no "how should these gaps be handled?" prompt. Each path prints the inverse as a one-line override. Anti-ballooning scope discipline preserved (only minor gaps park).
+
+### Added
+- `--no-auto` flag on `plan-phase` / `discuss-phase` to opt out of the now-default auto-advance per run.
+- `check.verification-status` now returns `blocking_gaps`, `minor_gaps`, and `has_blocking_gaps`.
+
+### Tests
+- `tests/housekeeping-prompt-reduction.test.cjs`, `tests/auto-advance-context-aware.test.cjs`, `tests/gap-auto-routing.test.cjs`, plus SDK `check-verification-status` severity and frontmatter cases.
+
 ## [3.5.0] - 2026-06-14  (adopt gsd-core 1.5.0-rc slice: lazy MVP refs + low-effort status reads)
 
 Minor bump opens the 3.5.x line, which begins tracking the `@opengsd/gsd-core` 1.5.x series. This release adopts the two pieces of the 1.5.0-rc that fit a Claude-only plugin; the rest of the roughly 55-feature rc (multi-runtime support, the Capability Registry refactor, `context:fork` on heavy skills, the install-time `disallowedTools` deny-list) was assessed and deliberately not ported (see Notes).
