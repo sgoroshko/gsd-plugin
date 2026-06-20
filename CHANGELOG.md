@@ -8,6 +8,11 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [3.6.3] - 2026-06-20  (fix: UI-SPEC gate honors auto_advance)
+
+### Fixed
+- **The UI-SPEC gate dead-ended even with auto-advance on.** `plan-phase` §5.6 checked only the ephemeral chain flag (`auto_chain_active`, false on manual invocation), so a manual `plan-phase` on a frontend phase with no UI-SPEC.md printed a "run `/gsd:ui-phase` then re-run" gate even though `auto_advance` defaults on (3.6.0). It now reads `active` (chain OR `auto_advance`): with auto-advance on and no `--no-auto`, it auto-generates the UI-SPEC (`Skill ui-phase --auto`) and continues, no gate. `--no-auto` or `auto_advance: false` keep the manual gate; `--skip-ui` still plans without a UI-SPEC; `/gsd:ui-phase` stays available for an interactive design session. The discuss/CONTEXT gate is intentionally left interactive (the discussion is build-critical and worth keeping live).
+
 ## [3.6.2] - 2026-06-20  (fix: correct update instructions + leaner /gsd:version)
 
 ### Fixed

@@ -6,13 +6,15 @@
 
 **Based on:** [GSD 1.42.3](https://github.com/open-gsd/get-shit-done-redux/releases/tag/v1.42.3) base tree by **TACHES** (Lex Christopherson), now maintained by the community at [open-gsd/get-shit-done-redux](https://github.com/open-gsd/get-shit-done-redux)
 
-**Plugin version:** `3.6.2`
+**Plugin version:** `3.6.3`
 
 **GSD Plugin for Claude Code** ensures your coding work gets done in a systematic, structured way. It prompts you only for the important design and architectural decisions that actually need your judgment, and it splits each step into its own focused subcontext so token use stays optimised across long projects.
 
 Under the hood, a performance-optimized plugin packaging of [GSD](https://github.com/open-gsd/get-shit-done-redux) for Claude Code: reduces per-turn token overhead by ~92%, adds MCP-backed project state, auto-resumes across `/compact`, and bundles everything into a single-install plugin.
 
 ## What's New
+
+**v3.6.3**: the UI-SPEC gate now honors `auto_advance` (default on). A manual `plan-phase` on a frontend phase auto-generates the UI design contract and continues, instead of dead-ending with a "run `/gsd:ui-phase` then re-run" gate. `--no-auto` / `--skip-ui` keep the manual paths, and `/gsd:ui-phase` is still there for an interactive design session.
 
 **v3.6.2**: corrects the "how to update" instructions (the `/plugins` Marketplace refresh flow, in the README and in `/gsd:version`), and makes `/gsd:version` leaner and node-independent so it works even when node is broken.
 
