@@ -82,6 +82,73 @@ describe('checkVerificationStatus', () => {
     expect((d.gaps as string[]).length).toBeGreaterThan(0);
   });
 
+  it('classifies gaps by Severity column (blocking vs minor) for auto gap-handling', async () => {
+    const phaseDir = join(projectDir, '.planning', 'phases', '16-sev');
+    await mkdir(phaseDir, { recursive: true });
+    await writeFile(
+      join(phaseDir, '16-VERIFICATION.md'),
+      [
+        '| # | Description | Status | Severity |',
+        '|---|---|---|---|',
+        '| 1 | core feature works | PASS | - |',
+        '| 2 | playbook runs end to end | FAIL | blocking |',
+        '| 3 | cosmetic label | FAIL | minor |',
+      ].join('\n'),
+      'utf-8',
+    );
+
+    const { data } = await checkVerificationStatus(['16'], projectDir);
+    const d = data as Record<string, unknown>;
+    expect(d.blocking_gaps).toEqual(['playbook runs end to end']);
+    expect(d.minor_gaps).toEqual(['cosmetic label']);
+    expect(d.has_blocking_gaps).toBe(true);
+    expect((d.gaps as string[]).length).toBe(2); // gaps still holds both (backward compat)
+  });
+
+  it('frontmatter has_blocking_gaps is authoritative over table-derived severity', async () => {
+    const phaseDir = join(projectDir, '.planning', 'phases', '18-fm');
+    await mkdir(phaseDir, { recursive: true });
+    await writeFile(
+      join(phaseDir, '18-VERIFICATION.md'),
+      [
+        '---',
+        'status: gaps_found',
+        'has_blocking_gaps: false',
+        '---',
+        '',
+        '| # | Description | Status |',
+        '|---|---|---|',
+        '| 1 | only minor stuff left | FAIL |', // table would default to blocking...
+      ].join('\n'),
+      'utf-8',
+    );
+
+    const { data } = await checkVerificationStatus(['18'], projectDir);
+    const d = data as Record<string, unknown>;
+    expect(d.has_blocking_gaps).toBe(false); // ...but frontmatter wins -> park
+  });
+
+  it('fail-safe: FAIL rows without a Severity column count as blocking', async () => {
+    const phaseDir = join(projectDir, '.planning', 'phases', '17-nosev');
+    await mkdir(phaseDir, { recursive: true });
+    await writeFile(
+      join(phaseDir, '17-VERIFICATION.md'),
+      [
+        '| ID | Description | Status | Notes |',
+        '|---|---|---|---|',
+        '| T-01 | core works | PASS | |',
+        '| T-02 | missing handler | FAIL | |',
+      ].join('\n'),
+      'utf-8',
+    );
+
+    const { data } = await checkVerificationStatus(['17'], projectDir);
+    const d = data as Record<string, unknown>;
+    expect(d.has_blocking_gaps).toBe(true);
+    expect(d.blocking_gaps).toEqual(['missing handler']);
+    expect(d.minor_gaps).toEqual([]);
+  });
+
   it('returns score as fraction string', async () => {
     const phaseDir = join(projectDir, '.planning', 'phases', '04-ui');
     await mkdir(phaseDir, { recursive: true });

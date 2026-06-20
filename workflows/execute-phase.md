@@ -1443,7 +1443,7 @@ grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
 |--------|--------|
 | `passed` | → update_roadmap |
 | `human_needed` | Persist and present human testing items; keep phase pending until verification reruns as `passed` |
-| `gaps_found` | Present gap summary, ask user to choose: **park to backlog** (default — gaps become 999.x entries via `/gsd:add-backlog`, milestone ships when remaining phases close) OR **escalate to current milestone** (gaps become a follow-up phase via `/gsd:plan-phase {phase} --gaps ${GSD_WS}`). Default biases toward backlog to prevent unbounded phase multiplication; user explicitly opts into escalation when gaps actually block milestone goal. |
+| `gaps_found` | Present gap summary, then AUTO-route by `has_blocking_gaps` (from VERIFICATION.md frontmatter) — no prompt: **blocking** gaps escalate to a follow-up phase (`/gsd:plan-phase {phase} --gaps ${GSD_WS}`); **minor-only** gaps park to backlog (`/gsd:add-backlog`, milestone ships when remaining phases close). Each path prints the inverse as a one-line override. Minor-only parking still prevents unbounded phase multiplication; goal-blocking gaps escalate because they must close before ship. |
 
 **If human_needed:**
 
@@ -1519,61 +1519,51 @@ Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/gsd:progress
 
 ### What happens next
 
-Two paths. The plugin defaults to **park to backlog** because turning every verifier gap into a new in-scope phase tends to balloon milestones unbounded; most gaps are legitimately follow-up work, not blockers. Use **escalate to current milestone** only when at least one gap genuinely blocks the milestone's ship criteria.
+Gaps are AUTO-routed by severity (no prompt — a recommended outcome should just
+happen): **blocking** gaps (break the phase goal) escalate to gap-closure; when
+only **minor** (non-goal) gaps remain they park to backlog, so milestones do not
+balloon. Each path prints the inverse as a one-line override.
 ```
 
-Then ask the user (or auto-default to "Park" when running non-interactively):
-
+Read the blocking signal from the verifier (written to VERIFICATION.md frontmatter):
+```bash
+GAP_STATUS=$(gsd-sdk query check.verification-status {X} 2>/dev/null)
 ```
-AskUserQuestion(
-  header: "Gaps handling",
-  question: "How should these {N} gap(s) be handled?",
-  options: [
-    {
-      label: "Park to backlog (Recommended)",
-      description: "Each gap becomes a 999.x backlog entry via /gsd:add-backlog. Milestone can ship when remaining in-scope phases close. Best when gaps are real but not blocking the milestone goal."
-    },
-    {
-      label: "Escalate to current milestone",
-      description: "Gaps become a follow-up phase via /gsd:plan-phase {X} --gaps. New verification cycle opens. Best when at least one gap blocks the milestone goal and MUST close before ship."
-    },
-    {
-      label: "Decide later",
-      description: "Just present the gaps and let me decide manually. Phase stays in gaps_found state until I run /gsd:add-backlog, /gsd:plan-phase --gaps, or override."
-    }
-  ],
-  multiSelect: false
-)
-```
+Parse `has_blocking_gaps` from the JSON (fail-safe: when the field is absent the
+parser derives it from per-gap Severity, defaulting unknown gaps to blocking).
 
-If "Park to backlog": for each gap, run `/gsd:add-backlog "{gap.truth}: {gap.evidence}"`. Mark the phase as `gaps_parked` in STATE.md (continuation allowed; ship not blocked). Print:
+**If `has_blocking_gaps` is true (auto-escalate — do NOT prompt):**
+Blocking gaps invalidate the phase goal and must close before ship. Emit the
+escalation hand-off directly:
 
 ```
 ---
 ## ▶ Next Up — [${PROJECT_CODE}] ${PROJECT_TITLE}
 
-{N} gap(s) parked as backlog items (999.{next}-999.{last}). Milestone can ship when remaining in-scope phases close.
-
-`/gsd:next` — continue with next pending phase
-Also: `cat .planning/ROADMAP.md` — review parked items
-Also: `/gsd:plan-phase {X} --gaps ${GSD_WS}` — escalate later if you change your mind
-```
-
-If "Escalate to current milestone" (current behavior, preserved):
-
-```
----
-## ▶ Next Up — [${PROJECT_CODE}] ${PROJECT_TITLE}
+⚡ Auto-escalated: {N} blocking gap(s) break the phase goal.
 
 `/clear` then:
 
 `/gsd:plan-phase {X} --gaps ${GSD_WS}`
 
 Also: `cat {phase_dir}/{phase_num}-VERIFICATION.md` — full report
-Also: `/gsd:verify-work {X} ${GSD_WS}` — manual testing first
+Also (park instead): `/gsd:add-backlog` the gaps if you accept shipping without them
 ```
 
-If "Decide later": just print the gap summary plus both follow-up commands, no automatic action.
+**If `has_blocking_gaps` is false (only minor gaps — auto-park, do NOT prompt):**
+For each gap, run `/gsd:add-backlog "{gap.truth}: {gap.evidence}"`. Mark the phase
+as `gaps_parked` in STATE.md (continuation allowed; ship not blocked). Print:
+
+```
+---
+## ▶ Next Up — [${PROJECT_CODE}] ${PROJECT_TITLE}
+
+{N} minor gap(s) parked as backlog items (999.{next}-999.{last}). Milestone can ship when remaining in-scope phases close.
+
+`/gsd:next` — continue with next pending phase
+Also: `cat .planning/ROADMAP.md` — review parked items
+Also (escalate instead): `/gsd:plan-phase {X} --gaps ${GSD_WS}`
+```
 
 Gap closure cycle (escalation path): `/gsd:plan-phase {X} --gaps ${GSD_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/gsd:execute-phase {X} --gaps-only ${GSD_WS}` → verifier re-runs.
 
@@ -1690,7 +1680,7 @@ gsd-sdk query commit "docs(phase-{X}): evolve PROJECT.md after phase completion"
 
 <step name="offer_next">
 
-**Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the user with the gap-handling choice (park to backlog by default, or escalate to a follow-up phase via `/gsd:plan-phase {X} --gaps`). No additional routing needed — skip auto-advance regardless of which path the user picks.
+**Exception:** If `gaps_found`, the `verify_phase_goal` step already AUTO-routes by `has_blocking_gaps` (blocking -> escalate hand-off, minor-only -> park), no prompt. No additional routing needed — skip auto-advance regardless of which path was taken.
 
 **No-transition check (spawned by auto-advance chain):**
 

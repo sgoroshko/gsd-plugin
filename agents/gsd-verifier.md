@@ -607,12 +607,20 @@ Parse the JSON to extract all phases. Identify phases with `number > current_pha
 
 Before writing VERIFICATION.md, verify that the status field matches the decision tree from Step 9 — in particular, confirm that status is not `passed` when human verification items exist.
 
-Structure gaps in YAML frontmatter so the orchestrator can route them either to backlog (default, via `/gsd:add-backlog`) or to a follow-up phase (escalation, via `/gsd:plan-phase --gaps`). The user makes the routing choice after seeing the gap summary; do not pre-bias the recommendation in your verification output. The same YAML shape feeds both downstream paths:
+Structure gaps in YAML frontmatter so the orchestrator can AUTO-route them: any
+**blocking** gap (a failed must-have that invalidates the phase goal) routes to a
+follow-up phase (escalation, `/gsd:plan-phase --gaps`); when only **minor**
+(non-goal-blocking) gaps remain, they route to backlog (`/gsd:add-backlog`). Emit
+the FACTUAL blocking signal from your existing BLOCKER/WARNING judgment — do not
+editorialize the routing; the handler acts on `has_blocking_gaps`. The same YAML
+shape feeds both downstream paths:
 
 ```yaml
+has_blocking_gaps: true   # true if ANY gap below is severity: blocking
 gaps:
   - truth: "Observable truth that failed"
     status: failed
+    severity: blocking      # blocking (breaks the phase goal) | minor (non-goal)
     reason: "Brief explanation"
     artifacts:
       - path: "src/path/to/file.tsx"
@@ -623,6 +631,12 @@ gaps:
 
 - `truth`: The observable truth that failed
 - `status`: failed | partial
+- `severity`: blocking | minor — **default blocking** for any failed must-have
+  (a FAILED must-have is a BLOCKER per the verdict legend); use `minor` ONLY when
+  the gap genuinely does not block the phase goal (cosmetic / non-goal miss)
+- `has_blocking_gaps`: top-level aggregate, `true` if any gap is blocking. Drives
+  auto gap-handling: blocking -> escalate, all-minor -> park. Omit/false only when
+  every gap is minor.
 - `reason`: Brief explanation
 - `artifacts`: Files with issues
 - `missing`: Specific things to add/fix
@@ -683,6 +697,7 @@ phase: XX-name
 verified: YYYY-MM-DDTHH:MM:SSZ
 status: passed | gaps_found | human_needed
 score: N/M must-haves verified
+has_blocking_gaps: false # true if any gap has severity: blocking — drives auto escalate-vs-park
 overrides_applied: 0 # Count of PASSED (override) items included in score
 overrides: # Only if overrides exist — carried forward or newly added
   - must_have: "Must-have text that was overridden"

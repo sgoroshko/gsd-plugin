@@ -12,6 +12,7 @@ phase: XX-name
 verified: YYYY-MM-DDTHH:MM:SSZ
 status: passed | gaps_found | human_needed
 score: N/M must-haves verified
+has_blocking_gaps: false # true if any gap is blocking (breaks the phase goal); drives auto escalate-vs-park
 ---
 
 # Phase {X}: {Name} Verification Report

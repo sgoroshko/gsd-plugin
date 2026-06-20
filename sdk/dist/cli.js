@@ -12022,6 +12022,9 @@ var NOT_FOUND_RESULT = {
   status: "missing",
   score: null,
   gaps: [],
+  blocking_gaps: [],
+  minor_gaps: [],
+  has_blocking_gaps: false,
   human_items: [],
   deferred: []
 };
@@ -12082,6 +12085,7 @@ var checkVerificationStatus = async (args, projectDir) => {
   let typeCol = headerRow ? findColIndex(headerRow, (c) => /^type$/i.test(c)) : -1;
   let notesCol = headerRow ? findColIndex(headerRow, (c) => /^notes$/i.test(c)) : -1;
   let descCol = headerRow ? findColIndex(headerRow, (c) => /^description$/i.test(c)) : -1;
+  const severityCol = headerRow ? findColIndex(headerRow, (c) => /^severity$/i.test(c)) : -1;
   if (statusCol === -1)
     statusCol = 2;
   if (descCol === -1)
@@ -12089,6 +12093,8 @@ var checkVerificationStatus = async (args, projectDir) => {
   let passCount = 0;
   let totalCount = 0;
   const gaps = [];
+  const blocking_gaps = [];
+  const minor_gaps = [];
   const human_items = [];
   const deferred = [];
   for (const row of dataRows) {
@@ -12100,14 +12106,23 @@ var checkVerificationStatus = async (args, projectDir) => {
       totalCount++;
     if (statusVal === "PASS")
       passCount++;
-    if (statusVal === "FAIL")
+    if (statusVal === "FAIL") {
       gaps.push(descVal);
+      const sevVal = severityCol >= 0 ? (row.cells[severityCol] ?? "").toLowerCase() : "";
+      if (sevVal.includes("minor") || sevVal.includes("non-block")) {
+        minor_gaps.push(descVal);
+      } else {
+        blocking_gaps.push(descVal);
+      }
+    }
     if (typeVal.includes("human"))
       human_items.push(descVal);
     if (notesVal.includes("deferred"))
       deferred.push(descVal);
   }
   const score = totalCount > 0 ? `${passCount}/${totalCount}` : null;
+  const fmBlocking = content.match(/^has_blocking_gaps:\s*(true|false)\s*$/im);
+  const has_blocking_gaps = fmBlocking ? fmBlocking[1].toLowerCase() === "true" : blocking_gaps.length > 0;
   let status;
   if (gaps.length > 0) {
     status = "fail";
@@ -12122,6 +12137,9 @@ var checkVerificationStatus = async (args, projectDir) => {
       status,
       score,
       gaps,
+      blocking_gaps,
+      minor_gaps,
+      has_blocking_gaps,
       human_items,
       deferred
     }
