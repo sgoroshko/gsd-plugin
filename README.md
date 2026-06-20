@@ -6,13 +6,15 @@
 
 **Based on:** [GSD 1.42.3](https://github.com/open-gsd/get-shit-done-redux/releases/tag/v1.42.3) base tree by **TACHES** (Lex Christopherson), now maintained by the community at [open-gsd/get-shit-done-redux](https://github.com/open-gsd/get-shit-done-redux)
 
-**Plugin version:** `3.6.1`
+**Plugin version:** `3.6.2`
 
 **GSD Plugin for Claude Code** ensures your coding work gets done in a systematic, structured way. It prompts you only for the important design and architectural decisions that actually need your judgment, and it splits each step into its own focused subcontext so token use stays optimised across long projects.
 
 Under the hood, a performance-optimized plugin packaging of [GSD](https://github.com/open-gsd/get-shit-done-redux) for Claude Code: reduces per-turn token overhead by ~92%, adds MCP-backed project state, auto-resumes across `/compact`, and bundles everything into a single-install plugin.
 
 ## What's New
+
+**v3.6.2**: corrects the "how to update" instructions (the `/plugins` Marketplace refresh flow, in the README and in `/gsd:version`), and makes `/gsd:version` leaner and node-independent so it works even when node is broken.
 
 **v3.6.1**: fixes `/gsd:profile-user` and dev-preferences failing with "Template not found" in installs (the bundled SDK resolved templates at a stale nested path), and aligns the `commit_docs` new-project default between the CJS and SDK resolvers.
 

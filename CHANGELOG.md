@@ -8,6 +8,14 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [3.6.2] - 2026-06-20  (fix: correct update instructions + leaner /gsd:version)
+
+### Fixed
+- **"How to update" instructions were stale.** Both the README Updating section and the `/gsd:version` update hint pointed at the deprecated `/plugin marketplace update` + `/plugin install` commands. Now they describe the actual flow: `/plugins` -> Marketplace -> select gsd-plugin to refresh -> Esc twice (updates it on disk), then `/reload-plugins` in each open session. README also notes `/gsd:version` for checking the active version.
+
+### Changed
+- **`/gsd:version` is leaner and node-independent.** The skill runs at `effort: low` (cheap read-only report) with trimmed prose, and the installed-version parse uses `grep`/`sed` instead of `node`, so it keeps working even when node is broken (e.g. the Homebrew simdjson library drift) and skips the node startup.
+
 ## [3.6.1] - 2026-06-20  (fix: profile template path in flat-layout installs)
 
 ### Fixed
