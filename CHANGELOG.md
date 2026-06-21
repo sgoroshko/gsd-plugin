@@ -8,6 +8,14 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [3.7.1] - 2026-06-21  (fix: /gsd:version exit code + resilience sweep extension)
+
+### Fixed
+- **`/gsd:version` reported `Error: Exit code 1` when up to date.** The update-hint `&& printf` chain returned non-zero whenever the installed version equaled the latest (the version-equal test fails and short-circuits the chain), so Claude Code flagged the command as an error even though it printed correctly. Switched to an `if/then/fi` block (always exits 0), and compacted the bash from 8 lines to 4 to cut the per-invocation token cost (dropped the curl fallback and comments; `git ls-remote` remains the tag source).
+
+### Changed
+- **Resilience sweep extended to `/gsd:validate-phase` and `/gsd:secure-phase`.** Both are genuine-judgment gates (validate: which gaps are auto-testable vs manual-only; secure: verify vs deliberately accept-risk), so they keep their prompt but now mark the fix-it action ("Fix all gaps" / "Verify all open threats") as recommended, since that is the whole reason you ran the command, instead of a neutral menu. secure-phase's accept-risk stays a deliberate security choice (never the default) and its enforcing gate is unchanged.
+
 ## [3.7.0] - 2026-06-21  (improved resilience when sessions are broken)
 
 When a session drops and resumes, phases can be left partially delivered. GSD used to either lose the thread or confront the user with hard-to-read internals questions. This release heals instead: it finishes the build-work that was in flight and auto-fixes mechanical gaps, reserving questions for genuine judgment calls in plain language.

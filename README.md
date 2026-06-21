@@ -6,7 +6,7 @@
 
 **Based on:** [GSD 1.42.3](https://github.com/open-gsd/get-shit-done-redux/releases/tag/v1.42.3) base tree by **TACHES** (Lex Christopherson), now maintained by the community at [open-gsd/get-shit-done-redux](https://github.com/open-gsd/get-shit-done-redux)
 
-**Plugin version:** `3.7.0`
+**Plugin version:** `3.7.1`
 
 **GSD Plugin for Claude Code** ensures your coding work gets done in a systematic, structured way. It prompts you only for the important design and architectural decisions that actually need your judgment, and it splits each step into its own focused subcontext so token use stays optimised across long projects.
 
@@ -14,7 +14,9 @@ Under the hood, a performance-optimized plugin packaging of [GSD](https://github
 
 ## What's New
 
-**v3.7.0** (latest): **Improved resilience when sessions are broken.** When a session drops and resumes, phases can be left partially delivered, and GSD used to either lose the thread or confront you with hard-to-read internals questions. Now it heals instead:
+**v3.7.1**: fixes `/gsd:version` reporting `Error: Exit code 1` when you are up to date (the update-hint chain exited non-zero; it printed correctly but Claude Code flagged it), and trims its bash. Extends the resilience sweep to `/gsd:validate-phase` and `/gsd:secure-phase` so the fix-it action is recommended (not a neutral menu).
+
+**v3.7.0**: **Improved resilience when sessions are broken.** When a session drops and resumes, phases can be left partially delivered, and GSD used to either lose the thread or confront you with hard-to-read internals questions. Now it heals instead:
 - **Interrupted UATs are never lost.** If you detour mid-verification (a bug to `/gsd:quick`, ideas to `/gsd:add-phase` / `/gsd:explore`), an unfinished UAT becomes a hard invariant in `/gsd:next` (resumed before any forward routing) and the detour itself leaves a "↩ resume UAT" breadcrumb.
 - **Coverage gates auto-heal instead of interrogating.** When the decision/requirements-coverage gates find a plan that implements a decision but didn't literally tag it, GSD now backfills the `(D-NN)`/REQ-ID tags and proceeds silently (the plan-checker already confirmed the work is covered). Only decisions implemented in *no* plan surface, in plain language with the fix recommended.
 - **Leaner `/gsd:version`** — inlined and node-free, so it works even when node is broken.
