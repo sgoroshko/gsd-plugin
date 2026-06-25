@@ -5,7 +5,7 @@
 - [x] **v1.0 MVP** — Phases 1-3 (shipped 2026-04-06)
 - [x] **v1.1 Session Continuity** — Phases 4-5 (shipped 2026-04-20; Phase 6 dropped, rehomed to v1.2 backlog)
 - [x] **v1.2 Upstream Resilience** — Phases 7-9 (shipped 2026-04-24 — 3 phases, 3 plans, 14 tasks, ~26min executor time)
-- [ ] **v1.3** — Not yet scoped. Carried backlog: LIFE-02, LIFE-03, BEHAVIOR-01, UPST-03, UPST-04.
+- [ ] **v1.3 Consistency & Code-Integrity Safeguards** — Phases 10-11 (scoped 2026-06-26). Carried backlog (still deferred): LIFE-02, LIFE-03, BEHAVIOR-01, UPST-03, UPST-04.
 
 ## Phases
 
@@ -42,9 +42,25 @@ Full details: [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md)
 
 </details>
 
-### v1.3 (not yet scoped)
+<details open>
+<summary>v1.3 Consistency & Code-Integrity Safeguards (Phases 10-11) — SCOPED 2026-06-26</summary>
 
-Run `/gsd:new-milestone` to start v1.3 planning. Carries forward the following deferred requirements from v1.1 and v1.2:
+Addresses **cross-session drift**: independent agent sessions, no shared memory, produce
+locally-reasonable but globally-inconsistent code (duplicate logic under different names,
+oscillating naming conventions, split architectural patterns, half-finished stubs). Two
+complementary tracks — prevention stops new drift, detection reconciles existing drift.
+Origin: `/gsd:explore` session 2026-06-26. VibeDrift v0.14.0 empirically evaluated on 4 repos
+(see `milestones/v1.3-ROADMAP.md` and `references/` for findings: adopt as optional external
+gate + cherry-pick its heuristics; do not vendor).
+
+- [ ] Phase 10: Prevention — convention/architectural conformance in plan -> execute -> review
+- [ ] Phase 11: Detection — consistency sweep + optional VibeDrift gate in the pre-1.0 ceremony
+
+Full details: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
+
+</details>
+
+### v1.3 carried backlog (still deferred, NOT in this milestone)
 
 - **LIFE-02** — staleness threshold detection for HANDOFF.json (resume refuses / warns on stale)
 - **LIFE-03** — dedicated `/gsd:checkpoint` skill for manual save (optional; current manual path works via `/gsd:pause-work`)
@@ -59,4 +75,4 @@ Run `/gsd:new-milestone` to start v1.3 planning. Carries forward the following d
 | v1.0 MVP | 3 | 2026-04-06 |
 | v1.1 Session Continuity | 2 (+ 1 dropped) | 2026-04-20 |
 | v1.2 Upstream Resilience | 3 | 2026-04-24 |
-| v1.3 | TBD | — |
+| v1.3 Consistency & Code-Integrity Safeguards | 2 (scoped) | — |
