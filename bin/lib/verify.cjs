@@ -1473,16 +1473,27 @@ function cmdVerifyConventions(cwd, opts, raw) {
       // changed files themselves).
       const scopeDirs = new Set(changedFiles.map((c) => path.posix.dirname(c.file.replace(/\\/g, '/'))));
       const corpus = [];
+      let corpusDirsFailed = 0;
       for (const dir of scopeDirs) {
         try {
           corpus.push(...collectConventionCorpus(path.resolve(cwd, dir), cwd));
         } catch {
-          // ignore an unreadable scope dir
+          // An unreadable scope dir does not fail the advisory run, but it is
+          // tracked + surfaced below so a caller can tell "no findings because
+          // conformant" apart from "no findings because the corpus could not be
+          // read" (avoids the error-swallowing-empty-sentinel anti-pattern).
+          corpusDirsFailed++;
         }
       }
       const derived = conventions.deriveConventions(corpus.length ? corpus : changedFiles.map((c) => c.file), { cwd });
       const result = conventions.checkConformance(changedFiles, derived);
-      emit({ mode: 'check', findings: result.findings || [], skipped: result.skipped || false, reason: result.reason || null });
+      emit({
+        mode: 'check',
+        findings: result.findings || [],
+        skipped: result.skipped || false,
+        reason: result.reason || (corpusDirsFailed ? 'partial-corpus' : null),
+        corpus_dirs_failed: corpusDirsFailed,
+      });
       return;
     }
 
