@@ -30,8 +30,11 @@ function check(name, fn) {
 
 // ─── exports ────────────────────────────────────────────────────────────────
 
-check('exports the five named functions', () => {
-  for (const f of ['deriveConventions', 'checkConformance', 'summarizeAxis', 'classifyCasing', 'sanitizePaths']) {
+check('exports the public functions', () => {
+  for (const f of [
+    'deriveConventions', 'checkConformance', 'summarizeAxis', 'classifyCasing', 'sanitizePaths',
+    'classifyArchitecture', 'extractIdentifiers', 'blankSpans',
+  ]) {
     assert.strictEqual(typeof conventions[f], 'function', `missing ${f}`);
   }
 });
