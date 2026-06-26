@@ -68,12 +68,12 @@ the conventions the codebase already exhibits (derived by majority vote, not har
 2. `gsd-code-reviewer` flags a deliberately convention-violating changed file and passes a conforming one.
 3. Verb-vs-body intent and architectural-split (DI vs env, error-handling) checks run with no new runtime dependency, in the existing review path.
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 10-01-PLAN.md — TDD: bin/lib/conventions.cjs (deriveConventions + checkConformance) + tests/conventions.test.cjs (Wave 0 first)
+- [x] 10-01-PLAN.md — TDD: bin/lib/conventions.cjs (deriveConventions + checkConformance) + tests/conventions.test.cjs (Wave 0 first)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
