@@ -247,6 +247,11 @@ function observeFile(file, src) {
  * verdict. Normalized Shannon entropy H_norm = -Σ p·log(p) / log(n);
  * 0 = single variant, 1 = perfectly even. Dominance = max share.
  * RESEARCH §Code Examples "Normalized Shannon entropy + dominance".
+ *
+ * `dominant` is ONLY meaningful when `status === 'named'`. For a contested axis
+ * it is `null` while `share`/`variants` stay populated, so any consumer must
+ * gate on `status === 'named'` before comparing against `dominant` — a raw
+ * `got !== axis.dominant` against a contested axis would flag everything.
  * @param {Object} counts - { variant: n }
  * @param {Object} [opts] - { minSamples=8, dominanceThreshold=0.70 }
  */
