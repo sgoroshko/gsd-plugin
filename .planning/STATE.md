@@ -59,7 +59,11 @@ See: milestones/v1.0-ROADMAP.md for full v1.0 decision history.
 
 ### Pending Todos
 
-None.
+4 pending (see `.planning/todos/pending/`):
+- Add more programming language rule packs for the naming-drift/convention checks (tooling; extends Phase 10 D-05)
+- Convert "(Recommended)"-default rubber-stamp prompts into announced auto-actions
+- Collapse plan-phase's two upstream-artifact dead-ends into auto-chaining
+- auto_advance default-on (context-aware) + auto-escalate blocking gaps
 
 ### Blockers/Concerns
 
