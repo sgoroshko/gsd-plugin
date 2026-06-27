@@ -63,6 +63,24 @@ jobs:
       - name: Run conventions module test
         run: node tests/conventions.test.cjs
 
+  drift-detectors:
+    name: Drift detectors (Phase 11)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run drift detector tests
+        run: |
+          node tests/semantic-dup.test.cjs
+          node tests/phantom-scaffolding.test.cjs
+          node tests/drift-allowlist.test.cjs
+      - name: Smoke test verify drift JSON output
+        run: |
+          node bin/gsd-tools.cjs verify drift --scope . --json | node -e \
+            "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const o=JSON.parse(s); if(typeof o!=='object'||!('skipped' in o))throw new Error('invalid drift JSON: '+s.slice(0,200)); process.exit(0);})"
+
   user-docs-jargon:
     name: User-docs jargon ratchet
     runs-on: ubuntu-latest
