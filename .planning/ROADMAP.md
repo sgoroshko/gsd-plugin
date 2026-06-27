@@ -100,7 +100,7 @@ VibeDrift is treated as a second upstream whose heuristics are ported and watche
 2. `/gsd:scan --drift` produces a ranked drift report on gsd-plugin.
 3. Native-primary proven: the sweep runs entirely via native checks (zero runtime dep, VibeDrift never invoked).
 
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 
 Plans:
 **Wave 1**
@@ -111,7 +111,7 @@ Plans:
 
 **Wave 2** *(blocked on 11-01 + 11-02)*
 
-- [ ] 11-04-PLAN.md — Wire `verify drift` subcommand (cmdVerifyDrift + router) + CJS<->SDK parity (manifest/aliases/2 config keys/dist rebuild) + CI drift-detectors job
+- [x] 11-04-PLAN.md — Wire `verify drift` subcommand (cmdVerifyDrift + router) + CJS<->SDK parity (manifest/aliases/2 config keys/dist rebuild) + CI drift-detectors job
 
 **Wave 3** *(blocked on 11-04)*
 
