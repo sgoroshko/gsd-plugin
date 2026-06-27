@@ -35,7 +35,7 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 
 ## Step 1: Parse arguments and resolve focus
 
-### 1a. --drift mode (non-agent, pure-compute — check FIRST)
+### 1a. --drift mode (non-agent, pure-compute: check FIRST)
 
 If the user input contains `--drift`:
 

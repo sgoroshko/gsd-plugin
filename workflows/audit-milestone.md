@@ -164,7 +164,7 @@ Discovery only — never auto-calls `/gsd:validate-phase`.
 
 ## 5.6. Drift Integrity Gate (opt-in)
 
-Skip if `workflow.drift_gate` is not `true` (absent/false = disabled, default OFF — D-05).
+Skip if `workflow.drift_gate` is not `true` (absent/false = disabled, default OFF, D-05).
 
 ```bash
 DRIFT_GATE=$(gsd-sdk query config-get workflow.drift_gate --raw --default false)
@@ -199,7 +199,7 @@ drift:
 
 **Never blocks the milestone.** The milestone fails ONLY when `workflow.drift_fail_on_score` (or an explicit `--fail-on-score N`) is set AND the score is below it (D-06). The hard cutoff is never imposed by default.
 
-Discovery only — never auto-fails the milestone without an explicit cutoff.
+Discovery only, never auto-fails the milestone without an explicit cutoff.
 
 ## 6. Aggregate into v{version}-MILESTONE-AUDIT.md
 
