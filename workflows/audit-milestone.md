@@ -162,6 +162,45 @@ Add to audit YAML: `nyquist: { compliant_phases, partial_phases, missing_phases,
 
 Discovery only — never auto-calls `/gsd:validate-phase`.
 
+## 5.6. Drift Integrity Gate (opt-in)
+
+Skip if `workflow.drift_gate` is not `true` (absent/false = disabled, default OFF — D-05).
+
+```bash
+DRIFT_GATE=$(gsd-sdk query config-get workflow.drift_gate --raw --default false)
+```
+
+If not `true`: skip entirely.
+
+Otherwise:
+
+```bash
+DRIFT_FAIL=$(gsd-sdk query config-get workflow.drift_fail_on_score --raw --default "")
+FAIL_FLAG=""
+[ -n "$DRIFT_FAIL" ] && FAIL_FLAG="--fail-on-score $DRIFT_FAIL"
+DRIFT_JSON=$(gsd-tools verify drift --scope . $FAIL_FLAG --json 2>&1)
+```
+
+Parse the JSON: extract `score`, `findings`, `suppressed`, `counts`.
+
+Report with **recommended-fix framing**: present each finding as a recommendation (not a blocker), surface the suppressed list so the intentional CJS/SDK dual-resolver suppression is auditable (D-07). With the committed `.gsd/drift-allowlist.json` in place, the dual-resolver pair is suppressed and does NOT contribute to the score.
+
+Add to audit YAML:
+
+```yaml
+drift:
+  score: {score}
+  findings_count: {counts.findings}
+  suppressed_count: {counts.suppressed}
+  overall: "pass | warn | fail"
+```
+
+`overall` is `fail` only when `workflow.drift_fail_on_score` (or explicit `--fail-on-score N`) is set AND the score is below the cutoff (D-06). Otherwise `pass` (score >= cutoff or no cutoff set) or `warn` (findings present but no cutoff).
+
+**Never blocks the milestone.** The milestone fails ONLY when `workflow.drift_fail_on_score` (or an explicit `--fail-on-score N`) is set AND the score is below it (D-06). The hard cutoff is never imposed by default.
+
+Discovery only — never auto-fails the milestone without an explicit cutoff.
+
 ## 6. Aggregate into v{version}-MILESTONE-AUDIT.md
 
 Create `.planning/v{version}-v{version}-MILESTONE-AUDIT.md` with:
