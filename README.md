@@ -8,41 +8,7 @@
 
 **GSD Plugin for Claude Code** ensures your coding work gets done in a systematic, structured way. It prompts you only for the important design and architectural decisions that actually need your judgment, and it splits each step into its own focused subcontext so token use stays optimised across long projects.
 
-Under the hood, a performance-optimized plugin packaging of [GSD](https://github.com/open-gsd/get-shit-done-redux) for Claude Code: reduces per-turn token overhead by ~92%, adds MCP-backed project state, auto-resumes across `/compact`, and bundles everything into a single-install plugin.
-
-## What's New
-
-**v4.0.0**: **Consistency and code-integrity safeguards, and a second upstream.** GSD now derives a project's naming and architectural conventions and gates changes against them (`verify conventions`, wired into pattern-mapper and code-review), and ships native drift detection that finds duplicated logic, phantom/placeholder scaffolding, and structural near-clones across the repo (`verify drift`, `/gsd:scan --drift`, plus an opt-in `audit-milestone` integrity gate). All detection is 100% native with zero runtime dependency. This release also formalizes **[VibeDrift](https://www.npmjs.com/package/@vibedrift/cli) as a second upstream**: GSD never runs it, but ports its drift-detection heuristics natively and watches its releases to cherry-pick future ones. The major bump to 4.0 marks gsd-plugin as its own version line, signaling how far it has diverged from upstream GSD (see [Upstream projects](#upstream-projects) and [Versioning](#versioning)).
-
-**v3.7.2**: `/gsd:autonomous` no longer stops to ask you to re-confirm before kicking off. The workflow had no confirm-scope step, so the orchestrator improvised one out of caution: it printed the phase plan, then waited for you to say "go" again, which defeats an autonomous command. A new explicit contract makes the rule plain (show the plan, then continue into execution in the same turn; surface a discovered constraint, like a migration-chain collision, as a one-line notice it acts on, not a gate that waits). The only pauses left are the real decision points: human verification, gaps after one auto-retry, audit gaps/tech-debt, and blockers.
-
-**v3.7.1**: fixes `/gsd:version` reporting `Error: Exit code 1` when you are up to date (the update-hint chain exited non-zero; it printed correctly but Claude Code flagged it), and trims its bash. Extends the resilience sweep to `/gsd:validate-phase` and `/gsd:secure-phase` so the fix-it action is recommended (not a neutral menu).
-
-**v3.7.0**: **Improved resilience when sessions are broken.** When a session drops and resumes, phases can be left partially delivered, and GSD used to either lose the thread or confront you with hard-to-read internals questions. Now it heals instead:
-- **Interrupted UATs are never lost.** If you detour mid-verification (a bug to `/gsd:quick`, ideas to `/gsd:add-phase` / `/gsd:explore`), an unfinished UAT becomes a hard invariant in `/gsd:next` (resumed before any forward routing) and the detour itself leaves a "↩ resume UAT" breadcrumb.
-- **Coverage gates auto-heal instead of interrogating.** When the decision/requirements-coverage gates find a plan that implements a decision but didn't literally tag it, GSD now backfills the `(D-NN)`/REQ-ID tags and proceeds silently (the plan-checker already confirmed the work is covered). Only decisions implemented in *no* plan surface, in plain language with the fix recommended.
-- **Leaner `/gsd:version`** — inlined and node-free, so it works even when node is broken.
-
-**v3.6.3**: the UI-SPEC gate now honors `auto_advance` (default on). A manual `plan-phase` on a frontend phase auto-generates the UI design contract and continues, instead of dead-ending with a "run `/gsd:ui-phase` then re-run" gate. `--no-auto` / `--skip-ui` keep the manual paths, and `/gsd:ui-phase` is still there for an interactive design session.
-
-**v3.6.2**: corrects the "how to update" instructions (the `/plugins` Marketplace refresh flow, in the README and in `/gsd:version`), and makes `/gsd:version` leaner and node-independent so it works even when node is broken.
-
-**v3.6.1**: fixes `/gsd:profile-user` and dev-preferences failing with "Template not found" in installs (the bundled SDK resolved templates at a stale nested path), and aligns the `commit_docs` new-project default between the CJS and SDK resolvers.
-
-**v3.6.0**: **Less GSD housekeeping prompts.** GSD now interrupts you only for decisions about what you're building, not its own plumbing.
-- **No more rubber-stamp prompts.** Process prompts that just confirmed a recommendation now auto-follow it (announced, with a per-run escape): the "Research first (Recommended)?" gate, the discuss-phase "ready for context?" gate, and the ~8-question new-project setup gauntlet (first run now offers a single "use recommended defaults" gate). Build and design prompts stay interactive.
-- **Auto-advance on by default, context-aware.** `auto_advance` now defaults on: cheap phases (<=2 plans) flow plan to execute hands-free; big phases pause for a `/clear` hand-off (clean context plus live wave checkpoints). discuss to plan stays interactive. `--no-auto` opts out per run.
-- **Gaps auto-route by severity.** Verification gaps that break the phase goal auto-escalate to gap-closure; minor-only gaps auto-park to backlog, with no "how should these gaps be handled?" prompt.
-
-Recent: v4.0.0 added the convention conformance gate, native drift detection, and a second upstream (VibeDrift), and moved the plugin to its own version line; v3.7.0 added session-resilience healing. Full history in [CHANGELOG.md](./CHANGELOG.md).
-
-> ### Upstream change (May 2026)
->
-> In May 2026 the original GSD maintainer TÂCHES (Lex Christopherson) became unreachable, deleted his social accounts, and the associated `$GSD` Solana token was publicly linked to a rug-pull (see external coverage: [intellectia.ai](https://intellectia.ai/news/crypto/gsd-token-allegedly-rugpulled-after-founder-exit), [ourcryptotalk](https://ourcryptotalk.com/news/bags-hackathon-winner-gsd-cloud-rug-pull)).
->
-> On 2026-05-22, GSD collaborator [trek-e](https://github.com/trek-e) launched a community continuation at [open-gsd/get-shit-done-redux](https://github.com/open-gsd/get-shit-done-redux): same MIT-licensed code, all 394 branches and 229 tags mirrored bit-for-bit, no token references. The [migration announcement](https://github.com/open-gsd/get-shit-done-redux/discussions/109) details what changed for downstream consumers. The original `gsd-build/get-shit-done` is now locked and auto-closes new issues and PRs.
->
-> This plugin treats `open-gsd/get-shit-done-redux` as upstream from `v2.43.6` onward. No code changed at the cutover (the redux is bit-perfect with the pre-rug tree); only URLs and npm package names moved. See [Versioning](#versioning) and [Credits](#credits) for the historical relationship.
+Under the hood, a performance-optimized plugin evolution of [GSD](https://github.com/open-gsd/get-shit-done-redux) for Claude Code: reduces per-turn token overhead by ~92%, adds MCP-backed project state, auto-resumes across `/compact`, and bundles everything into a single-install plugin.
 
 ## Installation
 
@@ -129,6 +95,40 @@ Note: the marketplace step (1) updates the plugin on disk; `/reload-plugins` (2)
 To check the active version in a session, run `/gsd:version` (it also checks GitHub for the latest release and prints the update steps when you are behind).
 
 **Do I run `/reload-plugins` in all open sessions or just one?** In all of them. `/reload-plugins` is per-session: each Claude Code session loads its own copy of the plugin, so reloading in one session does not refresh the others. Run it once per session you have open. Sessions you start **after** the update load the new version automatically, with no reload needed (so only your already-open sessions need the command). No `/exit` or restart is required. gsd-plugin ships an MCP server, but its tools load on demand via tool search, so the reload applies cleanly; on Claude Code v2.1.163+ in the rare case a reload would force a full context re-read, `/reload-plugins` prints a warning and you re-run it as `/reload-plugins --force`.
+
+## What's New
+
+**v4.0.0**: **Consistency and code-integrity safeguards, and a second upstream.** GSD now derives a project's naming and architectural conventions and gates changes against them (`verify conventions`, wired into pattern-mapper and code-review), and ships native drift detection that finds duplicated logic, phantom/placeholder scaffolding, and structural near-clones across the repo (`verify drift`, `/gsd:scan --drift`, plus an opt-in `audit-milestone` integrity gate). All detection is 100% native with zero runtime dependency. This release also formalizes **[VibeDrift](https://www.npmjs.com/package/@vibedrift/cli) as a second upstream**: GSD never runs it, but ports its drift-detection heuristics natively and watches its releases to cherry-pick future ones. The major bump to 4.0 marks gsd-plugin as its own version line, signaling how far it has diverged from upstream GSD (see [Upstream projects](#upstream-projects) and [Versioning](#versioning)).
+
+**v3.7.2**: `/gsd:autonomous` no longer stops to ask you to re-confirm before kicking off. The workflow had no confirm-scope step, so the orchestrator improvised one out of caution: it printed the phase plan, then waited for you to say "go" again, which defeats an autonomous command. A new explicit contract makes the rule plain (show the plan, then continue into execution in the same turn; surface a discovered constraint, like a migration-chain collision, as a one-line notice it acts on, not a gate that waits). The only pauses left are the real decision points: human verification, gaps after one auto-retry, audit gaps/tech-debt, and blockers.
+
+**v3.7.1**: fixes `/gsd:version` reporting `Error: Exit code 1` when you are up to date (the update-hint chain exited non-zero; it printed correctly but Claude Code flagged it), and trims its bash. Extends the resilience sweep to `/gsd:validate-phase` and `/gsd:secure-phase` so the fix-it action is recommended (not a neutral menu).
+
+**v3.7.0**: **Improved resilience when sessions are broken.** When a session drops and resumes, phases can be left partially delivered, and GSD used to either lose the thread or confront you with hard-to-read internals questions. Now it heals instead:
+- **Interrupted UATs are never lost.** If you detour mid-verification (a bug to `/gsd:quick`, ideas to `/gsd:add-phase` / `/gsd:explore`), an unfinished UAT becomes a hard invariant in `/gsd:next` (resumed before any forward routing) and the detour itself leaves a "↩ resume UAT" breadcrumb.
+- **Coverage gates auto-heal instead of interrogating.** When the decision/requirements-coverage gates find a plan that implements a decision but didn't literally tag it, GSD now backfills the `(D-NN)`/REQ-ID tags and proceeds silently (the plan-checker already confirmed the work is covered). Only decisions implemented in *no* plan surface, in plain language with the fix recommended.
+- **Leaner `/gsd:version`** — inlined and node-free, so it works even when node is broken.
+
+**v3.6.3**: the UI-SPEC gate now honors `auto_advance` (default on). A manual `plan-phase` on a frontend phase auto-generates the UI design contract and continues, instead of dead-ending with a "run `/gsd:ui-phase` then re-run" gate. `--no-auto` / `--skip-ui` keep the manual paths, and `/gsd:ui-phase` is still there for an interactive design session.
+
+**v3.6.2**: corrects the "how to update" instructions (the `/plugins` Marketplace refresh flow, in the README and in `/gsd:version`), and makes `/gsd:version` leaner and node-independent so it works even when node is broken.
+
+**v3.6.1**: fixes `/gsd:profile-user` and dev-preferences failing with "Template not found" in installs (the bundled SDK resolved templates at a stale nested path), and aligns the `commit_docs` new-project default between the CJS and SDK resolvers.
+
+**v3.6.0**: **Less GSD housekeeping prompts.** GSD now interrupts you only for decisions about what you're building, not its own plumbing.
+- **No more rubber-stamp prompts.** Process prompts that just confirmed a recommendation now auto-follow it (announced, with a per-run escape): the "Research first (Recommended)?" gate, the discuss-phase "ready for context?" gate, and the ~8-question new-project setup gauntlet (first run now offers a single "use recommended defaults" gate). Build and design prompts stay interactive.
+- **Auto-advance on by default, context-aware.** `auto_advance` now defaults on: cheap phases (<=2 plans) flow plan to execute hands-free; big phases pause for a `/clear` hand-off (clean context plus live wave checkpoints). discuss to plan stays interactive. `--no-auto` opts out per run.
+- **Gaps auto-route by severity.** Verification gaps that break the phase goal auto-escalate to gap-closure; minor-only gaps auto-park to backlog, with no "how should these gaps be handled?" prompt.
+
+Recent: v4.0.0 added the convention conformance gate, native drift detection, and a second upstream (VibeDrift), and moved the plugin to its own version line; v3.7.0 added session-resilience healing. Full history in [CHANGELOG.md](./CHANGELOG.md).
+
+> ### Upstream change (May 2026)
+>
+> In May 2026 the original GSD maintainer TÂCHES (Lex Christopherson) became unreachable, deleted his social accounts, and the associated `$GSD` Solana token was publicly linked to a rug-pull (see external coverage: [intellectia.ai](https://intellectia.ai/news/crypto/gsd-token-allegedly-rugpulled-after-founder-exit), [ourcryptotalk](https://ourcryptotalk.com/news/bags-hackathon-winner-gsd-cloud-rug-pull)).
+>
+> On 2026-05-22, GSD collaborator [trek-e](https://github.com/trek-e) launched a community continuation at [open-gsd/get-shit-done-redux](https://github.com/open-gsd/get-shit-done-redux): same MIT-licensed code, all 394 branches and 229 tags mirrored bit-for-bit, no token references. The [migration announcement](https://github.com/open-gsd/get-shit-done-redux/discussions/109) details what changed for downstream consumers. The original `gsd-build/get-shit-done` is now locked and auto-closes new issues and PRs.
+>
+> This plugin treats `open-gsd/get-shit-done-redux` as upstream from `v2.43.6` onward. No code changed at the cutover (the redux is bit-perfect with the pre-rug tree); only URLs and npm package names moved. See [Versioning](#versioning) and [Credits](#credits) for the historical relationship.
 
 ## What GSD Plugin provides
 
