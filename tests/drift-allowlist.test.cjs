@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-// Unit tests for bin/lib/drift-allowlist.cjs (Phase 11, plan 11-02).
+// Unit tests for bin/lib/drift-allowlist.cjs.
 //
 // Covers DRIFT-03: committed pre-seeded allowlist + never-throw loader +
 // pair/ignore suppression auditability (D-07).
@@ -111,6 +111,36 @@ check('committed .gsd/drift-allowlist.json parses and contains the bin/lib<->sdk
     (p) => /bin\/lib/.test(p.a + p.b) && /sdk\/src/.test(p.a + p.b) && typeof p.reason === 'string' && p.reason.length > 0
   );
   assert.ok(hasPair, 'should contain a bin/lib<->sdk/src pair with a non-empty reason');
+});
+
+// ─── isIgnored: .vibedriftignore corpus exclusion ────────────────────────────
+
+check('exports isIgnored', () => {
+  assert.strictEqual(typeof allowlist.isIgnored, 'function');
+});
+
+check('isIgnored: glob entry excludes a matching file only', () => {
+  const allow = { pairs: [], ignore: ['*.generated.cjs'] };
+  assert.strictEqual(allowlist.isIgnored('command-aliases.generated.cjs', allow), true);
+  assert.strictEqual(allowlist.isIgnored('verify.cjs', allow), false);
+});
+
+check('isIgnored: bare directory name excludes everything beneath it', () => {
+  const allow = { pairs: [], ignore: ['vendor'] };
+  assert.strictEqual(allowlist.isIgnored('vendor/lib/x.cjs', allow), true);
+  assert.strictEqual(allowlist.isIgnored('vendor', allow), true);
+  assert.strictEqual(allowlist.isIgnored('src/vendor-helper.cjs', allow), false);
+});
+
+check('isIgnored: trailing-slash and ** entries both match nested paths', () => {
+  assert.strictEqual(allowlist.isIgnored('dist/a/b.cjs', { ignore: ['dist/'] }), true);
+  assert.strictEqual(allowlist.isIgnored('sdk/src/query/x.ts', { ignore: ['sdk/src/**'] }), true);
+});
+
+check('isIgnored: empty/missing ignore list returns false (never throws)', () => {
+  assert.strictEqual(allowlist.isIgnored('any/file.cjs', { ignore: [] }), false);
+  assert.strictEqual(allowlist.isIgnored('any/file.cjs', {}), false);
+  assert.strictEqual(allowlist.isIgnored('any/file.cjs', null), false);
 });
 
 // footer

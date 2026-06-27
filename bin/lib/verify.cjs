@@ -1590,7 +1590,18 @@ function cmdVerifyDrift(cwd, opts, raw) {
     }
 
     // Load allowlist (never throws — returns empty-but-valid on missing file)
-    const allow = require('./drift-allowlist.cjs').load(cwd);
+    const driftAllowlist = require('./drift-allowlist.cjs');
+    const allow = driftAllowlist.load(cwd);
+
+    // Apply .vibedriftignore: drop ignored files before any detector runs, so
+    // the ignore list excludes them from the corpus entirely (not just from pairs).
+    if (allow && Array.isArray(allow.ignore) && allow.ignore.length) {
+      corpus = corpus.filter((f) => !driftAllowlist.isIgnored(f, allow));
+      if (corpus.length === 0) {
+        emit({ skipped: true, reason: 'all-files-ignored' });
+        return;
+      }
+    }
 
     // Run all three detectors over the single corpus.
     // If a detector returns { skipped:true }, fold its reason into a warning

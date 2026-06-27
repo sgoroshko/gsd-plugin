@@ -156,6 +156,26 @@ function isSuppressed(fileA, fileB, allow) {
   return { suppressed: false };
 }
 
+/**
+ * Check whether a single file is excluded by the .vibedriftignore list.
+ * Each entry is treated as a glob; a bare name or trailing-slash entry also
+ * matches everything beneath it (gitignore-style directory exclusion).
+ * @param {string} filePath - cwd-relative path
+ * @param {{ ignore: string[] }} allow
+ * @returns {boolean}
+ */
+function isIgnored(filePath, allow) {
+  if (!allow || !Array.isArray(allow.ignore) || !allow.ignore.length) return false;
+  for (const raw of allow.ignore) {
+    if (typeof raw !== 'string' || !raw) continue;
+    const p = raw.replace(/\/$/, '');
+    if (globMatch(p, filePath)) return true;
+    // Directory-prefix match: `dist` or `dist/` excludes `dist/<anything>`.
+    if (globMatch(p + '/**', filePath)) return true;
+  }
+  return false;
+}
+
 // ─── Exports ─────────────────────────────────────────────────────────────────
 
-module.exports = { load, isSuppressed };
+module.exports = { load, isSuppressed, isIgnored };
