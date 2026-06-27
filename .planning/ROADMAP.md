@@ -53,7 +53,7 @@ Origin: `/gsd:explore` session 2026-06-26. VibeDrift v0.14.0 empirically evaluat
 external gate + cherry-pick its heuristics; do not vendor).
 
 - [x] Phase 10: Convention and Architectural Conformance (completed 2026-06-26)
-- [ ] Phase 11: Drift Detection and Consistency Gate
+- [x] Phase 11: Drift Detection and Consistency Gate (completed 2026-06-27)
 
 ### Phase 10: Convention and Architectural Conformance
 
@@ -100,7 +100,7 @@ VibeDrift is treated as a second upstream whose heuristics are ported and watche
 2. `/gsd:scan --drift` produces a ranked drift report on gsd-plugin.
 3. Native-primary proven: the sweep runs entirely via native checks (zero runtime dep, VibeDrift never invoked).
 
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 
 Plans:
 **Wave 1**
@@ -115,7 +115,7 @@ Plans:
 
 **Wave 3** *(blocked on 11-04)*
 
-- [ ] 11-05-PLAN.md — `/gsd:scan --drift` ranked report branch + audit-milestone §5.6 opt-in warn-first Drift Integrity Gate
+- [x] 11-05-PLAN.md — `/gsd:scan --drift` ranked report branch + audit-milestone §5.6 opt-in warn-first Drift Integrity Gate
 
 ### v1.3 carried backlog (still deferred, NOT in this milestone)
 
