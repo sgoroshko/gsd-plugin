@@ -1,5 +1,5 @@
 /**
- * Phantom Scaffolding Detector (Phase 11, plan 11-02).
+ * Phantom Scaffolding Detector.
  *
  * DRIFT-05 layer 2: detects two categories of phantom/scaffolding code:
  *
@@ -11,7 +11,7 @@
  *   2. placeholder-stub: a function body containing `return null|undefined|{}|[]`
  *      paired with a TODO/TBD/FIXME/not-implemented comment (case-insensitive).
  *      Uses conventions.blankSpans pre-pass so a TODO inside a string is never
- *      matched (Pitfall 2 / T-11-04 string-safety).
+ *      matched (string-safety).
  *
  * D-09 compliance: does NOT emit "unused-export", "comment-density",
  * "unreachable-after-return", or "function-too-long" findings.

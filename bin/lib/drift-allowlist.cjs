@@ -1,5 +1,5 @@
 /**
- * Drift Allowlist Loader + Suppression Matcher (Phase 11, plan 11-02).
+ * Drift Allowlist Loader + Suppression Matcher.
  *
  * Provides two public functions:
  *   - load(cwd)                          -> { pairs, ignore }  (never throws)

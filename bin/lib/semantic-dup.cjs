@@ -1,5 +1,5 @@
 /**
- * Structural Near-Clone Detector (Phase 11, plan 11-01 — DRIFT-05 layer 3).
+ * Structural Near-Clone Detector (DRIFT-05 layer 3).
  *
  * Native MinHash+LCS structural near-clone detector. Ports the exact constants
  * and algorithm from @vibedrift/cli@0.14.4 (read locally during research; NEVER
@@ -392,7 +392,7 @@ function detect(corpus, opts) {
     // Index all functions from the corpus
     const indexed = [];
 
-    // Reuse sanitizePaths for safety (T-11-01 / V5)
+    // Reuse sanitizePaths for path safety
     const safePaths = conventions.sanitizePaths(corpus);
 
     for (const relPath of safePaths) {
@@ -403,7 +403,7 @@ function detect(corpus, opts) {
         if (!stat.isFile() || stat.size > (512 * 1024)) continue;  // MAX_SCAN_BYTES
         src = fs.readFileSync(absPath, 'utf8');
       } catch {
-        continue;  // one bad file never fails the run (T-11-03)
+        continue;  // one bad file never fails the run
       }
 
       let fns;
