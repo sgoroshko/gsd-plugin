@@ -36,6 +36,18 @@ function routeVerifyCommand({ verify, args, cwd, raw, error }) {
       else if (a === '--files') parsedOpts.files = rest[++i];
     }
     verify.cmdVerifyConventions(cwd, parsedOpts, raw);
+  } else if (subcommand === 'drift') {
+    // Parse --scope <value> / --top <n> / --fail-on-score <n> / --json into opts.
+    // Mirror the conventions arg-parse loop.
+    const rest = args.slice(2);
+    const o = { scope: undefined, top: undefined, failOnScore: undefined };
+    for (let i = 0; i < rest.length; i++) {
+      if (rest[i] === '--scope') o.scope = rest[++i];
+      else if (rest[i] === '--top') o.top = +rest[++i];
+      else if (rest[i] === '--fail-on-score') o.failOnScore = +rest[++i];
+      // --json is already handled by the outer raw flag; skip silently
+    }
+    verify.cmdVerifyDrift(cwd, o, raw);
   } else {
     error(`Unknown verify subcommand. Available: ${VERIFY_SUBCOMMANDS.join(', ')}`);
   }

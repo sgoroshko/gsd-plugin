@@ -1541,6 +1541,170 @@ function collectConventionCorpus(root, cwd) {
   return out;
 }
 
+/**
+ * Composite drift-detection handler — wires the three Phase-11 native detectors
+ * (semantic-dup, phantom-scaffolding, conventions) over ONE bounded corpus and
+ * emits a scored, ranked, suppression-auditable JSON report.
+ *
+ * Contract mirrors cmdVerifyConventions exactly:
+ *   - Never throws and never exits non-zero (all errors -> { skipped:true, reason })
+ *   - The ONLY non-zero exit path is explicit --fail-on-score (D-06), marked below
+ *   - Suppressed pairs always appear in suppressed:[], never dropped (D-07)
+ *   - Unsafe scope -> early emit({ skipped:true, reason }) per T-11-01
+ *
+ * Score formula: 100 minus a weighted sum of findings by severity, floored at 0.
+ *   severity weights: critical=20, high=10, medium=5, low=2, info=1
+ *   A score of 100 means no findings; lower scores reflect more or higher-severity issues.
+ *
+ * @param {string} cwd
+ * @param {Object} opts - { scope?, top?, failOnScore?, json? }
+ * @param {boolean} raw
+ */
+function cmdVerifyDrift(cwd, opts, raw) {
+  const emit = (payload) => output(payload, raw);
+
+  try {
+    const o = opts && typeof opts === 'object' ? opts : {};
+
+    // Scope sanitization (T-11-01 — mirror cmdVerifyConventions lines 1425-1438)
+    const conventions = require('./conventions.cjs');
+    const scope = typeof o.scope === 'string' && o.scope ? o.scope : '.';
+    const safeScope = conventions.sanitizePaths([scope])[0];
+    if (scope !== '.' && !safeScope) {
+      emit({ skipped: true, reason: 'unsafe-scope' });
+      return;
+    }
+    const root = scope === '.' ? cwd : path.resolve(cwd, scope);
+
+    // Build the corpus ONCE (bounded walk — same as conventions handler)
+    let corpus;
+    try {
+      corpus = collectConventionCorpus(root, cwd);
+    } catch (err) {
+      emit({ skipped: true, reason: 'scope-walk-failed: ' + (err && err.message ? err.message : String(err)) });
+      return;
+    }
+    if (corpus.length === 0) {
+      emit({ skipped: true, reason: 'no-readable-files' });
+      return;
+    }
+
+    // Load allowlist (never throws — returns empty-but-valid on missing file)
+    const allow = require('./drift-allowlist.cjs').load(cwd);
+
+    // Run all three detectors over the single corpus.
+    // If a detector returns { skipped:true }, fold its reason into a warning
+    // but do not abort the whole report (T-11-03 partial-skip tolerance).
+    const warnings = [];
+
+    let dupResult;
+    try {
+      dupResult = require('./semantic-dup.cjs').detect(corpus, { cwd, allow });
+    } catch (err) {
+      dupResult = { skipped: true, reason: 'detector-exception: ' + String(err), pairs: [], suppressed: [] };
+    }
+    if (dupResult.skipped) warnings.push('semantic-dup: ' + (dupResult.reason || 'skipped'));
+
+    let phantomResult;
+    try {
+      phantomResult = require('./phantom-scaffolding.cjs').detect(corpus, { cwd });
+    } catch (err) {
+      phantomResult = { skipped: true, reason: 'detector-exception: ' + String(err), findings: [] };
+    }
+    if (phantomResult.skipped) warnings.push('phantom-scaffolding: ' + (phantomResult.reason || 'skipped'));
+
+    let convResult;
+    try {
+      convResult = conventions.deriveConventions(corpus, { cwd });
+    } catch (err) {
+      convResult = { skipped: true, reason: 'detector-exception: ' + String(err), axes: [] };
+    }
+    if (convResult.skipped) warnings.push('conventions: ' + (convResult.reason || 'skipped'));
+
+    // Compose findings — flatten dup.pairs (kind:'structural-dup') + phantom.findings
+    // Each finding gets a numeric severity weight for scoring.
+    const SEVERITY_WEIGHTS = { critical: 20, high: 10, medium: 5, low: 2, info: 1 };
+    const rawFindings = [];
+
+    const pairs = (!dupResult.skipped && Array.isArray(dupResult.pairs)) ? dupResult.pairs : [];
+    for (const pair of pairs) {
+      // pair.a / pair.b are objects with a .file property (semantic-dup API)
+      const fileA = (pair.a && typeof pair.a === 'object') ? (pair.a.file || '') : (String(pair.a || ''));
+      const fileB = (pair.b && typeof pair.b === 'object') ? (pair.b.file || '') : (String(pair.b || ''));
+      const severity = pair.severity || 'medium';
+      rawFindings.push({
+        kind: 'structural-dup',
+        file: fileA,
+        fileB,
+        severity,
+        similarity: pair.similarity,
+        _weight: SEVERITY_WEIGHTS[severity] || SEVERITY_WEIGHTS.medium,
+      });
+    }
+
+    const phantomFindings = (!phantomResult.skipped && Array.isArray(phantomResult.findings)) ? phantomResult.findings : [];
+    for (const f of phantomFindings) {
+      // phantom-scaffolding uses 'warning' severity — map to 'medium' for scoring
+      const sev = f.severity === 'warning' ? 'medium' : (f.severity || 'low');
+      rawFindings.push({
+        kind: f.kind || 'phantom',
+        file: typeof f.file === 'string' ? f.file : String(f.file || ''),
+        line: f.line,
+        severity: sev,
+        detail: f.detail || f.name || null,
+        _weight: SEVERITY_WEIGHTS[sev] || SEVERITY_WEIGHTS.low,
+      });
+    }
+
+    // Score: 100 minus weighted sum, floored at 0
+    const totalWeight = rawFindings.reduce((sum, f) => sum + f._weight, 0);
+    const score = Math.max(0, 100 - totalWeight);
+
+    // Rank by severity descending (higher weight first), then by file alphabetically
+    rawFindings.sort((a, b) => {
+      if (b._weight !== a._weight) return b._weight - a._weight;
+      return (a.file || '').localeCompare(b.file || '');
+    });
+
+    // Strip internal _weight field before emitting
+    const findings = rawFindings.map(({ _weight, ...rest }) => rest); // eslint-disable-line no-unused-vars
+
+    // Apply --top N slice when set
+    const top = typeof o.top === 'number' && isFinite(o.top) ? o.top : null;
+    const limitedFindings = top !== null ? findings.slice(0, top) : findings;
+
+    // Suppressed pairs — always passed through for D-07 auditability
+    const suppressed = (!dupResult.skipped && Array.isArray(dupResult.suppressed)) ? dupResult.suppressed : [];
+
+    // Convention axes count for informational purposes
+    const conventionAxes = (!convResult.skipped && Array.isArray(convResult.axes)) ? convResult.axes.length : 0;
+
+    const payload = {
+      skipped: false,
+      score,
+      findings: limitedFindings,
+      suppressed,
+      counts: {
+        structuralDup: pairs.length,
+        phantom: phantomFindings.length,
+        conventionAxes,
+      },
+    };
+    if (warnings.length) payload.warnings = warnings;
+
+    emit(payload);
+
+    // D-06: explicit hard-gate cutoff — the ONLY sanctioned non-zero exit.
+    // The handler core never exits non-zero on its own; the caller must pass
+    // --fail-on-score to enable this escalation path.
+    if (typeof o.failOnScore === 'number' && isFinite(o.failOnScore) && score < o.failOnScore) {
+      process.exitCode = 1;
+    }
+  } catch (err) {
+    emit({ skipped: true, reason: 'exception: ' + (err && err.message ? err.message : String(err)) });
+  }
+}
+
 module.exports = {
   cmdVerifySummary,
   cmdVerifyPlanStructure,
@@ -1555,4 +1719,5 @@ module.exports = {
   cmdVerifySchemaDrift,
   cmdVerifyCodebaseDrift,
   cmdVerifyConventions,
+  cmdVerifyDrift,
 };
