@@ -286,7 +286,17 @@ function extractFunctions(src) {
     { re: NAMED_FN_RE, priority: 1 },
     { re: VAR_FN_RE, priority: 2 },
     { re: ARROW_FN_RE, priority: 3 },
+    { re: METHOD_RE, priority: 4 },
   ];
+
+  // METHOD_RE also matches control-flow heads (if/for/while/...). Skip those so
+  // they are never extracted as functions. Declared-form matches (priorities
+  // 1-3) already claim their bodyStart via `seen`, so a real method is only
+  // picked up here when no earlier pattern matched it.
+  const CONTROL_FLOW = new Set([
+    'if', 'for', 'while', 'switch', 'catch', 'function', 'return', 'do', 'else',
+    'with', 'await', 'yield', 'case', 'throw', 'typeof', 'void', 'delete', 'in', 'of', 'new',
+  ]);
 
   const seen = new Set(); // avoid double-extraction at the same offset
 
@@ -294,6 +304,7 @@ function extractFunctions(src) {
     let m;
     while ((m = re.exec(blanked)) !== null) {
       const name = m[1];
+      if (CONTROL_FLOW.has(name)) continue;
       const bodyStart = m.index + m[0].length - 1; // position of opening '{'
 
       if (seen.has(bodyStart)) continue;

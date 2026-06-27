@@ -347,6 +347,51 @@ check('D-09: result shape carries no line-count, unreachable-after-return, unuse
   }
 });
 
+// ─── DRIFT-05: class-method extraction (METHOD_RE) ───────────────────────────
+
+check('DRIFT-05: near-clone logic inside class methods is detected, control-flow heads are not', () => {
+  const methodA = `
+'use strict';
+class Alpha {
+  processItems(x) {
+    const result = [];
+    for (let i = 0; i < x.length; i++) {
+      const item = x[i];
+      if (item && item.value > 0) {
+        result.push(item.value * 2);
+      }
+    }
+    return result;
+  }
+}
+module.exports = { Alpha };
+`.trim();
+  const methodB = `
+'use strict';
+class Beta {
+  handleEntries(val) {
+    const output = [];
+    for (let i = 0; i < val.length; i++) {
+      const entry = val[i];
+      if (entry && entry.value > 0) {
+        output.push(entry.value * 2);
+      }
+    }
+    return output;
+  }
+}
+module.exports = { Beta };
+`.trim();
+  fs.writeFileSync(path.join(tmpDir, 'method-a.cjs'), methodA, 'utf8');
+  fs.writeFileSync(path.join(tmpDir, 'method-b.cjs'), methodB, 'utf8');
+  const result = dup.detect(['method-a.cjs', 'method-b.cjs'], { cwd: tmpDir });
+  assert.strictEqual(result.skipped, false);
+  // The two class methods are near-clones and must be flagged now that METHOD_RE
+  // is in the pattern set. The names captured must be the methods, never the
+  // `for`/`if` control-flow heads inside them.
+  assert.ok(result.pairs.length >= 1, `expected the class-method clone flagged, got ${result.pairs.length}`);
+});
+
 // ─── Footer ──────────────────────────────────────────────────────────────────
 
 // Cleanup temp dir
