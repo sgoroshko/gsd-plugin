@@ -8427,9 +8427,9 @@ var DYNAMIC_KEY_PATTERNS = [
   },
   // #2517 — runtime-aware model profile overrides: model_profile_overrides.<runtime>.<tier>
   {
-    source: "^model_profile_overrides\\.[a-zA-Z0-9_-]+\\.(opus|sonnet|haiku)$",
-    description: "model_profile_overrides.<runtime>.<opus|sonnet|haiku>",
-    test: (k6) => /^model_profile_overrides\.[a-zA-Z0-9_-]+\.(opus|sonnet|haiku)$/.test(k6)
+    source: "^model_profile_overrides\\.[a-zA-Z0-9_-]+\\.(fable|opus|sonnet|haiku)$",
+    description: "model_profile_overrides.<runtime>.<fable|opus|sonnet|haiku>",
+    test: (k6) => /^model_profile_overrides\.[a-zA-Z0-9_-]+\.(fable|opus|sonnet|haiku)$/.test(k6)
   },
   // #3023 — per-phase-type model map: models.<phase_type> = <tier>
   {
