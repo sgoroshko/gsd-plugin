@@ -122,6 +122,17 @@ fs.writeFileSync(cloneBPath, CLONE_B_SRC, 'utf8');
 fs.writeFileSync(tinyPath, TINY_SRC, 'utf8');
 fs.writeFileSync(sameFilePath, SAME_FILE_SRC, 'utf8');
 
+// Multi-level near-clone pair for the `**` glob-suppression test: one file one
+// level deep (bin/lib), the other two levels deep (sdk/src/query) so `sdk/src/**`
+// must cross more than one path separator to suppress it.
+const deepAPath = path.join(tmpDir, 'bin', 'lib', 'dup-a.cjs');
+const deepBPath = path.join(tmpDir, 'sdk', 'src', 'query', 'dup-b.ts');
+fs.mkdirSync(path.dirname(deepAPath), { recursive: true });
+fs.mkdirSync(path.dirname(deepBPath), { recursive: true });
+fs.writeFileSync(deepAPath, CLONE_A_SRC, 'utf8');
+fs.writeFileSync(deepBPath, CLONE_B_SRC, 'utf8');
+const deepCorpus = ['bin/lib/dup-a.cjs', 'sdk/src/query/dup-b.ts'];
+
 // cwd-relative paths for the corpus (relative to tmpDir)
 const cloneCorpus = ['a-clone.cjs', 'b-clone.cjs'];
 const tinyCorpus = ['tiny-helper.cjs'];
@@ -301,6 +312,22 @@ check('DRIFT-03: a pair matching opts.allow lands in suppressed, not pairs', () 
   for (const s of result.suppressed) {
     assert.ok(typeof s.reason === 'string' && s.reason.length > 0, 'suppressed entry must have reason');
   }
+});
+
+// ─── DRIFT-03: multi-level `**` glob suppresses the CJS/SDK dual resolver ─────
+
+check('DRIFT-03: `**` allow pattern suppresses a pair nested more than one level deep', () => {
+  const allow = {
+    pairs: [{ a: 'bin/lib/**', b: 'sdk/src/**', reason: 'intentional dual resolver' }],
+    ignore: [],
+  };
+  const result = dup.detect(deepCorpus, { cwd: tmpDir, allow });
+  assert.strictEqual(result.skipped, false);
+  // The deep pair (sdk/src/query/dup-b.ts is two levels deep) must be suppressed,
+  // not surfaced in pairs[]. A broken `**` -> [^/]*[^/]* translation fails here.
+  assert.ok(result.suppressed.length >= 1,
+    `expected the bin/lib <-> sdk/src/query pair suppressed, got ${result.suppressed.length}`);
+  assert.strictEqual(result.pairs.length, 0, 'no unsuppressed pairs should remain');
 });
 
 // ─── D-09: no noise fields ───────────────────────────────────────────────────
