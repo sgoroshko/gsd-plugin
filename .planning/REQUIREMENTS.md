@@ -9,10 +9,10 @@ Cross-session drift is the failure mode this milestone targets: independent agen
 
 ### Convention Conformance (Prevention — Phase 10)
 
-- [ ] **CONV-01**: pattern-mapper writes a Conventions section to PATTERNS.md (identifier casing, file-name casing, export style) derived by majority vote with an entropy signal, so planner and executor get a named contract
-- [ ] **CONV-02**: code-review flags a changed file that deviates from the derived convention and passes a conforming one
-- [ ] **CONV-03**: code-review runs a verb-vs-body intent check (name says `get`, body mutates)
-- [ ] **CONV-04**: code-review runs an architectural-pattern split check (DI vs direct env access, error-handling style), with no new runtime dependency and running in the existing review path
+- [x] **CONV-01**: pattern-mapper writes a Conventions section to PATTERNS.md (identifier casing, file-name casing, export style) derived by majority vote with an entropy signal, so planner and executor get a named contract
+- [x] **CONV-02**: code-review flags a changed file that deviates from the derived convention and passes a conforming one
+- [x] **CONV-03**: code-review runs a verb-vs-body intent check (name says `get`, body mutates)
+- [x] **CONV-04**: code-review runs an architectural-pattern split check (DI vs direct env access, error-handling style), with no new runtime dependency and running in the existing review path
 
 ### Drift Detection (Detection — Phase 11)
 
@@ -52,10 +52,10 @@ Deferred to a later milestone. Tracked but not in the v1.3 roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CONV-01 | Phase 10 | Pending |
-| CONV-02 | Phase 10 | Pending |
-| CONV-03 | Phase 10 | Pending |
-| CONV-04 | Phase 10 | Pending |
+| CONV-01 | Phase 10 | Complete |
+| CONV-02 | Phase 10 | Complete |
+| CONV-03 | Phase 10 | Complete |
+| CONV-04 | Phase 10 | Complete |
 | DRIFT-01 | Phase 11 | Complete |
 | DRIFT-02 | Phase 11 | Complete |
 | DRIFT-03 | Phase 11 | Complete |
