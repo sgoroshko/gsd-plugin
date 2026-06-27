@@ -366,13 +366,15 @@ After migration, verify the plugin is active:
 
 ## Upstream projects
 
-gsd-plugin draws on two upstream projects, in two very different ways. Neither is a runtime dependency: the plugin bundles everything it needs.
+gsd-plugin draws on three upstream projects, in three different ways: it **packages** one, **ports ideas from** another, and **implements the format spec** of a third. None is a runtime dependency: the plugin bundles everything it needs.
 
 **1. GSD (`@opengsd/gsd-core`): the primary upstream.** This is the workflow engine the plugin packages and optimizes. The plugin starts from gsd-core's source tree (the phase/plan/execute/verify lifecycle, the agents, the SDK) and adds Claude-Code-native capabilities on top: skill isolation via `context: fork`, MCP-backed project state, cross-session memory, auto-resume across `/compact`, and the token-overhead reductions. Content is selectively cherry-picked from gsd-core, not a full vendor sync, and `bin/check-gsd-release.sh` watches gsd-core for new releases to fold in. Provenance: gsd-core is the community continuation at [open-gsd/get-shit-done-redux](https://github.com/open-gsd/get-shit-done-redux) of the original GSD by TÂCHES (see the [Upstream change](#whats-new) note above and [Credits](#credits)).
 
 **2. VibeDrift (`@vibedrift/cli`): a second, idea-only upstream.** As of v4.0.0, GSD treats VibeDrift the way it treats gsd-core: as an upstream to learn from. But the relationship is deliberately narrower. GSD **never installs or runs VibeDrift** at any point. Instead it ports VibeDrift's drift-detection heuristics natively (the MinHash+LCS structural-dup detector in this release is one such port, with its constants pinned to the v0.14.0 idea baseline) and watches the package for new releases (`bin/check-vibedrift-release.sh`) so future heuristics can be cherry-picked over time. This keeps drift detection 100% native and zero-dependency while still benefiting from VibeDrift's research. VibeDrift is an idea source, never a runtime component.
 
-This two-upstream posture is part of why v4.0.0 is a major bump: the plugin now accumulates a substantial body of capability (a convention conformance gate, native drift detection, an integrity gate) that does not exist in upstream GSD at all, and pulls ideas from a second project entirely. See [Versioning](#versioning).
+**3. workspace.json (`workspace-json/spec`): a consumed format spec.** gsd-plugin is a consumer implementation of the [workspace.json spec](https://github.com/workspace-json/spec): when a `.agents/workspace.json` file conforming to the spec is present, the plugin reads it at SessionStart and injects structured codebase intelligence (fragile files, frameworks, co-change notes) into the model's context, with strict major-version gating and prompt-injection sanitization. The plugin neither generates nor bundles the file; it implements the reader side of an open spec, so any tool that emits spec-conformant `workspace.json` interoperates. The integration was contributed by [Qwynn Marcelle](https://github.com/qmarcelle) (see [Credits](#credits)).
+
+This multi-upstream posture is part of why v4.0.0 is a major bump: the plugin now accumulates a substantial body of capability (a convention conformance gate, native drift detection, an integrity gate) that does not exist in upstream GSD at all, pulls ideas from a second project entirely, and implements a third project's open format. See [Versioning](#versioning).
 
 ## Versioning
 
@@ -396,6 +398,7 @@ This project repackages the GSD workflow system as a native Claude Code plugin w
 
 - **GSD (Get Shit Done)** by TACHES (Lex Christopherson) -- the original workflow framework this plugin is based on. Original repo at [gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done) (locked May 2026 after the founder rug-pulled the associated `$GSD` token and deleted his accounts).
 - **[open-gsd/get-shit-done-redux](https://github.com/open-gsd/get-shit-done-redux)** by [trek-e](https://github.com/trek-e) (Tom Boucher) and contributors -- bit-perfect community continuation hosting the codebase going forward.
+- **[workspace.json spec](https://github.com/workspace-json/spec)** -- the open codebase-intelligence format gsd-plugin reads at SessionStart; the consumer integration was contributed by [Qwynn Marcelle](https://github.com/qmarcelle).
 - Plugin packaging, MCP integration, token optimization, and memory system by Jasper Nuyens
 
 ## License
