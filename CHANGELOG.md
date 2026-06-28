@@ -8,6 +8,17 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [4.0.1] - 2026-06-28  (fix: checkpoint hook no longer wipes HANDOFF.json or creates .planning/ in non-GSD dirs)
+
+### Fixed
+- **Periodic-checkpoint hook destroyed `HANDOFF.json` and created `.planning/` where it should not (#17).** `writeCheckpoint()` in `bin/lib/checkpoint.cjs` had no guards: it created `.planning/` when absent (so the PostToolUse hook spawned a `.planning/HANDOFF.json` in directories that are not GSD projects) and wrote a `phase:null/task:null` skeleton even with nothing to resume (so it silently blanked a hand-authored `HANDOFF.json` in an idle GSD project). Added two early-return guards before any filesystem mutation: no-op when `.planning/` does not already exist, and no-op for any non-`manual-pause` source when both `phase` and `task` are null. `/gsd:pause-work` still writes via the `manual-pause` bypass; active phase/task work still checkpoints. Regression test `tests/checkpoint-write-guards.test.cjs` (8 cases).
+
+### Added
+- **Pre-release CI gate for the #17 regression.** The checkpoint write-guards test now runs in CI (`.github/workflows/check-drift.yml`, `handoff-schema` job) on every push, so the data-loss failure mode fails the build before any tag. New `RELEASING.md` documents the pre-release checklist with CI as the source-of-truth gate.
+
+### Changed
+- README polish: install flow moved ahead of "What's New"; "Added features beyond upstream" descriptions tightened for scannability; intro reworded ("evolution" of GSD, not "packaging"); redundant "Based on" header dropped (covered by the Upstream projects section).
+
 ## [4.0.0] - 2026-06-27  (consistency and code-integrity safeguards, a second upstream, and an independent version line)
 
 This is a milestone release (internal milestone v1.3) and the first on the plugin's own version line. The major bump is a **divergence signal, not a breaking change**: existing commands, config, and planning artifacts work unchanged, and the new capabilities are additive and opt-in. Follows the gsd-core `1.x` line.
