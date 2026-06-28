@@ -29,6 +29,8 @@ jobs:
         run: npm ci
       - name: Validate HANDOFF schema
         run: node bin/maintenance/check-handoff-schema.cjs
+      - name: Run checkpoint write-guards test (regression for #17)
+        run: node tests/checkpoint-write-guards.test.cjs
 
   mcp-stdio-framing:
     name: MCP stdio framing (regression for #3)
