@@ -85,6 +85,17 @@ jobs:
           node bin/gsd-tools.cjs verify drift --scope . --json | node -e \
             "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const o=JSON.parse(s); if(typeof o!=='object'||!('skipped' in o))throw new Error('invalid drift JSON: '+s.slice(0,200)); process.exit(0);})"
 
+  bash-hook-retry:
+    name: Bash-hook fork-failure retry (regression for #16)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run bash-hook retry isolation test
+        run: node tests/run-bash-hook.test.cjs
+
   user-docs-jargon:
     name: User-docs jargon ratchet
     runs-on: ubuntu-latest
