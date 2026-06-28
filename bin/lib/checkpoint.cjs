@@ -362,19 +362,42 @@ function generateCheckpoint(cwd, options = {}) {
  * Generate a checkpoint and write it to `.planning/HANDOFF.json`.
  * Overwrites any existing file (D-05). Returns the data object on success.
  * Never throws — on failure returns a best-effort object with partial=true.
+ *
+ * Two guards prevent destructive no-op writes for automatic sources
+ * (auto-postool, auto-compact):
+ *   (a) If `.planning/` does not exist the cwd is not a GSD project -- never
+ *       create the directory or the file.
+ *   (b) If the checkpoint has no active phase and no active task it is a
+ *       trivial skeleton -- writing it would blank out any hand-authored
+ *       HANDOFF.json that may exist. Skip the write.
+ * Manual pause (source: "manual-pause") bypasses guard (b) so an explicit
+ * /gsd:pause-work in an idle project still produces the expected file.
  */
 function writeCheckpoint(cwd, options = {}) {
   const data = generateCheckpoint(cwd, options);
   try {
     const planningDirPath = planningPaths(cwd).planning;
-    // Ensure .planning/ exists (it should, but be safe)
+
+    // Guard (a): refuse to create .planning/ -- only write into an existing one.
     if (!fs.existsSync(planningDirPath)) {
-      fs.mkdirSync(planningDirPath, { recursive: true });
+      return data;
     }
+
+    // Guard (b): skip trivial (phase:null, task:null) checkpoints for automatic
+    // sources. A trivial write would destroy hand-authored HANDOFF.json content
+    // in idle GSD projects. Only an explicit manual pause may write a trivial
+    // skeleton; every other source (current auto-postool, auto-compact, and any
+    // future automatic caller) is treated as automatic by default so a new
+    // source can never silently bypass this guard.
+    const isManualPause = options.source === 'manual-pause';
+    if (!isManualPause && data.phase === null && data.task === null) {
+      return data;
+    }
+
     const outPath = path.join(planningDirPath, 'HANDOFF.json');
     fs.writeFileSync(outPath, JSON.stringify(data, null, 2) + '\n', 'utf-8');
   } catch {
-    // Flag partial but don't throw — PreCompact has a 5s budget and must not crash.
+    // Flag partial but don't throw -- PreCompact has a 5s budget and must not crash.
     data.partial = true;
   }
   return data;
