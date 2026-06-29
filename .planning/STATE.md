@@ -1,34 +1,35 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3
-milestone_name: Consistency & Code-Integrity Safeguards
-status: Awaiting next milestone
-stopped_at: v1.3 shipped as plugin v4.0.0; milestone archived and tagged
-last_updated: "2026-06-27T12:43:39.188Z"
-last_activity: 2026-06-27 — Milestone v1.3 completed and archived
+milestone: v4.1
+milestone_name: Buildomator Rebrand
+status: planning
+last_updated: "2026-06-29T00:00:00.000Z"
+last_activity: 2026-06-29
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_phases: 4
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-26)
+See: .planning/PROJECT.md (updated 2026-06-29)
 
 **Core value:** Reduce GSD's per-turn token overhead and agent spawn latency without breaking multi-CLI compatibility
-**Current focus:** Milestone complete
+**Current focus:** v4.1 Buildomator Rebrand — roadmap defined, ready to plan Phase 12
 
 ## Current Position
 
-Phase: Milestone v1.3 complete
+Phase: 12 (Two-Plugin Build Foundation) — Not started
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-27 — Milestone v1.3 completed and archived
+Status: Roadmap defined; awaiting `/gsd:plan-phase 12`
+Last activity: 2026-06-29 — Roadmap created for v4.1 (4 phases, 13 requirements)
+
+Progress: [░░░░░░░░░░] 0% (0/4 phases)
 
 ## Performance Metrics
 
@@ -60,6 +61,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 See: milestones/v1.0-ROADMAP.md for full v1.0 decision history.
 
 - [Phase ?]: Used npm view @vibedrift/cli version as the authoritative version source for the second-upstream watch; GitHub release notes are best-effort (guarded || exit 0)
+- [2026-06-29 roadmap]: Phase sequencing — BUILD foundation (Phase 12) before BM plugin (Phase 13) before coexistence testing (Phase 14); BRAND (Phase 15) last since it documents what shipped. Rationale: two-plugin generation must exist before both plugins can be tested together.
 
 ### Pending Todos
 
@@ -136,13 +138,14 @@ None.
 | 260611-e7x | v3.4.7 Fable sunset: the `fable` tier (quality-profile default for the 9 heaviest agents since v3.4.4) now auto-falls-back to `opus` after 2026-06-22, since Claude Fable 5 is only offered through that date. Single injection in `bin/lib/core.cjs` resolveModelInternal (applyFableSunset/fableAvailable + FABLE_SUNSET_DATE), applied to the requested tier before the runtime/resolve_model_ids/alias exit points so one effective tier flows everywhere. Inclusive cutoff; GSD_FABLE_SUNSET_NOW env override for tests; invalid-now stays available (no early fallback). init.cjs resolves planner/executor models via this fn so spawns inherit it; SDK ts resolver intentionally untouched (not on plugin spawn path). tests/fable-sunset.test.cjs (11 checks) + e2e (quality gsd-planner: claude-fable-5 before, claude-opus-4-8 after). Suite 17/17. README row extended + CHANGELOG | 2026-06-11 | 00041b7 | Done | [260611-e7x-fable-tier-auto-falls-back-to-opus-after](./quick/260611-e7x-fable-tier-auto-falls-back-to-opus-after/) |
 | 260628-3hr | Wire the issue #17 checkpoint write-guards regression test into the CI handoff-schema job (runs on every push = pre-release gate) + new RELEASING.md pre-release checklist. Closes the loop on the /gsd:debug 17 fix (commit 79c5f63, Fixes #17). | 2026-06-28 | 738cdbb | Done | [260628-3hr-wire-checkpoint-write-guards-test-into-p](./quick/260628-3hr-wire-checkpoint-write-guards-test-into-p/) |
 | 260628-hyu | Encode the third-party contribution policy (run all feasible checks, minimal patch, produce a .patch file, manual review before submit, never auto-submit) in CLAUDE.md + a feedback memory. | 2026-06-28 | 93454a2 | Done | [260628-hyu-third-party-contribution-policy-checks-m](./quick/260628-hyu-third-party-contribution-policy-checks-m/) |
+| 260629-2ui | Version-alignment drift detector: fails CI when the internal milestone version diverges from the actual product version (plugin/marketplace), preventing a recurrence of the v1.x-vs-4.x split. | 2026-06-29 | eed1ea6 | Done | [260629-2ui-prevent-internal-milestone-version-diver](./quick/260629-2ui-prevent-internal-milestone-version-diver/) |
 
 ## Session Continuity
 
-Last session: 2026-06-27T01:35:35.303Z
-Stopped at: v1.3 Consistency & Code-Integrity Safeguards shipped as plugin v4.0.0; milestone archived and tagged.
-Next action: `/gsd:new-milestone` to scope the next milestone.
+Last session: 2026-06-29T00:00:00.000Z
+Stopped at: Roadmap defined for v4.1 Buildomator Rebrand (4 phases: 12-15, 13 requirements covered).
+Next action: `/gsd:plan-phase 12` to plan the Two-Plugin Build Foundation phase.
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Plan Phase 12 with `/gsd:plan-phase 12`

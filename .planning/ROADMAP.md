@@ -6,6 +6,7 @@
 - [x] **v1.1 Session Continuity** — Phases 4-5 (shipped 2026-04-20; Phase 6 dropped, rehomed to v1.2 backlog)
 - [x] **v1.2 Upstream Resilience** — Phases 7-9 (shipped 2026-04-24 — 3 phases, 3 plans, 14 tasks, ~26min executor time)
 - [x] **v1.3 Consistency & Code-Integrity Safeguards** — Phases 10-11 (shipped 2026-06-27, released as plugin v4.0.0)
+- [ ] **v4.1 Buildomator Rebrand** — Phases 12-15 (in progress, ships as plugin 4.1.0)
 
 ## Phases
 
@@ -122,6 +123,58 @@ Plans:
 
 </details>
 
+**v4.1 Buildomator Rebrand (Phases 12-15) — IN PROGRESS**
+
+- [ ] **Phase 12: Two-Plugin Build Foundation** - One source generates both `bm` and `gsd` packages; release publishes them in lockstep; `gsd-plugin` repo/cache identity verified unaffected
+- [ ] **Phase 13: Buildomator Plugin** - The `/bm:` plugin is live with full command parity and identical agents, hooks, and MCP behavior
+- [ ] **Phase 14: Backward Compatibility and Coexistence** - `/gsd:*` keeps working with no re-enable; both plugins can run together without hook double-fire, duplicate MCP state, or data corruption; deprecation nudge surfaces in `/gsd:*`
+- [ ] **Phase 15: Buildomator Identity and Communications** - Project presents as Buildomator everywhere; buildomator.com wired into metadata; CHANGELOG documents migration path and retirement timeline
+
+## Phase Details
+
+### Phase 12: Two-Plugin Build Foundation
+**Goal**: One build step produces both the `bm` and `gsd` plugin packages from a single source, released in lockstep, with the repo/cache identity and hook paths verified unaffected by the new dual-package arrangement
+**Depends on**: Nothing (first phase of this milestone)
+**Requirements**: BUILD-01, BUILD-02, BUILD-03
+**Success Criteria** (what must be TRUE):
+  1. Running the build step produces two complete plugin directories (one with `name: bm`, one with `name: gsd`), from a single shared source, with no manual per-package editing required
+  2. Both `plugin.json` and `marketplace.json` carry the same version number (4.1.0) for both packages after a release run
+  3. `CLAUDE_PLUGIN_ROOT` resolves correctly and hook scripts execute without path errors when the repo/cache id remains `gsd-plugin` (verified by smoke test)
+  4. The two packages never drift from each other — the build step is the only place where plugin identity (`name`) diverges
+**Plans**: TBD
+
+### Phase 13: Buildomator Plugin
+**Goal**: A fully functional `/bm:` plugin exists, with every GSD command available under the `bm` prefix, and agents, hooks, and MCP server behaving identically to the `gsd` plugin
+**Depends on**: Phase 12 (build infrastructure must produce the `bm` package)
+**Requirements**: BM-01, BM-02, BM-03
+**Success Criteria** (what must be TRUE):
+  1. Installing the `bm` plugin surfaces all commands as `/bm:*` in Claude Code (e.g., `/bm:new-project`, `/bm:execute-phase`, `/bm:quick`)
+  2. Running a `/bm:` command against a project produces the same result as the equivalent `/gsd:` command (same skill content, same plan/state mutations)
+  3. The `bm` plugin's agents respond correctly, its hooks fire, and its MCP server exposes the same resources and tools as the `gsd` plugin
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 14: Backward Compatibility and Coexistence
+**Goal**: Existing `/gsd:*` users are unaffected, and users running both plugins simultaneously experience no hook double-fire, no duplicate MCP writers, and no corrupted project state; a deprecation nudge points `/gsd:*` users toward `/bm:*`
+**Depends on**: Phase 12, Phase 13 (both plugins must exist to test coexistence)
+**Requirements**: COMPAT-01, COMPAT-02, COMPAT-03, COMPAT-04
+**Success Criteria** (what must be TRUE):
+  1. An existing user with only the `gsd` plugin enabled sees no change in `/gsd:*` behavior after upgrading to 4.1.0 (zero re-enable, zero config change)
+  2. With both `gsd` and `bm` plugins enabled, the PostToolUse checkpoint, validate-commit, and session-state hooks each fire exactly once per event (verified by log/hook output)
+  3. With both plugins enabled, project state files (HANDOFF.json, STATE.md, phase plans) remain consistent and uncorrupted after interleaved `/gsd:*` and `/bm:*` commands
+  4. Running any `/gsd:` command displays a non-blocking deprecation nudge that mentions `/bm:` and the v5.0 retirement timeline
+**Plans**: TBD
+
+### Phase 15: Buildomator Identity and Communications
+**Goal**: The project presents as Buildomator everywhere a user or potential user encounters it, with buildomator.com wired into metadata and a clear migration story in CHANGELOG and README
+**Depends on**: Phase 12 (branding lands in the generated packages)
+**Requirements**: BRAND-01, BRAND-02, BRAND-03
+**Success Criteria** (what must be TRUE):
+  1. The README, plugin description, and marketplace text name the project "Buildomator" and document `/bm:` as the primary command surface
+  2. The homepage/docs links in `plugin.json`, `marketplace.json`, and README resolve to buildomator.com
+  3. CHANGELOG contains an entry for v4.1.0 that explains the rebrand, describes the additive `/bm:` + retained `/gsd:` strategy, and states the v5.0 retirement date for `/gsd:`
+**Plans**: TBD
+
 ## Backlog
 
 Still-deferred, carried forward (surfaces at next `/gsd:new-milestone`):
@@ -140,3 +193,11 @@ Still-deferred, carried forward (surfaces at next `/gsd:new-milestone`):
 | v1.1 Session Continuity | 2 (+ 1 dropped) | 2026-04-20 |
 | v1.2 Upstream Resilience | 3 | 2026-04-24 |
 | v1.3 Consistency & Code-Integrity Safeguards | 2 | 2026-06-27 |
+| v4.1 Buildomator Rebrand | 4 | — |
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 12. Two-Plugin Build Foundation | 0/? | Not started | - |
+| 13. Buildomator Plugin | 0/? | Not started | - |
+| 14. Backward Compatibility and Coexistence | 0/? | Not started | - |
+| 15. Buildomator Identity and Communications | 0/? | Not started | - |
