@@ -139,6 +139,7 @@ None.
 | 260628-3hr | Wire the issue #17 checkpoint write-guards regression test into the CI handoff-schema job (runs on every push = pre-release gate) + new RELEASING.md pre-release checklist. Closes the loop on the /gsd:debug 17 fix (commit 79c5f63, Fixes #17). | 2026-06-28 | 738cdbb | Done | [260628-3hr-wire-checkpoint-write-guards-test-into-p](./quick/260628-3hr-wire-checkpoint-write-guards-test-into-p/) |
 | 260628-hyu | Encode the third-party contribution policy (run all feasible checks, minimal patch, produce a .patch file, manual review before submit, never auto-submit) in CLAUDE.md + a feedback memory. | 2026-06-28 | 93454a2 | Done | [260628-hyu-third-party-contribution-policy-checks-m](./quick/260628-hyu-third-party-contribution-policy-checks-m/) |
 | 260629-2ui | Version-alignment drift detector: fails CI when the internal milestone version diverges from the actual product version (plugin/marketplace), preventing a recurrence of the v1.x-vs-4.x split. | 2026-06-29 | eed1ea6 | Done | [260629-2ui-prevent-internal-milestone-version-diver](./quick/260629-2ui-prevent-internal-milestone-version-diver/) |
+| 260629-35t | Exploration (no code): design for evidence-based verification (red→green repro capture, screenshots/run-the-app) integrated into GSD at low token overhead. Produced EXPLORATION.md with ranked seams + incremental rollout. | 2026-06-29 | 39469cc | Done | [260629-35t-evidence-based-verification-screenshots-](./quick/260629-35t-evidence-based-verification-screenshots-/) |
 
 ## Session Continuity
 
