@@ -16,6 +16,19 @@ jobs:
       - name: Run file-layout drift detector
         run: node bin/maintenance/check-file-layout.cjs
 
+  version-alignment:
+    name: Version alignment (internal milestone vs product version)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run version-alignment unit test
+        run: node tests/version-alignment.test.cjs
+      - name: Run version-alignment detector
+        run: node bin/maintenance/check-version-alignment.cjs
+
   handoff-schema:
     name: HANDOFF schema validation
     runs-on: ubuntu-latest

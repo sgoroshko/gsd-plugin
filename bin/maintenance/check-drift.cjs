@@ -2,10 +2,11 @@
 /**
  * Unified Drift Check (DRIFT-03)
  *
- * Umbrella orchestrator that spawns the three per-category detectors:
+ * Umbrella orchestrator that spawns the per-category detectors:
  *   1. bin/maintenance/check-file-layout.cjs       (dangling @~/.claude/... refs)
  *   2. bin/maintenance/check-handoff-schema.cjs    (HANDOFF.json schema validation)
  *   3. bin/maintenance/rewrite-command-namespace.cjs --dry  (/gsd-<skill> → /gsd:<skill> drift)
+ *   4. bin/maintenance/check-version-alignment.cjs (internal milestone vs product version)
  *
  * Aggregates exit codes and reports a consolidated PASS/FAIL. Intended for local
  * dev loops and post-upstream-sync verification. NOT added to CI — CI runs each
@@ -65,6 +66,12 @@ const detectors = [
         : { ok: false, reason: `${n} dash-style command ref(s) need normalization — run "node bin/maintenance/rewrite-command-namespace.cjs" to fix` };
     },
   },
+  {
+    name: 'Version alignment (internal milestone vs product version)',
+    cmd: 'node',
+    args: ['bin/maintenance/check-version-alignment.cjs'],
+    parser: null,  // exit code is the whole story (0 pass/skip, 1 divergence)
+  },
 ];
 
 function runDetector(i, total, det) {
@@ -116,10 +123,10 @@ function main() {
     console.log(`  [${marker}] ${r.name}${tail}`);
   }
   if (failed.length === 0) {
-    console.log('\nStatus: PASS — all 3 detectors clean');
+    console.log(`\nStatus: PASS — all ${results.length} detectors clean`);
     process.exit(0);
   } else {
-    console.log(`\nStatus: FAIL — ${failed.length}/3 detector(s) reporting drift`);
+    console.log(`\nStatus: FAIL — ${failed.length}/${results.length} detector(s) reporting drift`);
     process.exit(1);
   }
 }
