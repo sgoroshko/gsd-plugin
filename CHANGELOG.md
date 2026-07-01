@@ -8,6 +8,18 @@ History before 2.38.2 lives in git + the per-milestone archive (see `.planning/m
 
 ## [Unreleased]
 
+## [4.0.3] - 2026-07-01  (gsd-core 1.6.1 correctness slice + Claude Sonnet 5 + watcher fix)
+
+Patch release on the 4.0.x line. Cherry-picks the worthwhile fixes from the gsd-core `1.6.1` line, adopts the newly released Claude Sonnet 5, and fixes a stale second-upstream watcher. Both parallel resolvers (SDK + CJS) stay in sync; `sdk/dist` rebuilt.
+
+### Fixed
+- **Roadmap analyze skips Phase 0 / Phase 999 sentinels (gsd-core 1.6.1 #1580).** `roadmap analyze` no longer counts placeholder/backlog sentinel phases in the phase list or flags a `999.x` checklist entry as a missing detail section. Ported to `sdk/src/query/roadmap.ts` and `bin/lib/roadmap.cjs`.
+- **No more false "Milestone complete" on `<details>`-wrapped checklists (gsd-core 1.6.1 #1591).** The `phase.complete` isLastPhase fallback now matches heading, checkbox, and bold-checkbox phase forms (`- [ ] **Phase N: Name**`, the roadmap-template form), so completing the last on-disk phase no longer reports the milestone done when a later phase exists only as a checklist entry. Ported to `sdk/src/query/phase-lifecycle.ts` and `bin/lib/phase.cjs`; also closed a CJS/SDK parity gap (the SDK phase scan now skips `999.x` backlog dirs like the CJS already did). New regression tests on both sides.
+- **VibeDrift release watcher no longer freezes.** `bin/check-vibedrift-release.sh` hardcoded `/usr/bin/npm`, which does not exist on Homebrew macOS, so under cron's minimal PATH it bailed before the version compare and stuck at an old version. It now resolves npm via `command -v` then known install locations.
+
+### Changed
+- **Adopted Claude Sonnet 5 (`claude-sonnet-5`) as the Sonnet model tier (gsd-core 1.6.1 #1847).** Claude Sonnet 5 shipped 2026-06-30, replacing Sonnet 4.6 (now legacy). Updated the Claude-model `sonnet` tier in `sdk/shared/model-catalog.json` (the single catalog both resolvers read); the deliberately non-Anthropic tiers (codex/gemini/qwen) are unchanged.
+
 ## [4.0.2] - 2026-06-29  (maintenance: version-alignment CI guard + portable mktemp on macOS)
 
 Patch release on the 4.0.x line (4.1.0 stays reserved for the in-progress Buildomator milestone). Two standalone maintenance items committed during v4.1 planning. Follows the gsd-core `1.x` line.
