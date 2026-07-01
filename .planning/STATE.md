@@ -147,6 +147,8 @@ None.
 | 260701-gbo | Upstream follow-ups (parallel): surveyed gsd-core 1.6.1 (ADOPT #1580 + #1591; #1847 claude-sonnet-5 verify-first; no #1520 companion) + 1.7.0-rc.1 (multi-runtime = SKIP; watch ADR-1769 vs #9); FIXED vibedrift watcher npm-path freeze (was stuck 0.14.4 vs 0.14.8). | 2026-07-01 | 1b3dbd7 | Done | [260701-gbo-upstream-follow-ups-survey-gsd-core-1-6-](./quick/260701-gbo-upstream-follow-ups-survey-gsd-core-1-6-/) |
 | 260701-gzj | Cherry-picked gsd-core 1.6.1 #1580 (roadmap-analyze Phase 0/999 sentinel exclusion) + #1591 (isLastPhase checkbox/bold-checkbox detection, kills false milestone-complete) into BOTH resolvers + rebuilt sdk/dist + regression tests (1815 SDK tests green). #1847 initially skipped then ADOPTED (d5667a9): Claude Sonnet 5 (claude-sonnet-5) IS real (announced 2026-06-30, after the cached model catalog); Sonnet tier updated in the shared model-catalog.json, 4.6 is now legacy. | 2026-07-01 | d5667a9 | Done | [260701-gzj-cherry-pick-gsd-core-1-6-1-1580-1591-sen](./quick/260701-gzj-cherry-pick-gsd-core-1-6-1-1580-1591-sen/) |
 
+| 260701-vnh | Investigation (no code): security issue #19 "Multiple Skills Auto-Approve Unrestricted Shell" (Trustabl scanner). VERDICT: theoretical/mischaracterized, not a real Critical — allowed-tools:Bash only suppresses prompts while the user-INVOKED skill runs (documented CC behavior); no bypass/mode/background vector; 83/86 skills declare Bash of necessity. Optional hardening: scoped Bash(gsd-sdk:*). | 2026-07-01 | (docs) | Done | [260701-vnh-investigate-trustabl-security-report-19-](./quick/260701-vnh-investigate-trustabl-security-report-19-/) |
+
 ## Session Continuity
 
 Last session: 2026-07-01T00:28:17.775Z
