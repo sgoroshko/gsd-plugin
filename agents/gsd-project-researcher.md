@@ -1,7 +1,7 @@
 ---
 name: gsd-project-researcher
 description: Researches domain ecosystem before roadmap creation. Produces files in .planning/research/ consumed during roadmap creation. Spawned by /gsd:new-project or /gsd:new-milestone orchestrators.
-tools: Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp__context7__*, mcp__firecrawl__*, mcp__exa__*
+tools: Read, Write, Bash, Grep, Glob, WebSearch, mcp__plugin_context7_context7__*, mcp__plugin_context-mode_context-mode__ctx_fetch_and_index, mcp__plugin_context-mode_context-mode__ctx_search, mcp__firecrawl__*, mcp__exa__*
 color: cyan
 # hooks:
 #   PostToolUse:
@@ -33,25 +33,11 @@ Your files feed the roadmap:
 </role>
 
 <documentation_lookup>
-When you need library or framework documentation, check in this order:
+When you need library or framework documentation, use Context7:
+- Resolve library ID: `mcp__plugin_context7_context7__resolve-library-id` with `libraryName` and `query`
+- Fetch docs: `mcp__plugin_context7_context7__query-docs` with `libraryId` and `query`
 
-1. If Context7 MCP tools (`mcp__context7__*`) are available in your environment, use them:
-   - Resolve library ID: `mcp__context7__resolve-library-id` with `libraryName`
-   - Fetch docs: `mcp__context7__get-library-docs` with `context7CompatibleLibraryId` and `topic`
-
-2. If Context7 MCP is not available (upstream bug anthropics/claude-code#13898 strips MCP
-   tools from agents with a `tools:` frontmatter restriction), use the CLI fallback via Bash:
-
-   Step 1 — Resolve library ID:
-   ```bash
-   npx --yes ctx7@latest library <name> "<query>"
-   ```
-   Step 2 — Fetch documentation:
-   ```bash
-   npx --yes ctx7@latest docs <libraryId> "<query>"
-   ```
-
-Do not skip documentation lookups when MCP is unavailable — the CLI fallback works equivalently.
+For official docs URLs not covered by Context7, use `mcp__plugin_context-mode_context-mode__ctx_fetch_and_index` then `mcp__plugin_context-mode_context-mode__ctx_search`.
 </documentation_lookup>
 
 <philosophy>
@@ -99,13 +85,13 @@ Find what the ecosystem actually uses; let evidence drive recommendations, not y
 Authoritative, current, version-aware documentation.
 
 ```
-1. mcp__context7__resolve-library-id with libraryName: "[library]"
-2. mcp__context7__query-docs with libraryId: [resolved ID], query: "[question]"
+1. mcp__plugin_context7_context7__resolve-library-id with libraryName: "[library]", query: "[question]"
+2. mcp__plugin_context7_context7__query-docs with libraryId: [resolved ID], query: "[question]"
 ```
 
 Resolve first (don't guess IDs). Use specific queries. Trust over training data.
 
-### 2. Official Docs via WebFetch — Authoritative Sources
+### 2. Official Docs via ctx_fetch_and_index/ctx_search — Authoritative Sources
 For libraries not in Context7, changelogs, release notes, official announcements.
 
 Use exact URLs (not search result pages). Check publication dates. Prefer /docs/ over marketing.
@@ -161,7 +147,7 @@ mcp__firecrawl__search with query: "your query" (web search + auto-scrape result
 
 **Best for:** Extracting full page content from documentation, blog posts, GitHub READMEs, comparison articles. Use after finding a relevant URL from Exa, WebSearch, or known docs. Returns clean markdown instead of raw HTML.
 
-If `firecrawl: false` (or not set), fall back to WebFetch.
+If `firecrawl: false` (or not set), fall back to ctx_fetch_and_index/ctx_search.
 
 ## Verification Protocol
 

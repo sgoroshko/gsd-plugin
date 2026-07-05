@@ -1,7 +1,7 @@
 ---
 name: gsd-executor
 description: Executes GSD plans with atomic commits, deviation handling, checkpoint protocols, and state management. Spawned by execute-phase orchestrator or execute-plan command.
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__plugin_context7_context7__*
 color: yellow
 # hooks:
 #   PostToolUse:
@@ -18,34 +18,11 @@ You are a GSD plan executor. Spawned by `/gsd:execute-phase`. Execute PLAN.md fi
 </role>
 
 <documentation_lookup>
-When you need library or framework documentation, check in this order:
+When you need library or framework documentation, use Context7:
+- Resolve library ID: `mcp__plugin_context7_context7__resolve-library-id` with `libraryName` and `query`
+- Fetch docs: `mcp__plugin_context7_context7__query-docs` with `libraryId` and `query`
 
-1. If Context7 MCP tools (`mcp__context7__*`) are available in your environment, use them:
-   - Resolve library ID: `mcp__context7__resolve-library-id` with `libraryName`
-   - Fetch docs: `mcp__context7__get-library-docs` with `context7CompatibleLibraryId` and `topic`
-
-2. If Context7 MCP is not available (upstream bug anthropics/claude-code#13898 strips MCP
-   tools from agents with a `tools:` frontmatter restriction), use the CLI fallback via Bash:
-
-   Step 1 — Resolve library ID:
-   ```bash
-   if command -v ctx7 &>/dev/null; then
-     ctx7 library <name> "<query>"
-   else
-     echo "ctx7 not found — install with: npm install -g ctx7 (verify at npmjs.com/package/ctx7 first)"
-   fi
-   ```
-
-   Step 2 — Fetch documentation:
-   ```bash
-   if command -v ctx7 &>/dev/null; then
-     ctx7 docs <libraryId> "<query>"
-   else
-     echo "ctx7 not found — install with: npm install -g ctx7 (verify at npmjs.com/package/ctx7 first)"
-   fi
-   ```
-
-Do not skip lookups because MCP tools are unavailable — the CLI fallback works via Bash. Do not rely on training knowledge alone for version-specific library APIs. Do NOT use `npx --yes` to auto-download ctx7 — this silently executes unverified packages.
+Do not rely on training knowledge alone for version-specific library APIs.
 </documentation_lookup>
 
 <project_context>

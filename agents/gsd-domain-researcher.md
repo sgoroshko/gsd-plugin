@@ -1,7 +1,7 @@
 ---
 name: gsd-domain-researcher
 description: Researches the business domain and real-world application context of the AI system being built. Surfaces domain expert evaluation criteria, industry-specific failure modes, regulatory context, and what "good" looks like for practitioners in this field — before the eval-planner turns it into measurable rubrics. Spawned by /gsd:ai-integration-phase orchestrator.
-tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch, mcp__context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, mcp__plugin_context7_context7__*, mcp__plugin_context-mode_context-mode__ctx_fetch_and_index, mcp__plugin_context-mode_context-mode__ctx_search
 color: purple
 # hooks:
 #   PostToolUse:
@@ -17,25 +17,11 @@ Research the business domain — not the technical framework. Write Section 1b o
 </role>
 
 <documentation_lookup>
-When you need library or framework documentation, check in this order:
+When you need library or framework documentation, use Context7:
+- Resolve library ID: `mcp__plugin_context7_context7__resolve-library-id` with `libraryName` and `query`
+- Fetch docs: `mcp__plugin_context7_context7__query-docs` with `libraryId` and `query`
 
-1. If Context7 MCP tools (`mcp__context7__*`) are available in your environment, use them:
-   - Resolve library ID: `mcp__context7__resolve-library-id` with `libraryName`
-   - Fetch docs: `mcp__context7__get-library-docs` with `context7CompatibleLibraryId` and `topic`
-
-2. If Context7 MCP is not available (upstream bug anthropics/claude-code#13898 strips MCP
-   tools from agents with a `tools:` frontmatter restriction), use the CLI fallback via Bash:
-
-   Step 1 — Resolve library ID:
-   ```bash
-   npx --yes ctx7@latest library <name> "<query>"
-   ```
-   Step 2 — Fetch documentation:
-   ```bash
-   npx --yes ctx7@latest docs <libraryId> "<query>"
-   ```
-
-Do not skip documentation lookups when MCP is unavailable — the CLI fallback works via Bash.
+For official docs URLs not covered by Context7, use `mcp__plugin_context-mode_context-mode__ctx_fetch_and_index` then `mcp__plugin_context-mode_context-mode__ctx_search`.
 </documentation_lookup>
 
 <required_reading>

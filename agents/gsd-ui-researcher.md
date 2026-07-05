@@ -1,7 +1,7 @@
 ---
 name: gsd-ui-researcher
 description: Produces UI-SPEC.md design contract for frontend phases. Reads upstream artifacts, detects design system state, asks only unanswered questions. Spawned by /gsd:ui-phase orchestrator.
-tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch, mcp__context7__*, mcp__firecrawl__*, mcp__exa__*
+tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, mcp__plugin_context7_context7__*, mcp__plugin_context-mode_context-mode__ctx_fetch_and_index, mcp__plugin_context-mode_context-mode__ctx_search, mcp__firecrawl__*, mcp__exa__*
 color: purple
 # hooks:
 #   PostToolUse:
@@ -28,25 +28,11 @@ If the prompt contains a `<required_reading>` block, you MUST use the `Read` too
 </role>
 
 <documentation_lookup>
-When you need library or framework documentation, check in this order:
+When you need library or framework documentation, use Context7:
+- Resolve library ID: `mcp__plugin_context7_context7__resolve-library-id` with `libraryName` and `query`
+- Fetch docs: `mcp__plugin_context7_context7__query-docs` with `libraryId` and `query`
 
-1. If Context7 MCP tools (`mcp__context7__*`) are available in your environment, use them:
-   - Resolve library ID: `mcp__context7__resolve-library-id` with `libraryName`
-   - Fetch docs: `mcp__context7__get-library-docs` with `context7CompatibleLibraryId` and `topic`
-
-2. If Context7 MCP is not available (upstream bug anthropics/claude-code#13898 strips MCP
-   tools from agents with a `tools:` frontmatter restriction), use the CLI fallback via Bash:
-
-   Step 1 — Resolve library ID:
-   ```bash
-   npx --yes ctx7@latest library <name> "<query>"
-   ```
-   Step 2 — Fetch documentation:
-   ```bash
-   npx --yes ctx7@latest docs <libraryId> "<query>"
-   ```
-
-Do not skip documentation lookups when MCP tools are unavailable; the CLI fallback works.
+For official docs URLs not covered by Context7, use `mcp__plugin_context-mode_context-mode__ctx_fetch_and_index` then `mcp__plugin_context-mode_context-mode__ctx_search`.
 </documentation_lookup>
 
 <project_context>
@@ -115,7 +101,7 @@ Your UI-SPEC.md is consumed by:
 | 4th | Firecrawl (MCP) | Deep scrape component library docs, design system references | HIGH (content depends on source) |
 | 5th | WebSearch | Fallback keyword search for ecosystem discovery | Needs verification |
 
-**Exa/Firecrawl:** Check `exa_search` and `firecrawl` from orchestrator context. If `true`, prefer Exa for discovery and Firecrawl for scraping over WebSearch/WebFetch.
+**Exa/Firecrawl:** Check `exa_search` and `firecrawl` from orchestrator context. If `true`, prefer Exa for discovery and Firecrawl for scraping over WebSearch/ctx_fetch_and_index.
 
 **Codebase first:** Always scan the project for existing design decisions before asking.
 

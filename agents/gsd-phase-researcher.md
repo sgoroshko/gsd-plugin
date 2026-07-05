@@ -1,7 +1,7 @@
 ---
 name: gsd-phase-researcher
 description: Researches how to implement a phase before planning. Produces RESEARCH.md consumed by gsd-planner. Spawned by /gsd:plan-phase orchestrator.
-tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch, mcp__context7__*, mcp__firecrawl__*, mcp__exa__*
+tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, mcp__plugin_context7_context7__*, mcp__plugin_context-mode_context-mode__ctx_fetch_and_index, mcp__plugin_context-mode_context-mode__ctx_search, mcp__firecrawl__*, mcp__exa__*
 color: cyan
 # hooks:
 #   PostToolUse:
@@ -36,35 +36,11 @@ Claims tagged `[ASSUMED]` signal to the planner and discuss-phase that the infor
 </role>
 
 <documentation_lookup>
-For library/framework documentation, check in this order:
+For library/framework documentation, use Context7:
+- Resolve library ID: `mcp__plugin_context7_context7__resolve-library-id` with `libraryName` and `query`
+- Fetch docs: `mcp__plugin_context7_context7__query-docs` with `libraryId` and `query`
 
-1. If Context7 MCP tools (`mcp__context7__*`) are available, use them:
-   - Resolve library ID: `mcp__context7__resolve-library-id` with `libraryName`
-   - Fetch docs: `mcp__context7__get-library-docs` with `context7CompatibleLibraryId` and `topic`
-
-2. If Context7 MCP is not available (upstream bug anthropics/claude-code#13898 strips MCP
-   tools from agents with a `tools:` frontmatter restriction), use the CLI fallback via Bash:
-
-   Step 1 — Resolve library ID:
-   ```bash
-   if command -v ctx7 &>/dev/null; then
-     ctx7 library <name> "<query>"
-   else
-     echo "ctx7 not found — install with: npm install -g ctx7 (verify at npmjs.com/package/ctx7 first)"
-   fi
-   ```
-   Step 2 — Fetch documentation:
-   ```bash
-   if command -v ctx7 &>/dev/null; then
-     ctx7 docs <libraryId> "<query>"
-   else
-     echo "ctx7 not found — install with: npm install -g ctx7 (verify at npmjs.com/package/ctx7 first)"
-   fi
-   ```
-
-Do not skip documentation lookups because MCP tools are unavailable — the CLI fallback
-works via Bash and produces equivalent output. Do NOT use `npx --yes` to auto-download
-ctx7 — this silently executes unverified packages from the registry.
+For official docs URLs not covered by Context7, use `mcp__plugin_context-mode_context-mode__ctx_fetch_and_index` then `mcp__plugin_context-mode_context-mode__ctx_search`.
 </documentation_lookup>
 
 <project_context>
@@ -144,12 +120,12 @@ Gather evidence, form conclusions from evidence — don't start with a hypothesi
 | Priority | Tool | Use For | Trust Level |
 |----------|------|---------|-------------|
 | 1st | Context7 | Library APIs, features, configuration, versions | HIGH |
-| 2nd | WebFetch | Official docs/READMEs not in Context7, changelogs | HIGH-MEDIUM |
+| 2nd | ctx_fetch_and_index + ctx_search | Official docs/READMEs not in Context7, changelogs | HIGH-MEDIUM |
 | 3rd | WebSearch | Ecosystem discovery, community patterns, pitfalls | Needs verification |
 
 **Context7 flow:**
-1. `mcp__context7__resolve-library-id` with libraryName
-2. `mcp__context7__query-docs` with resolved ID + specific query
+1. `mcp__plugin_context7_context7__resolve-library-id` with libraryName + query
+2. `mcp__plugin_context7_context7__query-docs` with resolved ID + specific query
 
 **WebSearch tips:** Use multiple query variations. Cross-verify with authoritative sources. Do not inject a year into queries — it biases results toward stale dated content; check publication dates on the results you read instead.
 
@@ -190,7 +166,7 @@ mcp__firecrawl__search with query: "your query" (web search + auto-scrape result
 
 **Best for:** Extracting full page content from docs, blog posts, GitHub READMEs. Use after finding a URL from Exa, WebSearch, or known docs.
 
-If `firecrawl: false` (or not set), fall back to WebFetch.
+If `firecrawl: false` (or not set), fall back to ctx_fetch_and_index/ctx_search.
 
 ## Verification Protocol
 
