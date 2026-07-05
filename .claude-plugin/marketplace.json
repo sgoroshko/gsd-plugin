@@ -1,7 +1,7 @@
 {
   "name": "gsd-plugin",
   "owner": {
-    "name": "Jasper Nuyens"
+    "name": "sgoroshko"
   },
   "metadata": {
     "description": "Performance-optimized GSD plugin for Claude Code"
@@ -11,12 +11,12 @@
       "name": "gsd",
       "source": "./",
       "description": "Get Shit Done -- structured workflow plugin for Claude Code with planning, execution, verification, and MCP-backed project state",
-      "version": "4.0.4",
+      "version": "4.0.4-fix",
       "author": {
         "name": "Jasper Nuyens"
       },
-      "homepage": "https://github.com/jnuyens/gsd-plugin",
-      "repository": "https://github.com/jnuyens/gsd-plugin",
+      "homepage": "https://github.com/sgoroshko/gsd-plugin",
+      "repository": "https://github.com/sgoroshko/gsd-plugin",
       "license": "MIT",
       "keywords": ["workflow", "planning", "gsd", "mcp"],
       "category": "productivity"
