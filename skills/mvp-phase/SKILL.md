@@ -11,8 +11,9 @@ allowed-tools:
   - Grep
   - Task
   - AskUserQuestion
-  - WebFetch
-  - mcp__context7__*
+  - mcp__plugin_context-mode_context-mode__ctx_fetch_and_index
+  - mcp__plugin_context-mode_context-mode__ctx_search
+  - mcp__plugin_context7_context7__*
 ---
 <objective>
 Guide the user through MVP-mode planning for a phase. Prompts for an "As a / I want to / So that" user story, runs SPIDR splitting check on the story, writes the result to ROADMAP.md, and delegates to `/gsd:plan-phase` (which auto-detects MVP via the roadmap mode field).
