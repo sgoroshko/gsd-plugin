@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-29)
 Phase: 12 (Two-Plugin Build Foundation) — Not started
 Plan: —
 Status: Roadmap defined; awaiting `/gsd:plan-phase 12`
-Last activity: 2026-06-29 — Roadmap created for v4.1 (4 phases, 13 requirements)
+Last activity: 2026-07-10 - Completed quick task 260710-0hl: Flutter branch added to /gsd:ui-phase design-contract pipeline
 
 Progress: [░░░░░░░░░░] 0% (0/4 phases)
 
@@ -150,6 +150,7 @@ None.
 | 260701-vnh | Investigation (no code): security issue #19 "Multiple Skills Auto-Approve Unrestricted Shell" (Trustabl scanner). VERDICT: theoretical/mischaracterized, not a real Critical — allowed-tools:Bash only suppresses prompts while the user-INVOKED skill runs (documented CC behavior); no bypass/mode/background vector; 83/86 skills declare Bash of necessity. Optional hardening: scoped Bash(gsd-sdk:*). | 2026-07-01 | (docs) | Done | [260701-vnh-investigate-trustabl-security-report-19-](./quick/260701-vnh-investigate-trustabl-security-report-19-/) |
 | 260701-wxe | Re-enabled Claude Fable 5 tier through its redeploy free-usage window (redeployed 2026-07-01, plan-included through 2026-07-07). Bumped FABLE_SUNSET_DATE 2026-06-12 -> 2026-07-07 in both resolvers + tests + dist; heavy agents ride Fable through 07-07 then auto-downgrade to Opus. Shipped as 4.0.4. | 2026-07-01 | v4.0.4 | Done | [260701-wxe-re-enable-fable-5-through-2026-07-07-red](./quick/260701-wxe-re-enable-fable-5-through-2026-07-07-red/) |
 | 260709-upg | Mirrored the agents/ context7-plugin + context-mode fix (a40be70) onto skills/ and workflows/: renamed `mcp__context7__*` -> `mcp__plugin_context7_context7__*` and bare WebFetch -> ctx_fetch_and_index/ctx_search across 7 SKILL.md files; fixed workflows/discuss-phase/modes/default.md prose and workflows/discovery-phase.md (also updated stale get-library-docs/context7CompatibleLibraryID call to query-docs/libraryId). Grep-verified zero mcp__context7__ remain in skills/ or workflows/. | 2026-07-09 | 4f27a7c | Done | [260709-upg-skills-workflows-context7-context-mode-m](./quick/260709-upg-skills-workflows-context7-context-mode-m/) |
+| 260710-0hl | Added a Flutter branch to the /gsd:ui-phase design-contract pipeline: new templates/UI-SPEC-flutter.md (Material 3/Cupertino tokens, Navigation Pattern, Touch & Platform Conventions, non-blocking Package Safety), stack-detection gate + Flutter design-contract questions in gsd-ui-researcher.md (explicit reference > named style > Material 3/Cupertino baseline cascade), mirrored Flutter dimensions in gsd-ui-checker.md, and stack/template routing in workflows/ui-phase.md. All researcher/checker edits verified as pure insertions (zero removed lines) — web/shadcn path untouched. | 2026-07-10 | ddee754 | Done | [260710-0hl-flutter-ui-design-contract-pipeline-gsd-](./quick/260710-0hl-flutter-ui-design-contract-pipeline-gsd-/) |
 
 ## Session Continuity
 
