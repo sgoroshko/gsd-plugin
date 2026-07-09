@@ -32,6 +32,19 @@ Detect sketch findings:
 SKETCH_FINDINGS_PATH=$(ls ./.claude/skills/sketch-findings-*/SKILL.md 2>/dev/null | head -1 || true)
 ```
 
+Detect UI stack (Flutter vs web) and pick the matching UI-SPEC template:
+
+```bash
+UI_STACK="web"
+if [[ -f pubspec.yaml || -f lib/main.dart ]] || find . -maxdepth 4 -name "*.dart" 2>/dev/null | head -1 | grep -q .; then
+  UI_STACK="flutter"
+fi
+UI_SPEC_TEMPLATE="templates/UI-SPEC.md"
+if [[ "$UI_STACK" == "flutter" ]]; then
+  UI_SPEC_TEMPLATE="templates/UI-SPEC-flutter.md"
+fi
+```
+
 Resolve UI agent models:
 
 ```bash
@@ -142,13 +155,14 @@ ${AGENT_SKILLS_UI}
 
 <output>
 Write to: {phase_dir}/{padded_phase}-UI-SPEC.md
-Template: ${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/templates/UI-SPEC.md
+Template: ${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/gsd-plugin/current}/${UI_SPEC_TEMPLATE}
 </output>
 
 <config>
 commit_docs: {commit_docs}
 phase_dir: {phase_dir}
 padded_phase: {padded_phase}
+ui_stack: {UI_STACK}
 </config>
 ```
 
