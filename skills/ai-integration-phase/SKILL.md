@@ -9,10 +9,11 @@ allowed-tools:
   - Glob
   - Grep
   - Task
-  - WebFetch
+  - mcp__plugin_context-mode_context-mode__ctx_fetch_and_index
+  - mcp__plugin_context-mode_context-mode__ctx_search
   - WebSearch
   - AskUserQuestion
-  - mcp__context7__*
+  - mcp__plugin_context7_context7__*
 ---
 <objective>
 Create an AI design contract (AI-SPEC.md) for a phase involving AI system development.

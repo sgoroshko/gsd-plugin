@@ -55,7 +55,7 @@ check whether to continue. Each answer should reveal the next question.
      - Timeline (needs new Timeline component — none exists yet)
      ```
    - Include "You decide" as an option when reasonable — captures Claude discretion
-   - **Context7 for library choices:** When a gray area involves library selection (e.g., "magic links" → query next-auth docs) or API approach decisions, use `mcp__context7__*` tools to fetch current documentation and inform the options. Don't use Context7 for every question — only when library-specific knowledge improves the options.
+   - **Context7 for library choices:** When a gray area involves library selection (e.g., "magic links" → query next-auth docs) or API approach decisions, use `mcp__plugin_context7_context7__*` tools to fetch current documentation and inform the options. Don't use Context7 for every question — only when library-specific knowledge improves the options.
 
 3. **After the current set of questions, check:**
    - header: "[Area]" (max 12 chars)

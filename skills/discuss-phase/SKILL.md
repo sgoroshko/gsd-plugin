@@ -10,8 +10,8 @@ allowed-tools:
   - Grep
   - AskUserQuestion
   - Task
-  - mcp__context7__resolve-library-id
-  - mcp__context7__query-docs
+  - mcp__plugin_context7_context7__resolve-library-id
+  - mcp__plugin_context7_context7__query-docs
 ---
 
 <objective>

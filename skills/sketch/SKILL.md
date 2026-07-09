@@ -11,9 +11,10 @@ allowed-tools:
   - Glob
   - AskUserQuestion
   - WebSearch
-  - WebFetch
-  - mcp__context7__resolve-library-id
-  - mcp__context7__query-docs
+  - mcp__plugin_context-mode_context-mode__ctx_fetch_and_index
+  - mcp__plugin_context-mode_context-mode__ctx_search
+  - mcp__plugin_context7_context7__resolve-library-id
+  - mcp__plugin_context7_context7__query-docs
 ---
 <objective>
 Explore design directions through throwaway HTML mockups before committing to implementation.

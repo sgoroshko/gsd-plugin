@@ -11,8 +11,9 @@ allowed-tools:
   - Grep
   - Task
   - AskUserQuestion
-  - WebFetch
-  - mcp__context7__*
+  - mcp__plugin_context-mode_context-mode__ctx_fetch_and_index
+  - mcp__plugin_context-mode_context-mode__ctx_search
+  - mcp__plugin_context7_context7__*
 ---
 <objective>
 Create executable phase prompts (PLAN.md files) for a roadmap phase with integrated research and verification.
